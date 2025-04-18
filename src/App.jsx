@@ -5,8 +5,6 @@ import HomePage from "./pages/HomePage.jsx";
 import CoursesPage from "./pages/CoursesPage.jsx";
 import SchedulePage from "./pages/SchedulePage.jsx";
 import ContactPage from "./pages/ContactPage.jsx";
-import RoadmapComponent from "./components/RoadmapComponent.jsx";
-import Roadmap2 from "./components/Roadmap2.jsx";
 
 import MainLayout from "./layouts/MainLayout.jsx";
 
@@ -63,8 +61,6 @@ const App = () => {
                     <Route path={"/courses"} element={<CoursesPage/>}/>
                     <Route path={"/schedule"} element={<SchedulePage/>}/>
                     <Route path={"/contact"} element={<ContactPage/>}/>
-                    <Route path={"/roadmap"} element={<RoadmapComponent data={data}/>}/>
-                    <Route path={"/roadmap2"} element={<Roadmap2 data={data}/>}/>
                 </Route>
             </Routes>
         </div>
