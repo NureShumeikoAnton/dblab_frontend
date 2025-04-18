@@ -1,0 +1,211 @@
+.dblab-presentation {
+  background-color: var(--primary-color);
+  color: white;
+  padding-top: 3em;
+}
+
+.dblab-presentation__db-dev-lab {
+  font-size: xx-large;
+  margin: 0.5em 0;
+}
+
+.dblab-presentation__databases-caps {
+  font-weight: bold;
+}
+
+.dblab-presentation__buttons {
+  display: flex;
+  justify-self: center;
+  align-items: center;
+  justify-items: center;
+  gap: 20px;
+  padding: 2em 0;
+}
+
+.dblab-presentation__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  
+  padding: 10px 20px;
+  border-radius: 18px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+  transition: var(--transition);
+}
+
+.dblab-presentation__meet-button {
+  background-color: var(--secondary-color);
+}
+
+.dblab-presentation__meet-button:hover {
+  background-color: var(--secondary-dark);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dblab-presentation__skills-button {
+  padding: 7px 17px;
+  border: 3px solid white;
+  background-color: transparent;
+}
+
+.dblab-presentation__skills-button:hover {
+  background-color: var(--primary-dark);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 4px 12px var(--primary-dark);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: left;
+  font-weight: 500;
+  width: 100%;
+}
+
+.info > * {
+  width: 50%;
+  min-width: 500px;
+}
+
+.info__heading {
+  text-align: center;
+  color: var(--primary-color);
+  padding: 1.7em;
+}
+
+.info__list {
+  list-style-type: disc;
+  padding-left: 1.5em;
+}
+
+.info__skills-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  row-gap: 10px;
+  padding: 20px 0;
+}
+
+.skill-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: 150px;
+  height: 150px;
+  border: 5px solid var(--primary-color);
+  border-radius: 15px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  transition: var(--transition);
+}
+
+.skill-card:hover {
+  border-color: var(--secondary-color);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2), 0 5px 10px var(--secondary-color);
+}
+
+.skill-card__img {
+  width: 90px;
+  height: 90px;
+  background-color: var(--primary-color);
+  margin: 0.8em 0;
+}
+
+.skill-card__name {
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+
+.directions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: whitesmoke;
+  width: 100%;
+}
+
+.directions__heading {
+  font-size: x-large;
+  text-align: center;
+  color: var(--primary-color);
+  padding: 1.7em;
+}
+
+.directions > * {
+  width: 70%;
+  min-width: 800px;
+}
+
+.directions__directions-container{
+  display: flex;
+  gap: 3%;
+  height: 300px;
+  margin-bottom: 2%;
+}
+
+.direction-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8%;
+  background-color: white;
+  border-radius: 5%;
+  padding: 3% 1%;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  transition: var(--transition);
+}
+
+.direction-card:hover {
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.direction-card__img {
+  width: 80px;
+  height: 80px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+}
+
+.direction-card__name {
+  font-size: larger;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.direction-card__description {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-light);
+  align-content: center;
+}
+
+.directions__all-directions-button {
+  display: inline-block;
+  width: auto;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--primary-color);
+  
+  padding: 7px 20px;
+  margin: 30px 0;
+  border-radius: 18px;
+  border: 3px solid var(--secondary-color);
+  background-color: transparent;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+  transition: var(--transition);
+}
+
+.directions__all-directions-button:hover {
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
