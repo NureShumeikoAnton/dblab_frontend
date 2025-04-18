@@ -1,0 +1,145 @@
+/* General styling for the course card */
+.course-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border-left-width: 4px;
+    max-width: 1000px;
+    margin-bottom: 15px;
+    border-left: 4px solid;
+}
+
+.course-card-content {
+    padding: 20px;
+    cursor: pointer;
+}
+
+.course-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.course-card-title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    font-size: 20px;
+    font-weight: bold;
+    color: #2d3748;
+}
+
+.course-card-shortdesc {
+    color: #718096;
+    margin-top: 4px;
+}
+
+.course-card-type-and-credits {
+    display: flex;
+    align-items: center;
+}
+
+.course-card-type {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 8px;
+}
+
+.course-card-credits {
+    background-color: #f7fafc;
+    color: #4a5568;
+    padding: 8px 12px;
+    border-radius: 9999px;
+    font-size: 14px;
+}
+
+.course-card-teachers {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.course-card-teachers-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.course-card-teachers-list {
+    font-size: 14px;
+    color: #718096;
+    margin-left: 8px;
+}
+
+.course-card-skills {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.course-card-skill {
+    padding: 4px 12px;
+    background-color: #edf2f7;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.course-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.course-card-toggle-button {
+    font-size: 14px;
+    font-weight: 500;
+    color: #0982B1;
+    display: flex;
+    align-items: center;
+}
+
+.course-card-chevron {
+    height: 16px;
+    width: 16px;
+    margin-left: 4px;
+    transition: transform 0.2s;
+}
+
+.course-card-syllabus {
+    font-size: 14px;
+    font-weight: 500;
+    color: #F59650;
+    display: flex;
+    align-items: center;
+}
+
+.course-card-download-icon {
+    height: 16px;
+    width: 16px;
+    margin-right: 4px;
+}
+
+.course-card-expanded-details {
+    padding: 16px 20px;
+    border-top: 1px solid #edf2f7;
+}
+
+.course-card-expanded-title {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 8px;
+}
+
+.course-card-expanded-desc {
+    color: #718096;
+    font-size: 14px;
+}
