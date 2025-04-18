@@ -30,8 +30,6 @@ yarn.lock
 .pnp.js
 *.pnp.js
 
-vite.config.js
-
 .env
 .env.local
 .env.*.local

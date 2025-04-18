@@ -60,7 +60,7 @@ const coursesData = [
 let allSkills = [...new Set(coursesData.flatMap(course => course.skills))].sort();
 
 const CoursesPage = () => {
-    const [allCourses, setAllCourses] = useState(coursesData);
+    const [allCourses, setAllCourses] = useState([]);
     const [courses, setCourses] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [typeFilter, setTypeFilter] = useState("all");
@@ -80,7 +80,7 @@ const CoursesPage = () => {
     }, []);
 
     useEffect(() => {
-        let filtered = coursesData;
+        let filtered = allCourses;
 
         if (searchTerm) {
             filtered = filtered.filter(course =>
@@ -153,7 +153,7 @@ const CoursesPage = () => {
                     <div className="skills-filter">
                         <div className="skills-header">
                             <Bookmark className="icon skills-icon"/>
-                            <span className="label">Напрями:</span>
+                            <span className="label">Навички:</span>
                         </div>
                         <div className="search-skills-list">
                             {allSkills.map(skill => (
