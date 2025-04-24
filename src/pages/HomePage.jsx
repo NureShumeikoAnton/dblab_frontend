@@ -19,6 +19,16 @@ const DirectionCard = ({name, link, image, description}) => (
     </a>
 )
 
+const ExpertCard = ({name, image, titles, description}) => (
+    <div className='expert-card'>
+        {/*<img src={image} alt={name} className='expert-card__img'/>*/}
+        <div className='expert-card__img'></div>
+        <p className='expert-card__name'>{name}</p>
+        <p className='expert-card__titles'>{titles}</p>
+        <p className='expert-card__description'>{description}</p>
+    </div>
+)
+
 const HomePage = () => {
     const skills = [
         {
@@ -72,6 +82,29 @@ const HomePage = () => {
             description: "Direction 4 is that thing and it does those things",
         },
     ];
+    const experts = [
+        {
+            id: 1,
+            name: "Мазурова Оксана Олексіївна",
+            image: "#",
+            titles: "Доцент кафедри програмної інженерії, кандидат технічних наук, вчений секретар кафедри",
+            description: "Керівник гуртка, експерт в області проєктування баз даних",
+        },
+        {
+            id: 2,
+            name: "Широкопетлєва Марія Сергіївна",
+            image: "#",
+            titles: "Старший викладач кафедри програмної інженерії, заступник директора центру післядипломної освіти",
+            description: "Керівник гуртка, експерт в області інформаційних систем",
+        },
+        {
+            id: 3,
+            name: "Expert 3",
+            image: "#",
+            titles: "Title one, title two",
+            description: "A description of Expert 3 which mentions who they are and what is their primary fiels of study",
+        }
+    ]
     return (
         <div className='home-page'>
             <section className='dblab-presentation'>
@@ -157,6 +190,16 @@ const HomePage = () => {
                 <a href="/directions" className='directions__all-directions-button'>
                     Усі напрями
                 </a>
+            </section>
+            <section className='experts'>
+                <h3 className='experts__heading'>
+                    Наукові керівники та запрошені експерти
+                </h3>
+                <div className='experts__experts-container'>
+                    {experts.map(expert => (
+                        <ExpertCard key={expert.id} {...expert} />
+                    ))}
+                </div>
             </section>
         </div>
     )
