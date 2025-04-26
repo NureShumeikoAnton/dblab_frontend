@@ -6,6 +6,7 @@ import CoursesPage from "./pages/CoursesPage.jsx";
 import SchedulePage from "./pages/SchedulePage.jsx";
 import ContactPage from "./pages/ContactPage.jsx";
 import CourseDetailsPage from "./pages/CourseDetailsPage.jsx";
+import DirectionDetailsPage from "./pages/DirectionDetailsPage.jsx";
 
 import MainLayout from "./layouts/MainLayout.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
@@ -13,52 +14,11 @@ import AdminLayout from "./layouts/AdminLayout.jsx";
 import Teachers from "./pages/adminPages/teachers.jsx";
 import Languages from "./pages/adminPages/languages.jsx";
 
-import AdminTableComponent from "./components/AdminTableComponent.jsx";
 import TestPage from "./pages/TestPage.jsx";
 
 
 
 const App = () => {
-    const data = [
-        {
-            "level": "Basic",
-            "sections": [
-                {
-                    "title": "SQL Fundamentals",
-                    "skills": [
-                        { "name": "SELECT Queries", "link": "/select-queries" },
-                        { "name": "JOINs", "link": "/joins" }
-                    ]
-                },
-                {
-                    "title": "Excel for Data Analysis",
-                    "skills": [
-                        { "name": "Pivot Tables", "link": "/pivot-tables" },
-                        { "name": "Data Cleaning", "link": null }
-                    ]
-                }
-            ]
-        },
-        {
-            "level": "Beginner",
-            "sections": [
-                {
-                    "title": "Python",
-                    "skills": [
-                        { "name": "Data Structures", "link": "/data-structures" },
-                        { "name": "OOP Basics", "link": "/oop-basics" }
-                    ]
-                },
-                {
-                    "title": "Statistics",
-                    "skills": [
-                        { "name": "Descriptive Statistics", "link": "/descriptive-statistics" },
-                        { "name": "Probability Theory", "link": null }
-                    ]
-                }
-            ]
-        }
-    ]
 
 
     return (
@@ -69,7 +29,7 @@ const App = () => {
                     <Route path={"/courses"} element={<CoursesPage/>}/>
                     <Route path={"/courses/:courseId"} element={<CourseDetailsPage/>}/>
                     <Route path={"/directions"}></Route>
-                    <Route path={"/directions/:directionId"}></Route>
+                    <Route path={"/directions/:directionId"} element={<DirectionDetailsPage/>}></Route>
                     <Route path={"/schedule"} element={<SchedulePage/>}/>
                     <Route path={"/contact"} element={<ContactPage/>}/>
                 </Route>

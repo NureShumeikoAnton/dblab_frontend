@@ -11,89 +11,6 @@ const levelColors = {
     Master: "#8A2BE2",
 };
 
-// Example data structure for a single direction
-const frontendRoadmapData = {
-    direction: "Фронтенд",
-    levels: [
-        {
-            name: "Basic",
-            sections: [
-                {
-                    name: "HTML",
-                    skills: [
-                        { name: "Структура HTML документу", link: "https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/Document_and_website_structure" },
-                        { name: "Семантичні теги", link: "https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/HTML_text_fundamentals" },
-                        { name: "Форми та валідація", link: "https://developer.mozilla.org/en-US/docs/Learn/Forms" }
-                    ]
-                },
-                {
-                    name: "CSS",
-                    skills: [
-                        { name: "Селектори", link: "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors" },
-                        { name: "Блочна модель", link: "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model" },
-                        { name: "Flexbox", link: "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout" }
-                    ]
-                }
-            ]
-        },
-        {
-            name: "Beginner",
-            sections: [
-                {
-                    name: "JavaScript",
-                    skills: [
-                        { name: "Типи даних", link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures" },
-                        { name: "Функції", link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions" },
-                        { name: "DOM маніпуляції", link: "https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model" }
-                    ]
-                },
-                {
-                    name: "Інструменти розробника",
-                    skills: [
-                        { name: "Chrome DevTools", link: "https://developer.chrome.com/docs/devtools/" },
-                        { name: "VS Code", link: "https://code.visualstudio.com/" },
-                        { name: "Git основи", link: "https://git-scm.com/book/en/v2/Getting-Started-Git-Basics" }
-                    ]
-                }
-            ]
-        },
-        {
-            name: "Intermediate",
-            sections: [
-                {
-                    name: "React",
-                    skills: [
-                        { name: "Компоненти та пропси", link: "https://reactjs.org/docs/components-and-props.html" },
-                        { name: "Стан та життєвий цикл", link: "https://reactjs.org/docs/state-and-lifecycle.html" },
-                        { name: "Hooks", link: "https://reactjs.org/docs/hooks-intro.html" }
-                    ]
-                },
-                {
-                    name: "Стилізація в React",
-                    skills: [
-                        { name: "CSS Modules", link: "https://github.com/css-modules/css-modules" },
-                        { name: "Styled Components", link: "https://styled-components.com/" },
-                        { name: "Tailwind CSS", link: "https://tailwindcss.com/" }
-                    ]
-                }
-            ]
-        },
-        {
-            name: "Advanced",
-            sections: [
-                {
-                    name: "Стан додатку",
-                    skills: [
-                        { name: "Redux", link: "https://redux.js.org/" },
-                        { name: "Context API", link: "https://reactjs.org/docs/context.html" },
-                        { name: "React Query", link: "https://react-query.tanstack.com/" }
-                    ]
-                }
-            ]
-        }
-    ]
-};
-
 // Component for individual skill
 const Skill = ({ skill }) => {
     return (
@@ -156,12 +73,10 @@ const LevelBlock = ({level, color}) => {
 }
 
 // Main Roadmap component
-const RoadmapComponent = () => {
-    const roadmapData = frontendRoadmapData;
-
+const RoadmapComponent = ({roadmapData}) => {
     return (
         <div className="roadmap-container">
-            <h2 className="roadmap-title">{roadmapData.direction}</h2>
+            <h2 className="roadmap-title">Твоя карта розвитку</h2>
             <div className="roadmap">
                 <div className="vertical-line"></div>
 
