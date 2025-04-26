@@ -3,6 +3,7 @@ import {ChevronRight, Download} from "lucide-react";
 import "./styles/Course.css";
 
 const CourseComponent = ({course, navigateToCourse}) => {
+    const courseSkills = course.skills.split(",").map(skill => skill.trim());
     return (
         <div className="course-card" style={{borderLeftColor: course.discipline_type === "Обов'язкова" ? "#F59650" : "#0094C8"}}>
             <div className="course-card-content" onClick={() => navigateToCourse(course.discipline_Id)}>
@@ -30,12 +31,12 @@ const CourseComponent = ({course, navigateToCourse}) => {
                 {/* Teachers */}
                 <div className="course-card-teachers">
                     <span className="course-card-teachers-label">Викладачі:</span>
-                    <span className="course-card-teachers-list">{course.teachers.join(", ")}</span>
+                    <span className="course-card-teachers-list">{course.teachers}</span>
                 </div>
 
                 {/* Skills */}
                 <div className="course-card-skills">
-                    {course.skills.map(skill => (
+                    {courseSkills.map(skill => (
                         <span key={skill} className="course-card-skill">{skill}</span>
                     ))}
                 </div>

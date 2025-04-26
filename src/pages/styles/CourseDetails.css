@@ -1,4 +1,230 @@
-* {
+.teacher-slider{
+    display: flex;
+    overflow-x: hidden;
+    scroll-snap-type: x mandatory;
+    gap: 20px;
+}
+
+.arrow-left, .arrow-right {
+    background-color: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+.arrow-left:hover{
+    animation: slideLeft 0.5s forwards;
+}
+
+.teacher-info {
+    flex-grow: 1;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: var(--secondary-color);
+    border-radius: var(--border-radius);
+    color: var(--white);
+}
+
+.teacher-text {
+    flex: 1;
+    margin-right: 16px;
+}
+
+.teacher-image {
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #eaeaea;
+}
+
+.teacher-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.teacher-slider .teacher-info {
+    transition: transform 0.5s ease-in-out;
+}
+
+.course-header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 16px;
+    background-color: var(--primary-color);
+    color: var(--white);
+    box-sizing: border-box;
+}
+
+.course-header-container h1 {
+    font-size: 64px;
     margin: 0;
-    padding: 0;
+}
+
+.course-header-container h2 {
+    font-size: 32px;
+    margin: 0;
+}
+
+.course-header-container .course-additional-info-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    margin-top: 40px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.course-additional-info-container span{
+    text-decoration: underline;
+}
+
+.course-details-container{
+    display: flex;
+    gap: 120px;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    background-color: var(--white);
+    box-sizing: border-box;
+}
+
+.course-details-container h3{
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.course-description-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40%;
+}
+
+.course-description-container p{
+    align-self: flex-start;
+}
+
+.course-content-container{
+    width: 40%;
+}
+
+.course-skills-container{
+    margin-top: 20px;
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.course-footer-container{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    padding: 16px;
+    background-color: var(--white);
+    box-sizing: border-box;
+}
+
+.course-footer-button{
+    color: var(--white);
+    padding: 10px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.course-footer-button:first-child{
+    background-color: var(--secondary-color);
+}
+
+.course-footer-button:last-child{
+    background-color: var(--primary-color);
+}
+
+@keyframes pulseLeft {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(-5px);
+    }
+}
+
+@keyframes pulseRight {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(5px);
+    }
+}
+
+.pulse-left:hover {
+    animation: pulseLeft 1s infinite;
+}
+
+.pulse-right:hover {
+    animation: pulseRight 1s infinite;
+}
+
+.slide-left {
+    animation: slideLeft 0.5s ease;
+}
+
+.slide-right {
+    animation: slideRight 0.5s ease;
+}
+
+@keyframes slideLeft {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    33% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    66% {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideRight {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    33% {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+    66% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }

@@ -72,7 +72,7 @@ const CoursesPage = () => {
                 console.log(response.data);
                 setAllCourses(response.data);
                 setCourses(response.data);
-                allSkills = [...new Set(response.data.flatMap(course => course.skills))].sort();
+                allSkills = [...new Set(response.data.flatMap(course => course.skills.split(', ')))].sort();
             })
             .catch(error => {
                 console.error("Error fetching courses:", error);
@@ -111,7 +111,7 @@ const CoursesPage = () => {
     };
 
     const navigateToCourse = (courseId) => {
-        window.location.href = `/course/${courseId}`;
+        window.location.href = `/courses/${courseId}`;
     }
 
     return (

@@ -5,8 +5,16 @@ import HomePage from "./pages/HomePage.jsx";
 import CoursesPage from "./pages/CoursesPage.jsx";
 import SchedulePage from "./pages/SchedulePage.jsx";
 import ContactPage from "./pages/ContactPage.jsx";
+import CourseDetailsPage from "./pages/CourseDetailsPage.jsx";
 
 import MainLayout from "./layouts/MainLayout.jsx";
+import AdminLayout from "./layouts/AdminLayout.jsx";
+
+import Teachers from "./pages/adminPages/teachers.jsx";
+import Languages from "./pages/adminPages/languages.jsx";
+
+import AdminTableComponent from "./components/AdminTableComponent.jsx";
+import TestPage from "./pages/TestPage.jsx";
 
 
 
@@ -59,9 +67,17 @@ const App = () => {
                 <Route path={'/'} Component={MainLayout}>
                     <Route path={"/"} element={<HomePage/>}/>
                     <Route path={"/courses"} element={<CoursesPage/>}/>
+                    <Route path={"/courses/:courseId"} element={<CourseDetailsPage/>}/>
+                    <Route path={"/directions"}></Route>
+                    <Route path={"/directions/:directionId"}></Route>
                     <Route path={"/schedule"} element={<SchedulePage/>}/>
                     <Route path={"/contact"} element={<ContactPage/>}/>
                 </Route>
+                <Route path={'/apanel'} Component={AdminLayout}>
+                    <Route path={"teachers"} element={<Teachers/>}></Route>
+                    <Route path={"languages"} element={<Languages/>}></Route>
+                </Route>
+                <Route path={"/test"} element={<TestPage/>}></Route>
             </Routes>
         </div>
     )
