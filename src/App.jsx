@@ -14,9 +14,6 @@ import AdminLayout from "./layouts/AdminLayout.jsx";
 import Teachers from "./pages/adminPages/teachers.jsx";
 import Languages from "./pages/adminPages/languages.jsx";
 
-import TestPage from "./pages/TestPage.jsx";
-
-
 
 const App = () => {
 
