@@ -1,0 +1,147 @@
+.roadmap-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.roadmap-title {
+    font-size: 28px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.roadmap {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.vertical-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background-color: #333;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+.level-block {
+    width: 100%;
+    margin-bottom: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.level-header {
+    width: 60%;
+    padding: 12px 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
+    z-index: 2;
+    color: var(--white);
+}
+
+.circle {
+    width: 16px;
+    height: 16px;
+    background-color: #333;
+    border-radius: 50%;
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+}
+
+.sections-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+.section-wrapper{
+    width: 50%;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+}
+
+.section-wrapper.section-left {
+    padding-right: 30px;
+}
+
+.section-wrapper.section-right {
+    padding-left: 30px;
+}
+
+.section-wrapper.section-left .circle {
+    right: -16px;
+    transform: translateX(-50%) translateY(-50%);
+}
+
+.section-wrapper.section-right .circle {
+    left: -16px;
+    transform: translateX(50%) translateY(-50%);
+}
+
+.section-left {
+    align-self: flex-start;
+}
+
+.section-right {
+    align-self: flex-end;
+}
+
+.section-header {
+    padding: 12px 15px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+.skill {
+    padding: 10px 15px 10px 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.skill:last-child {
+    border-bottom: none;
+}
+
+.skill-link {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.skill-link:hover {
+    text-decoration: underline;
+}
+
+.dropdown-icon {
+    font-size: 12px;
+    color: #666;
+}
