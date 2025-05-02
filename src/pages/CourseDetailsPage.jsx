@@ -86,8 +86,8 @@ const templateData = {
 };
 
 const CourseDetailsPage = () => {
-    const [course, setCourse] = useState({});
-    const [loading, setLoading] = useState(true);
+    const [course, setCourse] = useState(templateData);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const courseId = window.location.pathname.split('/').pop();

@@ -13,6 +13,9 @@ const AdminPageLayout = () => {
         {name: 'Levels', path: '/apanel/levels'},
         {name: 'Chapters', path: '/apanel/chapters'},
         {name: 'Languages', path: '/apanel/languages'},
+        {name: 'Development Directions', path: '/apanel/developmentdirections'},
+        {name: 'Discipline - Teacher', path: '/apanel/disciplineteacher'},
+        {name: 'Discipline - Skill', path: '/apanel/disciplineskill'},
     ];
 
     const authHeader = useAuthHeader();
@@ -26,6 +29,7 @@ const AdminPageLayout = () => {
             .then(response => {
                 console.log('Cache updated successfully:', response.data);
                 alert("Cache updated successfully");
+                window.location.reload();
             })
             .catch(error => {
                 console.error('Error updating cache:', error);

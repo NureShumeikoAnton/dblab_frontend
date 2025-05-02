@@ -4,6 +4,7 @@ import axios from "axios";
 import UniversalModalComponent from "./UniversalModalComponent.jsx";
 
 import './styles/AdminTable.css';
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => {
     const [data, setData] = useState([]);
@@ -14,6 +15,8 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
     const [isDeleteWithoutConfirmation, setIsDeleteWithoutConfirmation] = useState(false);
 
     const apiUrl = `http://localhost:5000/${endpoint}`;
+
+    const authHeader = useAuthHeader();
 
     const handelInputChange = (e) => {
         const {name, value} = e.target;
@@ -38,14 +41,13 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
 
     useEffect(() => {
         fetchData();
-        console.log(columns)
     }, [endpoint]);
 
     const handleAdd = () => {
         const emptyForm = {};
         columns.forEach(col => {
             if (col.key !== idField) {
-                emptyForm[col.key] = "";
+                emptyForm[col.key] = col.isMulti ? [] : "";
             }
         });
         setFormData(emptyForm);
@@ -67,7 +69,11 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
 
     const handleDelete = (id) => {
         if (isDeleteWithoutConfirmation) {
-            axios.delete(`${apiUrl}/${id}`)
+            axios.delete(`${apiUrl}/delete/${id}`, {
+                headers: {
+                    'Authorization': authHeader.split(' ')[1],
+                }
+            })
                 .then(() => {
                     fetchData();
                 })
@@ -76,7 +82,11 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                 });
         } else {
             if (window.confirm("Are you sure you want to delete this item?")) {
-                axios.delete(`${apiUrl}/${id}`)
+                axios.delete(`${apiUrl}/delete/${id}`, {
+                    headers: {
+                        'Authorization': authHeader.split(' ')[1],
+                    }
+                })
                     .then(() => {
                         fetchData();
                     })
@@ -91,11 +101,22 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
         try {
             if (currentItem) {
                 // Update existing item
-                await axios.put(`${apiUrl}/${currentItem[idField]}`, formData);
-            } else {
-                // Create new item
                 console.log(formData);
-                await axios.post(apiUrl + "/create", formData);
+                console.log(currentItem[idField]);
+                //await axios.put(`${apiUrl}/${currentItem[idField]}`, formData);
+            } else {
+                console.log(formData);
+                await axios.post(apiUrl + "/create", formData, {
+                    headers: {
+                        'Authorization': authHeader.split(' ')[1],
+                    }
+                })
+                    .then((response) => {
+                        console.log("Item created:", response.data);
+                    })
+                    .catch((error) => {
+                        console.error("Error creating item:", error);
+                    });
             }
             setShowModal(false);
             fetchData(); // Refresh data
@@ -121,7 +142,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
         <div className="admin-table-container">
             <h2>{tableName}</h2>
             <button className="add-button" onClick={handleAdd}>+ Add New</button>
-            <table>
+            <table className={"data-table"}>
                 <thead>
                 <tr>
                     {columns.map((col) => (
@@ -142,12 +163,14 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                         <tr key={item[idField]}>
                             {columns.map(col => (
                                 <td key={`${item[idField]}-${col.key}`}>
-                                    {col.format ? col.format(item[col.key]) : item[col.key]}
+                                    <div className="column-wrapper">
+                                        {col.format ? col.format(item[col.key]) : item[col.key]}
+                                    </div>
                                 </td>
                             ))}
                             <td className="actions">
                                 <button className="edit-btn" onClick={() => handleEdit(item)}>Edit</button>
-                                <button className="delete-btn" onClick={() => handleDelete(item)}>Delete</button>
+                                <button className="delete-btn" onClick={() => handleDelete(item[idField])}>Delete</button>
                             </td>
                         </tr>
                     ))

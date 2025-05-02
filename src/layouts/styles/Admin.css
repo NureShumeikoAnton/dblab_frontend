@@ -11,3 +11,7 @@
     overflow-y: auto;
     display: flex;
 }
+
+.admin-layout-container footer{
+    padding: 20px 0;
+}

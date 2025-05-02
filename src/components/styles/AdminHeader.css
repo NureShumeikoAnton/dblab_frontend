@@ -46,3 +46,17 @@
 .admin-user-info .logout-button:hover{
     color: var(--primary-light);
 }
+
+.up-to-date-text{
+    margin-left: 10px;
+    font-size: 24px;
+    color: green;
+    font-weight: 400;
+}
+
+.not-up-to-date-text{
+    margin-left: 10px;
+    font-size: 24px;
+    color: red;
+    font-weight: 400;
+}

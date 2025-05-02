@@ -10,7 +10,7 @@ const CourseComponent = ({course, navigateToCourse}) => {
                 <div className="course-card-header">
                     <div>
                         <h2 className="course-card-title">{course.discipline_name}</h2>
-                        <p className="course-card-shortdesc">{course.discipline_Description}</p>
+                        <p className="course-card-shortdesc">{course.discipline_Description.split(".")[0]}</p>
                     </div>
                     <div className="course-card-type-and-credits">
             <span

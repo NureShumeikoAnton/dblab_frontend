@@ -118,8 +118,8 @@ const frontendRoadmapData = {
 };
 
 const DirectionDetailsPage = () => {
-    const [loading, setLoading] = useState(true);
-    const [direction, setDirection] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [direction, setDirection] = useState(frontendRoadmapData);
 
     useEffect(() => {
         axios.get(`http://localhost:5000/developmentDirection/getRoad/${window.location.pathname.split('/').pop()}`)

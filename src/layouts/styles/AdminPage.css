@@ -32,9 +32,10 @@
     color: #333;
 }
 
-.main-content {
+.admin-page-layout .main-content {
     flex-grow: 1;
     padding: 20px;
     background-color: #fff;
     overflow-y: auto;
+    display: block;
 }
