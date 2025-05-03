@@ -21,7 +21,7 @@ const Chapters = () => {
                 console.error('Error fetching levels:', error);
             });
 
-        axios.get('http://localhost:5000/development_direction/getAll')
+        axios.get('http://localhost:5000/developmentDirection/getAll')
             .then(response => {
                 const options = response.data.map(direction => ({
                     id: direction.development_direction_Id,

@@ -103,9 +103,20 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                 // Update existing item
                 console.log(formData);
                 console.log(currentItem[idField]);
-                //await axios.put(`${apiUrl}/${currentItem[idField]}`, formData);
+                await axios.put(`${apiUrl}/${currentItem[idField]}`, formData, {
+                    headers: {
+                        'Authorization': authHeader.split(' ')[1],
+                    }
+                })
+                    .then((response) => {
+                        console.log("Item updated:", response.data);
+                    })
+                    .catch((error) => {
+                        console.error("Error updating item:", error);
+                });
             } else {
                 console.log(formData);
+                let createdItemId = null;
                 await axios.post(apiUrl + "/create", formData, {
                     headers: {
                         'Authorization': authHeader.split(' ')[1],
@@ -113,10 +124,15 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                 })
                     .then((response) => {
                         console.log("Item created:", response.data);
+                        createdItemId = response.data[idField];
                     })
                     .catch((error) => {
                         console.error("Error creating item:", error);
                     });
+                if(createdItemId) {
+                    handleAdditionalFields("add", createdItemId);
+                }
+
             }
             setShowModal(false);
             fetchData(); // Refresh data
@@ -128,6 +144,57 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
     const handleCancel = () => {
         setShowModal(false);
     };
+
+    const handleAdditionalFields = (action, createdId) => {
+        const additionalFields = columns.filter(col => col.isMulti).map(col => col.key);
+        additionalFields.forEach(field => {
+            const additionalData = {
+                [field]: formData[field],
+                [idField]: currentItem ? currentItem[idField] : createdId
+            };
+            console.log(additionalData);
+            if (action === "add") {
+                const additionalEndpoint = "http://localhost:5000/" + columns.find(col => col.key === field).endpoint + "/create";
+                additionalData[field].forEach((item) => {
+                    const data = {
+                        [field]: item,
+                        [idField]: createdId
+                    };
+                    axios.post(additionalEndpoint, data, {
+                        headers: {
+                            'Authorization': authHeader.split(' ')[1],
+                        }
+                    })
+                        .then((response) => {
+                            console.log("Item created:", response.data);
+                        })
+                        .catch((error) => {
+                            console.error("Error creating item:", error);
+                        });
+                });
+            } else if (action === "remove") {
+                const additionalEndpoint = "http://localhost:5000/" + columns.find(col => col.key === field).endpoint + "/delete";
+                additionalData[field].forEach((item) => {
+                    const data = {
+                        [field]: item,
+                        [idField]: createdId
+                    };
+                    axios.delete(additionalEndpoint, {
+                        headers: {
+                            'Authorization': authHeader.split(' ')[1],
+                        },
+                        data: data
+                    })
+                        .then((response) => {
+                            console.log("Item deleted:", response.data);
+                        })
+                        .catch((error) => {
+                            console.error("Error deleting item:", error);
+                        });
+                });
+            }
+        });
+    }
 
     const getRowNames = () => {
         return columns
