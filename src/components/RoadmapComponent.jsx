@@ -2,14 +2,14 @@ import { useState } from 'react';
 import './styles/Roadmap.css'; // Adjust the path as necessary
 
 // Level colors from your specification
-const levelColors = {
-    Basic: "#ADD8E6",
-    Beginner: "#32CD32",
-    Intermediate: "#FFD700",
-    Advanced: "#FF8C00",
-    Expert: "#FF4500",
-    Master: "#8A2BE2",
-};
+const levelColorList = [
+    "#ADD8E6", // Light Blue
+    "#32CD32", // Green
+    "#FFD700", // Yellow
+    "#FF8C00", // Orange
+    "#FF4500", // Red-Orange
+    "#8A2BE2", // Purple
+];
 
 // Component for individual skill
 const Skill = ({ skill }) => {
@@ -84,7 +84,7 @@ const RoadmapComponent = ({roadmapData}) => {
                     <LevelBlock
                         key={levelIndex}
                         level={level}
-                        color={levelColors[level.name]}
+                        color={levelColorList[levelIndex % levelColorList.length]}
                     />
                 ))}
             </div>
