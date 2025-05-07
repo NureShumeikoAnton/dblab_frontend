@@ -92,8 +92,7 @@
 .skill-card {
   justify-self: center;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   width: 150px;
   height: 150px;
@@ -109,17 +108,14 @@
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2), 0 5px 10px var(--secondary-color);
 }
 
-.skill-card__img {
-  width: 90px;
-  height: 90px;
-  background-color: var(--primary-color);
-  margin: 0.8em 0;
-}
-
 .skill-card__name {
+  font-size: larger;
   color: var(--primary-color);
   font-weight: bold;
-  margin-bottom: 0.5em;
+  padding: 0 10px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .directions {
@@ -156,6 +152,7 @@
   height: 200px;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
   gap: 8%;
   background-color: white;
   border-radius: 5%;
@@ -168,13 +165,6 @@
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
 }
 
-.direction-card__img {
-  width: 80px;
-  height: 80px;
-  background-color: var(--primary-color);
-  border-radius: 50%;
-}
-
 .direction-card__name {
   font-size: larger;
   font-weight: bold;
@@ -182,7 +172,6 @@
 }
 
 .direction-card__description {
-  flex: 1;
   font-weight: 500;
   color: var(--text-light);
   align-content: center;
@@ -237,6 +226,7 @@
 
 .expert-card {
   height: 430px;
+  width: 100%;
   justify-self: center;
   flex: 1;
   display: flex;
@@ -258,7 +248,7 @@
 .expert-card__img {
   width: 150px;
   height: 150px;
-  background-color: var(--primary-color);
+  object-fit: cover;
 }
 
 .expert-card__name {

@@ -7,156 +7,38 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
-function MultipleItems() {
-    return (
-      <div className="slider-container">
-        <Slider {...{
-      dots: true,
-      infinite: true,
-      speed: 500,
-      slidesToShow: 3,
-      slidesToScroll: 1
-    }}>
-          <ExpertCard {...{
-            id: 1,
-            name: "Мазурова Оксана Олексіївна",
-            image: "#",
-            titles: "Доцент кафедри програмної інженерії, кандидат технічних наук, вчений секретар кафедри",
-            description: "Керівник гуртка, експерт в області проєктування баз даних",
-        }}/>
-          <div>
-            <h3>2</h3>
-          </div>
-          <div>
-            <h3>3</h3>
-          </div>
-          <div>
-            <h3>4</h3>
-          </div>
-          <div>
-            <h3>5</h3>
-          </div>
-          <div>
-            <h3>6</h3>
-          </div>
-          <div>
-            <h3>7</h3>
-          </div>
-          <div>
-            <h3>8</h3>
-          </div>
-          <div>
-            <h3>9</h3>
-          </div>
-        </Slider>
-      </div>
-    );
-  }
-
-const SkillCard = ({ name, image }) => (
+const SkillCard = ({ name }) => (
     <div className='skill-card'>
-        {/*<img src={image} alt={name} className='skill-card__img'/>*/}
-        <div className='skill-card__img'></div>
         <p className='skill-card__name'>{name}</p>
     </div>
 );
 
-const DirectionCard = ({ name, link, image, description }) => (
+const DirectionCard = ({ name, link, description }) => (
     <a href={link} className='direction-card'>
-        {/*<img src={image} alt={name} className='direction-card__img'/>*/}
-        <div className='direction-card__img'></div>
         <p className='direction-card__name'>{name}</p>
         <p className='direction-card__description'>{description}</p>
     </a>
 )
 
-const ExpertCard = ({ name, image, titles, description }) => (
-    <div className='expert-card'>
-        {/*<img src={image} alt={name} className='expert-card__img'/>*/}
-        <div className='expert-card__img'></div>
-        <p className='expert-card__name'>{name}</p>
-        <p className='expert-card__titles'>{titles}</p>
-        <p className='expert-card__description'>{description}</p>
-    </div>
-)
+const ExpertCard = ({ name, image, titles, description }) => {
+    let imageSrc = "#";
+    if (image != null) {
+        imageSrc = Array.from(new Uint8Array(image.data))
+            .map(byte => String.fromCharCode(byte)).join('');
+    }
+    console.log(imageSrc);
+    return (
+        <div className='expert-card'>
+            {image != null && <img src={imageSrc} alt={name} className='expert-card__img'/>}
+            {image == null && <div className='expert-card__img'></div>}
+            <p className='expert-card__name'>{name}</p>
+            <p className='expert-card__titles'>{titles}</p>
+            <p className='expert-card__description'>{description}</p>
+        </div>
+    );
+}
 
 const HomePage = () => {
-    // const skills = [
-    //     {
-    //         id: 1,
-    //         name: "Моделювання БД",
-    //         image: "#",
-    //     },
-    //     {
-    //         id: 2,
-    //         name: "Навичка 2",
-    //         image: "#",
-    //     },
-    //     {
-    //         id: 3,
-    //         name: "Навичка 3",
-    //         image: "#",
-    //     },
-    //     {
-    //         id: 4,
-    //         name: "Навичка 4",
-    //         image: "#",
-    //     },
-    // ];
-    // const directions = [
-    //     {
-    //         id: 1,
-    //         name: "SQL",
-    //         link: "#",
-    //         image: "#",
-    //         description: "SQL is that thing and it does those things",
-    //     },
-    //     {
-    //         id: 2,
-    //         name: "Direction 2",
-    //         link: "#",
-    //         image: "#",
-    //         description: "Direction 2 is that thing and it does those things",
-    //     },
-    //     {
-    //         id: 3,
-    //         name: "Direction 3",
-    //         link: "#",
-    //         image: "#",
-    //         description: "Direction 3 is that thing and it does those things",
-    //     },
-    //     {
-    //         id: 4,
-    //         name: "Direction 4",
-    //         link: "#",
-    //         image: "#",
-    //         description: "Direction 4 is that thing and it does those things",
-    //     },
-    // ];
-    // const experts = [
-    //     {
-    //         id: 1,
-    //         name: "Мазурова Оксана Олексіївна",
-    //         image: "#",
-    //         titles: "Доцент кафедри програмної інженерії, кандидат технічних наук, вчений секретар кафедри",
-    //         description: "Керівник гуртка, експерт в області проєктування баз даних",
-    //     },
-    //     {
-    //         id: 2,
-    //         name: "Широкопетлєва Марія Сергіївна",
-    //         image: "#",
-    //         titles: "Старший викладач кафедри програмної інженерії, заступник директора центру післядипломної освіти",
-    //         description: "Керівник гуртка, експерт в області інформаційних систем",
-    //     },
-    //     {
-    //         id: 3,
-    //         name: "Expert 3",
-    //         image: "#",
-    //         titles: "Title one, title two",
-    //         description: "A description of Expert 3 which mentions who they are and what is their primary fiels of study",
-    //     }
-    // ];
-
     const [skills, setSkills] = useState([]);
     const [directions, setDirections] = useState([]);
     const [experts, setExperts] = useState([]);
@@ -168,7 +50,6 @@ const HomePage = () => {
                     id: direction.development_direction_Id,
                     name: direction.development_direction_name,
                     link: `/directions/${direction.development_direction_Id}`,
-                    image: "#",
                     description: direction.development_direction_Description,
                 })));
             })
@@ -195,7 +76,6 @@ const HomePage = () => {
                 setSkills(response.data.map(skill => ({
                     id: skill.skill_Id,
                     name: skill.skill_name,
-                    image: "#",
                 })));
             })
             .catch(error => {
