@@ -75,6 +75,24 @@ nav ul li a.active:after {
     width: 100%;
 }
 
+.user-info{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-info div{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.user-info div:hover{
+    transform: scale(1.1);
+}
+
 .registration-button {
     background-color: var(--primary-color);
     color: var(--white);

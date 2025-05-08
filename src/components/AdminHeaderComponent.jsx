@@ -2,9 +2,12 @@ import React from 'react';
 import './styles/AdminHeader.css';
 import {DatabaseIcon, LogOut} from "lucide-react";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
 const AdminHeaderComponent = ({upToDate}) => {
+    const authUser = useAuthUser();
     const sighOut = useSignOut();
+    const username = authUser ? authUser.username : null;
     const handleLogout = () => {
         sighOut();
         window.location.reload();
@@ -22,7 +25,7 @@ const AdminHeaderComponent = ({upToDate}) => {
                     )}
                 </div>
                 <div className="admin-user-info">
-                    <p>Admin Name</p>
+                    <p>{username}</p>
                     <button className="logout-button" onClick={handleLogout}>
                         Logout
                         <LogOut size={16} />
