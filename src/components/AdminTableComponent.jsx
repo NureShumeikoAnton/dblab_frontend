@@ -139,9 +139,8 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                     });
                 if (createdItemId) {
                     handleAdditionalFields("add", createdItemId);
-                } else {
-                    fetchData();
                 }
+                fetchData();
             }
             setShowModal(false);
         } catch (error) {
