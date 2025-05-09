@@ -28,7 +28,11 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
 
     const fetchData = () => {
         setLoading(true);
-        axios.get(apiUrl + "/getAll")
+        axios.get(apiUrl + "/getFromDb", {
+            headers: {
+                'Authorization': authHeader.split(' ')[1],
+            }
+        })
             .then((response) => {
                 setData(response.data);
                 setLoading(false);
@@ -113,7 +117,11 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                     })
                     .catch((error) => {
                         console.error("Error updating item:", error);
-                });
+                    });
+                handleAdditionalFields("remove", currentItem[idField]);
+                setTimeout(() => {
+                    handleAdditionalFields("add", currentItem[idField]);
+                }, 100);
             } else {
                 console.log(formData);
                 let createdItemId = null;
@@ -129,13 +137,13 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                     .catch((error) => {
                         console.error("Error creating item:", error);
                     });
-                if(createdItemId) {
+                if (createdItemId) {
                     handleAdditionalFields("add", createdItemId);
+                } else {
+                    fetchData();
                 }
-
             }
             setShowModal(false);
-            fetchData(); // Refresh data
         } catch (error) {
             console.error("Error saving item:", error);
         }
@@ -148,11 +156,13 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
     const handleAdditionalFields = (action, createdId) => {
         const additionalFields = columns.filter(col => col.isMulti).map(col => col.key);
         additionalFields.forEach(field => {
+            if (!columns.find(col => col.key === field).endpoint) return;
+
             const additionalData = {
                 [field]: formData[field],
-                [idField]: currentItem ? currentItem[idField] : createdId
+                [idField]: createdId
             };
-            console.log(additionalData);
+
             if (action === "add") {
                 const additionalEndpoint = "http://localhost:5000/" + columns.find(col => col.key === field).endpoint + "/create";
                 additionalData[field].forEach((item) => {
@@ -167,6 +177,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                     })
                         .then((response) => {
                             console.log("Item created:", response.data);
+                            fetchData();
                         })
                         .catch((error) => {
                             console.error("Error creating item:", error);
@@ -174,24 +185,23 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                 });
             } else if (action === "remove") {
                 const additionalEndpoint = "http://localhost:5000/" + columns.find(col => col.key === field).endpoint + "/delete";
-                additionalData[field].forEach((item) => {
-                    const data = {
-                        [field]: item,
-                        [idField]: createdId
-                    };
-                    axios.delete(additionalEndpoint, {
-                        headers: {
-                            'Authorization': authHeader.split(' ')[1],
-                        },
-                        data: data
+                const data = {
+                    [field]: formData[field],
+                    [idField]: createdId
+                };
+                axios.delete(additionalEndpoint, {
+                    headers: {
+                        'Authorization': authHeader.split(' ')[1],
+                    },
+                    data: data
+                })
+                    .then((response) => {
+                        console.log("Item deleted:", response.data);
+                        fetchData();
                     })
-                        .then((response) => {
-                            console.log("Item deleted:", response.data);
-                        })
-                        .catch((error) => {
-                            console.error("Error deleting item:", error);
-                        });
-                });
+                    .catch((error) => {
+                        console.error("Error deleting item:", error);
+                    });
             }
         });
     }
@@ -201,7 +211,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
             .filter(col => col.key !== idField)
     };
 
-    if(loading) {
+    if (loading) {
         return <div className="loading">Loading data...</div>;
     }
 
@@ -213,7 +223,9 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                 <thead>
                 <tr>
                     {columns.map((col) => (
-                        <th key={col.key}>{col.title}</th>
+                        !col.hidden && (
+                            <th key={col.key}>{col.title}</th>
+                        )
                     ))}
                     <th>Actions</th>
                 </tr>
@@ -221,7 +233,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                 <tbody>
                 {data.length === 0 ? (
                     <tr>
-                    <td colSpan={columns.length + 1} className="no-data">
+                        <td colSpan={columns.length + 1} className="no-data">
                             No data available
                         </td>
                     </tr>
@@ -229,15 +241,23 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                     data.map(item => (
                         <tr key={item[idField]}>
                             {columns.map(col => (
-                                <td key={`${item[idField]}-${col.key}`}>
-                                    <div className="column-wrapper">
-                                        {col.format ? col.format(item[col.key]) : item[col.key]}
-                                    </div>
-                                </td>
+                                !col.hidden && (
+                                    <td key={col.key}>
+                                        {col.isMulti ? (
+                                            item[col.key].map((subItem, index) => (
+                                                <span
+                                                    key={index}>{subItem}{index < item[col.key].length - 1 ? ', ' : ''}</span>
+                                            ))
+                                        ) : (
+                                            item[col.key]
+                                        )}
+                                    </td>
+                                )
                             ))}
                             <td className="actions">
                                 <button className="edit-btn" onClick={() => handleEdit(item)}>Edit</button>
-                                <button className="delete-btn" onClick={() => handleDelete(item[idField])}>Delete</button>
+                                <button className="delete-btn" onClick={() => handleDelete(item[idField])}>Delete
+                                </button>
                             </td>
                         </tr>
                     ))

@@ -14,11 +14,6 @@ const HeaderComponent = () => {
     const signOut = useSignOut();
     const username = authUser ? authUser.username : null;
 
-    const handleSignOut = () => {
-        signOut();
-        window.location.reload();
-    };
-
     return (
         <header>
             <AuthModalComponent
@@ -34,9 +29,9 @@ const HeaderComponent = () => {
                     <nav>
                         <ul>
                             <li><NavLink to="/" end>Головна</NavLink></li>
+                            <li><NavLink to="/directions">Напрямки</NavLink></li>
                             <li><NavLink to="/courses">Дисципліни</NavLink></li>
                             <li><NavLink to="/schedule">Розклад</NavLink></li>
-                            <li><NavLink to="/contact">Контакти</NavLink></li>
                         </ul>
                     </nav>
                     <div className="auth-buttons">

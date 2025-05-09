@@ -1,14 +1,21 @@
 import React, {useEffect, useState} from 'react';
 import AdminTableComponent from "../../components/AdminTableComponent.jsx";
 import axios from "axios";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const DisciplineTeachers = () => {
     const [disciplineOptions, setDisciplineOptions] = useState([]);
     const [teacherOptions, setTeacherOptions] = useState([]);
     const [languageOptions, setLanguageOptions] = useState([]);
 
+    const authHeader = useAuthHeader();
+
     useEffect(() => {
-        axios.get('http://localhost:5000/discipline/getAll')
+        axios.get('http://localhost:5000/discipline/getFromDb', {
+            headers: {
+                Authorization: authHeader.split(' ')[1],
+            }
+        })
             .then(response => {
                 const options = response.data.map(discipline => ({
                     id: discipline.discipline_Id,
@@ -20,7 +27,11 @@ const DisciplineTeachers = () => {
                 console.error('Error fetching disciplines:', error);
             });
 
-        axios.get('http://localhost:5000/teacher/getAll')
+        axios.get('http://localhost:5000/teacher/getFromDb', {
+            headers: {
+                Authorization: authHeader.split(' ')[1],
+            }
+        })
             .then(response => {
                 const options = response.data.map(teacher => ({
                     id: teacher.teacher_Id,
@@ -31,7 +42,11 @@ const DisciplineTeachers = () => {
             .catch(error => {
                 console.error('Error fetching teachers:', error);
             });
-        axios.get('http://localhost:5000/language/getAll')
+        axios.get('http://localhost:5000/language/getFromDb', {
+            headers: {
+                Authorization: authHeader.split(' ')[1],
+            }
+        })
             .then(response => {
                 const options = response.data.map(language => ({
                     id: language.language_Id,
@@ -46,9 +61,12 @@ const DisciplineTeachers = () => {
 
     const columns = [
         {key: "disciplineTeacher_Id", title: "ID"},
-        {key: "discipline_Id", title: "Discipline ID", type: "select", options: disciplineOptions},
-        {key: "teacher_Id", title: "Teacher ID", type: "select", options: teacherOptions},
-        {key: "language_Id", title: "Language ID", type: "select", options: languageOptions},
+        {key: "discipline_Id", title: "Discipline ID", type: "select", options: disciplineOptions, hidden: true},
+        {key: "discipline_name", title: "Discipline Name", modalHidden: true},
+        {key: "teacher_Id", title: "Teacher ID", type: "select", options: teacherOptions, hidden: true},
+        {key: "full_name", title: "Teacher Name", modalHidden: true},
+        {key: "language_Id", title: "Language ID", type: "select", options: languageOptions, hidden: true},
+        {key: "language_name", title: "Language Name", modalHidden: true},
         {key: "beginning_Year", title: "Beginning Year"},
     ];
     return (

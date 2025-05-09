@@ -9,7 +9,7 @@ const Teachers = () => {
     const authHeader = useAuthHeader();
 
     useEffect(() => {
-            axios.get('http://localhost:5000/user/getAll', {
+            axios.get('http://localhost:5000/user/getFromDb', {
                 headers: {
                     'Authorization': authHeader.split(' ')[1]
                 }
@@ -28,14 +28,15 @@ const Teachers = () => {
 
     const columns = [
         { key: "teacher_Id", title: "ID" },
-        { key: "user_Id", title: "User ID", type: "select", options: userOptions },
+        { key: "user_Id", title: "User ID", type: "select", options: userOptions, hidden: true },
+        { key: "login", title: "Login", modalHidden: true },
         { key: "full_name", title: "Full Name" },
         { key: "place_of_Employment", title: "Place of Employment" },
         { key: "position", title: "Position" },
         { key: "text", title: "Text" },
         { key: "level", title: "Level" },
         { key: "teacher_role", title: "Teacher Role" },
-        { key: "photo", title: "Photo", type: "file" }
+        { key: "photo", title: "Photo", type: "file", hidden: true },
     ];
     return (
         <div>

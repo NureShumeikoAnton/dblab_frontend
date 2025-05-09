@@ -14,12 +14,6 @@ const Disciplines = () => {
         },
         {key: "volume", title: "Credits"},
         {key: "syllabus_link", title: "Syllabus"},
-        {key: "repeat_time", title: "Type", type: "select",
-            options: [
-                {id: "1", name: "Обов'язкова"},
-                {id: "7", name: "Необов'язкова"},
-            ]
-        },
     ];
 
     return (

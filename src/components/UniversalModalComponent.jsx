@@ -12,6 +12,21 @@ const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onCha
         onCancel();
     }
 
+    const handleFileChange = (e, row) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64 = reader.result.split(',')[1];
+                data = {
+                    ...data,
+                    [row.key]: base64
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
 
     return (
         <div className={"universal-modal-window"}>
@@ -20,28 +35,43 @@ const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onCha
             </div>
             <div className={"universal-modal-body"}>
                 {rows.map((row, index) => (
-                    <div key={index} className={"universal-modal-row"}>
-                        {row.type === "select" ? (
-                            <SelectFieldComponent
-                                label={row.title}
-                                name={row.key}
-                                value={data[row.key]}
-                                onChange={(e) => {onChange(e, row)}}
-                                options={row.options}
-                                placeholder={row.title}
-                                isMulti={row.isMulti || false}
-                            />
-                        ) : (
-                            <InputFieldComponent
-                                label={row.title}
-                                name={row.key}
-                                type={"text"}
-                                placeholder={row.title}
-                                value={data[row.key]}
-                                onChange={(e) => {onChange(e, row)}}
-                            />
-                        )}
-                    </div>
+                    !row.modalHidden && (
+                        <div key={index} className={"universal-modal-row"}>
+                            {row.type === "select" ? (
+                                <SelectFieldComponent
+                                    label={row.title}
+                                    name={row.key}
+                                    value={data[row.key]}
+                                    onChange={(e) => {
+                                        onChange(e, row)
+                                    }}
+                                    options={row.options}
+                                    placeholder={row.title}
+                                    isMulti={row.isMulti || false}
+                                />
+                            ) : row.type === "file" ? (
+                                <div className="file-input-container">
+                                    <label>{row.title}</label>
+                                    <InputFieldComponent
+                                        type="file"
+                                        name={row.key}
+                                        onChange={(e) => handleFileChange(e, row)}
+                                    />
+                                </div>
+                            ) : (
+                                <InputFieldComponent
+                                    label={row.title}
+                                    name={row.key}
+                                    type={"text"}
+                                    placeholder={row.title}
+                                    value={data[row.key]}
+                                    onChange={(e) => {
+                                        onChange(e, row)
+                                    }}
+                                />
+                            )}
+                        </div>
+                    )
                 ))}
             </div>
             <div className={"universal-modal-footer"}>
