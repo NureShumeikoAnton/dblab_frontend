@@ -21,6 +21,8 @@ import Levels from "./pages/adminPages/levels.jsx";
 import Chapters from "./pages/adminPages/chapters.jsx";
 import DisciplineTeachers from "./pages/adminPages/disciplineTeachers.jsx";
 import DisciplineSkills from "./pages/adminPages/disciplineSkills.jsx";
+import Lessons from "./pages/adminPages/lessons.jsx";
+import Events from "./pages/adminPages/events.jsx";
 
 
 const App = () => {
@@ -48,6 +50,8 @@ const App = () => {
                     <Route path={"chapters"} element={<Chapters/>}></Route>
                     <Route path={"disciplineteacher"} element={<DisciplineTeachers/>}></Route>
                     <Route path={"disciplineskill"} element={<DisciplineSkills/>}></Route>
+                    <Route path={"lessons"} element={<Lessons/>}></Route>
+                    <Route path={"events"} element={<Events/>}></Route>
                 </Route>
             </Routes>
         </div>

@@ -16,6 +16,8 @@ const AdminPageLayout = () => {
         {name: 'Development Directions', path: '/apanel/developmentdirections'},
         {name: 'Discipline - Teacher', path: '/apanel/disciplineteacher'},
         {name: 'Discipline - Skill', path: '/apanel/disciplineskill'},
+        {name: 'Lessons', path: '/apanel/lessons'},
+        {name: 'Events', path: '/apanel/events'},
     ];
 
     const authHeader = useAuthHeader();
