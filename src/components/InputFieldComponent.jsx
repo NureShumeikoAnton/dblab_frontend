@@ -11,7 +11,8 @@ const InputFieldComponent = ({
                         onChange,
                         error = "",
                         onKeyPress,
-                        isPassword = false
+                        isPassword = false,
+                        disabled = false
                     }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
@@ -40,6 +41,7 @@ const InputFieldComponent = ({
                     onKeyPress={onKeyPress}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
+                    disabled={disabled}
                 />
                 {isPassword && (
                     <button

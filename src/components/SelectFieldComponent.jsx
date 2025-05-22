@@ -11,7 +11,8 @@ const SelectFieldComponent = ({
                                   placeholder = "Select items",
                                   error = "",
                                   icon,
-                                  isMulti = false // New prop to enable multi-select functionality
+                                  isMulti = false, // New prop to enable multi-select functionality
+                                  disabled = false
                               }) => {
     const [isFocused, setIsFocused] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -119,6 +120,7 @@ const SelectFieldComponent = ({
                         onChange={onChange}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
+                        disabled={disabled}
                     >
                         {(!value || value === "") && <option value="">{placeholder}</option>}
                         {options.map((option) => (

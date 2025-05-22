@@ -40,7 +40,7 @@ const Events = () => {
                 setLessonOptions(response.data.map(lesson => {
                     const datetime = dayjs(
                         `${lesson.lesson_date} ${lesson.lesson_time}`,
-                        "YYYY-MM-DD HH:mm:ss"
+                        "DD.MM.YYYY HH:mm:ss"
                     );
 
                     return {
@@ -48,7 +48,7 @@ const Events = () => {
                         name: `${lesson.name}, ${datetime.format("dd DD.MM.YYYY HH:mm")}`,
                         datetime,
                     };
-                }).sort((a, b) => a.datetime.isBefore(b) ? -1 : a.datetime.isAfter(b)));
+                }).sort((a, b) => a.datetime.isBefore(b.datetime) ? -1 : a.datetime.isAfter(b.datetime)));
             })
             .catch(error => {
                 console.error("Error fetching lessons:", error);
@@ -56,21 +56,21 @@ const Events = () => {
     }, []);
 
     const formatOptions = [
-        {id: "online", name: "Онлайн"},
-        {id: "offline", name: "Офлайн"},
+        { id: "online", name: "Онлайн" },
+        { id: "offline", name: "Офлайн" },
     ];
 
     const columns = [
-        {key: "event_Id", title: "ID"},
-        {key: "event_name", title: "Назва"},
-        {key: "teacher_Id", title: "Викладач", type: "select", options: teacherOptions, hidden: true},
-        {key: "teacher_name", title: "Викладач", modalHidden: true},
-        {key: "lesson_Id", title: "Заняття", type: "select", options: lessonOptions, hidden: true},
-        {key: "lesson_desc", title: "Заняття", modalHidden: true},
-        {key: "type", title: "Тип"},
-        {key: "format", title: "Формат", type: "select", options: formatOptions},
-        {key: "begin_date", title: "Дата початку"},
-        {key: "status", title: "Статус"},
+        { key: "event_Id", title: "ID" },
+        { key: "event_name", title: "Назва" },
+        { key: "teacher_Id", title: "Викладач", type: "select", options: teacherOptions, hidden: true },
+        { key: "teacher_name", title: "Викладач", modalHidden: true },
+        { key: "lesson_Id", title: "Заняття", type: "select", options: lessonOptions, hidden: true },
+        { key: "lesson_desc", title: "Заняття", modalHidden: true },
+        { key: "type", title: "Тип" },
+        { key: "format", title: "Формат", type: "select", options: formatOptions },
+        { key: "begin_date", title: "Дата початку" },
+        { key: "status", title: "Статус" },
     ];
 
     return (
