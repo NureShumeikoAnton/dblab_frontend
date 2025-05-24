@@ -56,6 +56,17 @@ const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onCha
                                         onChange={(e) => handleFileChange(e, row)}
                                     />
                                 </div>
+                            ) : row.type === "textarea" ? (
+                                <>
+                                    <label className="input-label">{row.title}</label>
+                                    <textarea
+                                        className="textarea-element"
+                                        name={row.key}
+                                        placeholder={row.title}
+                                        value={data[row.key]}
+                                        onChange={(e) => onChange(e, row)}
+                                    />
+                                </>
                             ) : (
                                 <InputFieldComponent
                                     label={row.title}

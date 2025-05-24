@@ -67,3 +67,21 @@
 .universal-modal-footer button:last-child:hover {
     background-color: #e5e5e5;
 }
+
+.textarea-element {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.15;
+    border: 1px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+    height: 200px;
+}
+
+.textarea-element:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}

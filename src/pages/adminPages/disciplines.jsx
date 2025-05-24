@@ -9,7 +9,7 @@ const Disciplines = () => {
         {key: "discipline_type", title: "Type", type: "select",
             options: [
                 {id: "Обов'язкова", name: "Обов'язкова"},
-                {id: "Необов'язкова", name: "Вибіркова"},
+                {id: "Вибіркова", name: "Вибіркова"},
             ]
         },
         {key: "volume", title: "Credits"},
