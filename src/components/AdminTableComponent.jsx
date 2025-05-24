@@ -1,7 +1,7 @@
-import React, {useEffect} from 'react';
-import {useState} from "react";
+import React, { useEffect, useState, useContext } from 'react';
 import axios from "axios";
 import UniversalModalComponent from "./UniversalModalComponent.jsx";
+import { NotificationContext } from "../layouts/AdminPageLayout.jsx";
 
 import './styles/AdminTable.css';
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
@@ -15,8 +15,25 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
     const [isDeleteWithoutConfirmation, setIsDeleteWithoutConfirmation] = useState(false);
 
     const apiUrl = `http://localhost:5000/${endpoint}`;
-
     const authHeader = useAuthHeader();
+
+    const notificationsRef = useContext(NotificationContext);
+
+    const notifySuccess = (message) => {
+        notificationsRef && notificationsRef.current && notificationsRef.current.addNotification({
+            title: "Success",
+            text: message,
+            type: "success"
+        });
+    };
+
+    const notifyError = (message) => {
+        notificationsRef && notificationsRef.current && notificationsRef.current.addNotification({
+            title: "Error",
+            text: message,
+            type: "error"
+        });
+    };
 
     const handelInputChange = (e) => {
         const {name, value} = e.target;
@@ -40,6 +57,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
             .catch((error) => {
                 console.error("Error fetching data:", error);
                 setLoading(false);
+                notifyError("Error fetching data: " + error.message);
             });
     }
 
@@ -72,31 +90,26 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
     }
 
     const handleDelete = (id) => {
-        if (isDeleteWithoutConfirmation) {
+        const deleteCall = () => {
             axios.delete(`${apiUrl}/delete/${id}`, {
                 headers: {
                     'Authorization': authHeader.split(' ')[1],
                 }
             })
-                .then(() => {
-                    fetchData();
-                })
-                .catch((error) => {
-                    console.error("Error deleting item:", error);
-                });
+            .then(() => {
+                notifySuccess("Item deleted successfully");
+                fetchData();
+            })
+            .catch((error) => {
+                console.error("Error deleting item:", error);
+                notifyError("Error deleting item" + error.message);
+            });
+        };
+        if (isDeleteWithoutConfirmation) {
+            deleteCall();
         } else {
             if (window.confirm("Are you sure you want to delete this item?")) {
-                axios.delete(`${apiUrl}/delete/${id}`, {
-                    headers: {
-                        'Authorization': authHeader.split(' ')[1],
-                    }
-                })
-                    .then(() => {
-                        fetchData();
-                    })
-                    .catch((error) => {
-                        console.error("Error deleting item:", error);
-                    });
+                deleteCall();
             }
         }
     }
@@ -114,9 +127,11 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                 })
                     .then((response) => {
                         console.log("Item updated:", response.data);
+                        notifySuccess("Item updated successfully");
                     })
                     .catch((error) => {
                         console.error("Error updating item:", error);
+                        notifyError("Error updating item" + error.message);
                     });
                 handleAdditionalFields("remove", currentItem[idField]);
                 setTimeout(() => {
@@ -133,15 +148,17 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                     .then((response) => {
                         console.log("Item created:", response.data);
                         createdItemId = response.data[idField];
+                        notifySuccess("Item created successfully");
                     })
                     .catch((error) => {
                         console.error("Error creating item:", error);
+                        notifyError("Error creating item" + error.message);
                     });
                 if (createdItemId) {
                     handleAdditionalFields("add", createdItemId);
                 }
-                fetchData();
             }
+            fetchData();
             setShowModal(false);
         } catch (error) {
             console.error("Error saving item:", error);

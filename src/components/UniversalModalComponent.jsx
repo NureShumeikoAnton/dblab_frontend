@@ -67,6 +67,9 @@ const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onCha
                                     }}
                                 />
                             )}
+                            {row.note && (
+                                <p className="input-note">{row.note}</p>
+                            )}
                         </div>
                     )
                 ))}

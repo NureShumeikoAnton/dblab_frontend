@@ -1,9 +1,11 @@
-import React from 'react';
-import {Outlet} from 'react-router-dom';
+import React, {createContext, createRef} from 'react';
+import {Outlet, Link} from 'react-router-dom';
 import './styles/AdminPage.css';
-import {Link} from 'react-router-dom';
 import axios from "axios";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import ModalNotificationComponent from "../components/ModalNotificationComponent.jsx";
+
+export const NotificationContext = createContext();
 
 const AdminPageLayout = () => {
     const tables = [
@@ -19,6 +21,7 @@ const AdminPageLayout = () => {
     ];
 
     const authHeader = useAuthHeader();
+    const notificationRef = createRef();
 
     const handleUpdate = () => {
         axios.post('http://localhost:5000/cache/update', null, {
@@ -52,8 +55,11 @@ const AdminPageLayout = () => {
                 </ul>
             </aside>
             <main className="main-content">
-                <Outlet/>
+                <NotificationContext.Provider value={notificationRef}>
+                    <Outlet />
+                </NotificationContext.Provider>
             </main>
+            <ModalNotificationComponent ref={notificationRef}/>
         </div>
     );
 };
