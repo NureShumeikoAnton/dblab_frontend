@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './styles/Directions.css';
+import ModalNotificationComponent from "../components/ModalNotificationComponent.jsx";
 
 const DirectionCard = ({name, link, image, description}) => (
     <a href={link} className='direction-card'>
         {/*<img src={image} alt={name} className='direction-card__img'/>*/}
         <div className='direction-card__img'></div>
         <p className='direction-card__name'>{name}</p>
-        <p className='direction-card__description'>{description}</p>
+        <p className='direction-card__description'>{description.split('.')[0]}</p>
     </a>
 );
 
@@ -37,6 +38,7 @@ const DirectionsPage = () => {
 
     return (
         <div className="directions-container">
+            <ModalNotificationComponent></ModalNotificationComponent>
             <h1 className="directions-title">Directions</h1>
             <div className="directions-grid">
                 {directions.map((direction) => (

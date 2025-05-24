@@ -5,11 +5,11 @@ const Disciplines = () => {
     const columns = [
         {key: "discipline_Id", title: "ID"},
         {key: "discipline_name", title: "Discipline"},
-        {key: "discipline_Description", title: "Description", type: "textarea"},
+        {key: "discipline_Description", title: "Description", type: "textarea", note: "Max length is 255 symbols"},
         {key: "discipline_type", title: "Type", type: "select",
             options: [
                 {id: "Обов'язкова", name: "Обов'язкова"},
-                {id: "Необов'язкова", name: "Необов'язкова"},
+                {id: "Необов'язкова", name: "Вибіркова"},
             ]
         },
         {key: "volume", title: "Credits"},
