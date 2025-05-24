@@ -290,6 +290,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                         onSave={handleSave}
                         onCancel={handleCancel}
                         onChange={handelInputChange}
+                        isEditing={!!currentItem}
                     />
                 </div>
             )}

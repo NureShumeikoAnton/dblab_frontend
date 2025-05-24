@@ -3,7 +3,7 @@ import './styles/UniversalModal.css';
 import InputFieldComponent from "./InputFieldComponent.jsx";
 import SelectFieldComponent from "./SelectFieldComponent.jsx";
 
-const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onChange}) => {
+const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onChange, isEditing}) => {
     const handleSave = () => {
         onSave(data);
     };
@@ -45,6 +45,7 @@ const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onCha
                                     options={row.options}
                                     placeholder={row.title}
                                     isMulti={row.isMulti || false}
+                                    disabled={isEditing && row.disabledOnEdit}
                                 />
                             ) : row.type === "file" ? (
                                 <div className="file-input-container">
@@ -65,6 +66,7 @@ const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onCha
                                     onChange={(e) => {
                                         onChange(e, row)
                                     }}
+                                    disabled={isEditing && row.disabledOnEdit}
                                 />
                             )}
                             {row.note && (
