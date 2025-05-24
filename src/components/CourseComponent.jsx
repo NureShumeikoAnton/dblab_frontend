@@ -45,7 +45,7 @@ const CourseComponent = ({course, navigateToCourse}) => {
                 <div className="course-card-footer">
                     <a
                         className="course-card-toggle-button"
-                        href={`/course/${course.discipline_Id}`} // Link to course details page with id
+                        href={`/courses/${course.discipline_Id}`} // Link to course details page with id
                     >
                         Детальніше
                         <ChevronRight
