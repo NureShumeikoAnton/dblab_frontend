@@ -15,5 +15,12 @@
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    justify-content: flex-start;
+    justify-content: center;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.direction-card {
+    flex: 0 0 calc(33.333% - 20px);
+    text-align: center;
 }

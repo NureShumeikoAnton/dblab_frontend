@@ -39,7 +39,7 @@ const DirectionsPage = () => {
     return (
         <div className="directions-container">
             <ModalNotificationComponent></ModalNotificationComponent>
-            <h1 className="directions-title">Directions</h1>
+            <h1 className="directions-title">Напрямки кар'єрного росту</h1>
             <div className="directions-grid">
                 {directions.map((direction) => (
                     <DirectionCard
