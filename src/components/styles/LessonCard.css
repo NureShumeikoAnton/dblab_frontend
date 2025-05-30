@@ -58,11 +58,10 @@
   justify-content: center;
 }
 
-/* Add these styles to your CSS */
 .lesson-card__carousel {
   position: relative;
   width: 85%;
-  padding: 0 15px; /* Add padding to prevent arrows from overlapping with slides */
+  padding: 0 15px;
 }
 
 .slick-slide {
@@ -71,10 +70,9 @@
 
 .slick-track {
   display: flex;
-  align-items: center; /* Center slides vertically if needed */
+  align-items: center;
 }
 
-/* Adjust arrow positioning */
 .slick-prev {
   left: -15px !important;
 }
@@ -151,7 +149,7 @@
   min-height: 1px;
 }
 
-.slick-slide div {
+.lesson-card .slick-slide div {
   height: 100%;
 }
 
