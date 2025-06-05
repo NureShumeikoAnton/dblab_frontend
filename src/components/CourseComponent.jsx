@@ -5,7 +5,8 @@ import "./styles/Course.css";
 const CourseComponent = ({course, navigateToCourse}) => {
     const courseSkills = course.skills.split(",").map(skill => skill.trim());
     return (
-        <div className="course-card" style={{borderLeftColor: course.discipline_type === "Обов'язкова" ? "#F59650" : "#0094C8"}}>
+        <div className="course-card"
+             style={{borderLeftColor: course.discipline_type === "Обов'язкова" ? "#F59650" : "#0094C8"}}>
             <div className="course-card-content" onClick={() => navigateToCourse(course.discipline_Id)}>
                 <div className="course-card-header">
                     <div>

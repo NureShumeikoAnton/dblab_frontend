@@ -4,7 +4,6 @@
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    border-left-width: 4px;
     max-width: 1000px;
     margin-bottom: 15px;
     border-left: 4px solid;
@@ -34,11 +33,15 @@
 .course-card-shortdesc {
     color: #718096;
     margin-top: 4px;
+    text-align: left;
+    
 }
 
 .course-card-type-and-credits {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    min-width: fit-content;
 }
 
 .course-card-type {
