@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import API_CONFIG from '../config/api.js';
 
 const SkillCard = ({ name }) => (
     <div className='skill-card'>
@@ -44,7 +45,7 @@ const HomePage = () => {
     const [experts, setExperts] = useState([]);
 
     useEffect(() => {
-        axios.get("http://localhost:5000/developmentDirection/getall")
+        axios.get(`${API_CONFIG.BASE_URL}/developmentDirection/getall`)
             .then(response => {
                 setDirections(response.data.slice(0, 4).map(direction => ({
                     id: direction.development_direction_Id,
@@ -57,7 +58,7 @@ const HomePage = () => {
                 console.error("Error fetching directions:", error);
             });
 
-        axios.get("http://localhost:5000/teacher/getall")
+        axios.get(`${API_CONFIG.BASE_URL}/teacher/getall`)
             .then(response => {
                 setExperts(response.data.map(teacher => ({
                     id: teacher.teacher_Id,
@@ -71,7 +72,7 @@ const HomePage = () => {
                 console.error("Error fetching experts:", error)
             });
 
-        axios.get("http://localhost:5000/skill/getall")
+        axios.get(`${API_CONFIG.BASE_URL}/skill/getall`)
             .then(response => {
                 setSkills(response.data.map(skill => ({
                     id: skill.skill_Id,

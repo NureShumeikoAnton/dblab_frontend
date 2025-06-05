@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import AdminTableComponent from "../../components/AdminTableComponent.jsx";
 import axios from "axios";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import API_CONFIG from '../../config/api.js';
 
 const DisciplineTeachers = () => {
     const [disciplineOptions, setDisciplineOptions] = useState([]);
@@ -11,7 +12,7 @@ const DisciplineTeachers = () => {
     const authHeader = useAuthHeader();
 
     useEffect(() => {
-        axios.get('http://localhost:5000/discipline/getFromDb', {
+        axios.get(`${API_CONFIG.BASE_URL}/discipline/getFromDb`, {
             headers: {
                 Authorization: authHeader.split(' ')[1],
             }
@@ -27,7 +28,7 @@ const DisciplineTeachers = () => {
                 console.error('Error fetching disciplines:', error);
             });
 
-        axios.get('http://localhost:5000/teacher/getFromDb', {
+        axios.get(`${API_CONFIG.BASE_URL}/teacher/getFromDb`, {
             headers: {
                 Authorization: authHeader.split(' ')[1],
             }
@@ -42,7 +43,7 @@ const DisciplineTeachers = () => {
             .catch(error => {
                 console.error('Error fetching teachers:', error);
             });
-        axios.get('http://localhost:5000/language/getFromDb', {
+        axios.get(`${API_CONFIG.BASE_URL}/language/getFromDb`, {
             headers: {
                 Authorization: authHeader.split(' ')[1],
             }

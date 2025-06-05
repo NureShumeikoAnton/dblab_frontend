@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import "dayjs/locale/uk";
 import axios from "axios";
+import API_CONFIG from '../config/api.js';
 
 dayjs.extend(customParseFormat);
 dayjs.locale("uk");
@@ -97,7 +98,7 @@ const SchedulePage = () => {
                 console.log("cached");
             return;
         }
-        axios.get(`http://localhost:5000/lesson/getLessonsBetweenDates`
+        axios.get(`${API_CONFIG.BASE_URL}/lesson/getLessonsBetweenDates`
             + `?start_date=${startOfWeek.format("DD.MM.YYYY")}`
             + `&end_date=${endOfWeek.format("DD.MM.YYYY")}`)
             .then(response => {

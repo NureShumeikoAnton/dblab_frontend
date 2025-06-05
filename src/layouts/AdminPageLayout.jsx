@@ -4,6 +4,7 @@ import './styles/AdminPage.css';
 import axios from "axios";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import ModalNotificationComponent from "../components/ModalNotificationComponent.jsx";
+import API_CONFIG from '../config/api.js';
 
 export const NotificationContext = createContext();
 
@@ -27,7 +28,7 @@ const AdminPageLayout = () => {
     const notificationRef = createRef();
 
     const handleUpdate = () => {
-        axios.post('http://localhost:5000/cache/update', null, {
+        axios.post(`${API_CONFIG.BASE_URL}/cache/update`, null, {
             headers: {
                 'Authorization': authHeader.split(' ')[1],
             }

@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {ChevronLeft, ChevronRight} from 'lucide-react';
 import './styles/CourseDetails.css';
+import API_CONFIG from '../config/api.js';
 
 import axios from "axios";
 
@@ -91,7 +92,7 @@ const CourseDetailsPage = () => {
 
     useEffect(() => {
         const courseId = window.location.pathname.split('/').pop();
-        axios.get(`http://localhost:5000/discipline/getFull/${courseId}`)
+        axios.get(`${API_CONFIG.BASE_URL}/discipline/getFull/${courseId}`)
             .then(response => {
                 console.log(response.data);
                 setCourse(response.data);

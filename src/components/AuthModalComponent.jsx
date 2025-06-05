@@ -4,6 +4,7 @@ import { User, Mail, Lock, Eye, EyeOff, X, AlertCircle } from "lucide-react";
 import InputFieldComponent from "./InputFieldComponent.jsx";
 import "./styles/AuthModal.css";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
+import API_CONFIG from '../config/api.js';
 
 const AuthModalComponent = ({ isOpen, onClose }) => {
     const [isLogin, setIsLogin] = useState(true);
@@ -98,7 +99,7 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
             setIsLoading(true);
             setApiError("");
 
-            const response = await axios.post("http://localhost:5000/auth/login", {
+            const response = await axios.post(`${API_CONFIG.BASE_URL}/auth/login`, {
                 login: formData.email,
                 email: formData.email,
                 password: formData.password
@@ -142,7 +143,7 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
             setIsLoading(true);
             setApiError("");
 
-            const response = await axios.post("http://localhost:5000/auth/register", {
+            const response = await axios.post(`${API_CONFIG.BASE_URL}/auth/register`, {
                 login: formData.login,
                 nickname: formData.nickname,
                 email: formData.email,

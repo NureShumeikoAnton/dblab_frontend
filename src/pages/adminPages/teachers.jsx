@@ -3,13 +3,14 @@ import AdminTableComponent from "../../components/AdminTableComponent.jsx";
 import axios from "axios";
 import {useEffect, useState} from "react";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import API_CONFIG from '../../config/api.js';
 
 const Teachers = () => {
     const [userOptions, setUserOptions] = useState([]);
     const authHeader = useAuthHeader();
 
     useEffect(() => {
-            axios.get('http://localhost:5000/user/getFromDb', {
+            axios.get(`${API_CONFIG.BASE_URL}/user/getFromDb`, {
                 headers: {
                     'Authorization': authHeader.split(' ')[1]
                 }

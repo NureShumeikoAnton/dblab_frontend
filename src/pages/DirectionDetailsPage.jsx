@@ -2,6 +2,7 @@ import React from 'react';
 import {useEffect, useState} from 'react';
 import RoadmapComponent from "../components/RoadmapComponent.jsx";
 import axios from "axios";
+import API_CONFIG from '../config/api.js';
 
 import './styles/DirectionDetails.css';
 
@@ -122,7 +123,7 @@ const DirectionDetailsPage = () => {
     const [direction, setDirection] = useState(frontendRoadmapData);
 
     useEffect(() => {
-        axios.get(`http://localhost:5000/developmentDirection/getRoad/${window.location.pathname.split('/').pop()}`)
+        axios.get(`${API_CONFIG.BASE_URL}/developmentDirection/getRoad/${window.location.pathname.split('/').pop()}`)
             .then(response => {
                 console.log(response.data);
                 setDirection(response.data);

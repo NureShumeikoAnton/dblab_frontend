@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AdminTableComponent from "../../components/AdminTableComponent";
 import axios from "axios";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import API_CONFIG from '../../config/api.js';
 
 const Materials = () => {
     const [eventOptions, setEventOptions] = useState([]);
@@ -9,7 +10,7 @@ const Materials = () => {
     const authToken = useAuthHeader().split(' ')[1];
 
     useEffect(() => {
-        axios.get("http://localhost:5000/event/getFromDb", {
+        axios.get(`${API_CONFIG.BASE_URL}/event/getFromDb`, {
             headers: {
                 'Authorization': authToken,
             }

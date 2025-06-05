@@ -5,6 +5,7 @@ import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import "dayjs/locale/uk";
+import API_CONFIG from '../../config/api.js';
 
 dayjs.extend(customParseFormat);
 dayjs.locale("uk");
@@ -16,7 +17,7 @@ const Events = () => {
     const authToken = useAuthHeader().split(' ')[1];
 
     useEffect(() => {
-        axios.get("http://localhost:5000/teacher/getFromDb", {
+        axios.get(`${API_CONFIG.BASE_URL}/teacher/getFromDb`, {
             headers: {
                 'Authorization': authToken,
             }
@@ -31,7 +32,7 @@ const Events = () => {
                 console.error("Error fetching teachers:", error);
             });
 
-        axios.get("http://localhost:5000/lesson/getFromDb", {
+        axios.get(`${API_CONFIG.BASE_URL}/lesson/getFromDb`, {
             headers: {
                 'Authorization': authToken,
             }

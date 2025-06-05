@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import './styles/Admin.css';
 import AdminHeaderComponent from "../components/AdminHeaderComponent.jsx";
 import axios from "axios";
+import API_CONFIG from '../config/api.js';
 
 import AdminPageLayout from "./AdminPageLayout.jsx";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
@@ -11,7 +12,7 @@ const AdminLayout = () => {
     const authHeader = useAuthHeader();
 
     useEffect(() => {
-        axios.get("http://localhost:5000/cache/getLastUpdate", {
+        axios.get(`${API_CONFIG.BASE_URL}/cache/getLastUpdate`, {
             headers: {
                 'Authorization': authHeader.split(' ')[1],
             }

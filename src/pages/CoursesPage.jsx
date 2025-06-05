@@ -3,6 +3,7 @@ import CourseComponent from '../components/CourseComponent';
 import './styles/Courses.css';
 import {Search, Filter, Bookmark} from "lucide-react";
 import axios from "axios";
+import API_CONFIG from '../config/api.js';
 
 const coursesData = [
     {
@@ -57,25 +58,54 @@ const coursesData = [
     }
 ];
 
-let allSkills = [...new Set(coursesData.flatMap(course => course.skills))].sort();
-
 const CoursesPage = () => {
     const [allCourses, setAllCourses] = useState([]);
     const [courses, setCourses] = useState([]);
+    const [allSkills, setAllSkills] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [typeFilter, setTypeFilter] = useState("all");
     const [selectedSkills, setSelectedSkills] = useState([]);
 
     useEffect(() => {
-        axios.get("http://localhost:5000/discipline/getFull")
+        axios.get(`${API_CONFIG.BASE_URL}/discipline/getFull`)
             .then(response => {
                 console.log(response.data);
                 setAllCourses(response.data);
                 setCourses(response.data);
-                allSkills = [...new Set(response.data.flatMap(course => course.skills.split(', ')))].sort();
+                
+                // Extract skills properly and filter out empty values
+                const skillsSet = new Set();
+                response.data.forEach(course => {
+                    if (course.skills) {
+                        if (typeof course.skills === 'string') {
+                            // Split by comma and filter out empty strings
+                            course.skills.split(',').forEach(skill => {
+                                const trimmedSkill = skill.trim();
+                                if (trimmedSkill && trimmedSkill.length > 0) {
+                                    skillsSet.add(trimmedSkill);
+                                }
+                            });
+                        } else if (Array.isArray(course.skills)) {
+                            // If skills is already an array
+                            course.skills.forEach(skill => {
+                                const trimmedSkill = skill.trim();
+                                if (trimmedSkill && trimmedSkill.length > 0) {
+                                    skillsSet.add(trimmedSkill);
+                                }
+                            });
+                        }
+                    }
+                });
+                
+                const extractedSkills = [...skillsSet].sort();
+                console.log('Extracted skills:', extractedSkills);
+                setAllSkills(extractedSkills);
             })
             .catch(error => {
                 console.error("Error fetching courses:", error);
+                // Fallback to static data skills if API fails
+                const fallbackSkills = [...new Set(coursesData.flatMap(course => course.skills))].sort();
+                setAllSkills(fallbackSkills);
             });
     }, []);
 
@@ -94,13 +124,23 @@ const CoursesPage = () => {
         }
 
         if (selectedSkills.length > 0) {
-            filtered = filtered.filter(course =>
-                selectedSkills.every(skill => course.skills.includes(skill))
-            );
+            filtered = filtered.filter(course => {
+                if (!course.skills) return false;
+                
+                const courseSkills = typeof course.skills === 'string' 
+                    ? course.skills.split(',').map(skill => skill.trim())
+                    : course.skills;
+                    
+                return selectedSkills.every(skill => 
+                    courseSkills.some(courseSkill => 
+                        courseSkill.toLowerCase().includes(skill.toLowerCase())
+                    )
+                );
+            });
         }
 
         setCourses(filtered);
-    }, [searchTerm, typeFilter, selectedSkills]);
+    }, [searchTerm, typeFilter, selectedSkills, allCourses]);
 
     const toggleSkill = (skill) => {
         setSelectedSkills(prev =>
@@ -145,7 +185,7 @@ const CoursesPage = () => {
                         >
                             <option value="all">Усі дисципліни</option>
                             <option value="Обов'язкова">Обов'язкова</option>
-                            <option value="Необов'язкова">Необов'язкова</option>
+                            <option value="Необов'язкова">Вибіркова</option>
                         </select>
                     </div>
 

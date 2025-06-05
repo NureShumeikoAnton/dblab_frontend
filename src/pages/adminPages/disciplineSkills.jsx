@@ -3,6 +3,7 @@ import AdminTableComponent from "../../components/AdminTableComponent.jsx";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import API_CONFIG from '../../config/api.js';
 
 const DisciplineSkills = () => {
     const [disciplineOptions, setDisciplineOptions] = useState([]);
@@ -13,7 +14,7 @@ const DisciplineSkills = () => {
 
     useEffect(() => {
         // Fetch disciplines
-        axios.get('http://localhost:5000/discipline/getFromDb', {
+        axios.get(`${API_CONFIG.BASE_URL}/discipline/getFromDb`, {
             headers: {
                 Authorization: authHeader.split(' ')[1],
             }
@@ -30,7 +31,7 @@ const DisciplineSkills = () => {
             });
 
         // Fetch skills
-        axios.get('http://localhost:5000/skill/getFromDb', {
+        axios.get(`${API_CONFIG.BASE_URL}/skill/getFromDb`, {
             headers: {
                 Authorization: authHeader.split(' ')[1],
             }
@@ -44,10 +45,8 @@ const DisciplineSkills = () => {
             })
             .catch(error => {
                 console.error('Error fetching skills:', error);
-            });
-
-        // Fetch levels
-        axios.get('http://localhost:5000/level/getFromDb', {
+            });        // Fetch levels
+        axios.get(`${API_CONFIG.BASE_URL}/level/getFromDb`, {
             headers: {
                 Authorization: authHeader.split(' ')[1],
             }

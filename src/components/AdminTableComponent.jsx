@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import axios from "axios";
 import UniversalModalComponent from "./UniversalModalComponent.jsx";
 import { NotificationContext } from "../layouts/AdminPageLayout.jsx";
+import API_CONFIG from '../config/api.js';
 
 import './styles/AdminTable.css';
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
@@ -14,7 +15,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
     const [formData, setFormData] = useState({});
     const [isDeleteWithoutConfirmation, setIsDeleteWithoutConfirmation] = useState(false);
 
-    const apiUrl = `http://localhost:5000/${endpoint}`;
+    const apiUrl = `${API_CONFIG.BASE_URL}/${endpoint}`;
     const authHeader = useAuthHeader();
 
     const notificationsRef = useContext(NotificationContext);
@@ -180,7 +181,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
             };
 
             if (action === "add") {
-                const additionalEndpoint = "http://localhost:5000/" + columns.find(col => col.key === field).endpoint + "/create";
+                const additionalEndpoint = `${API_CONFIG.BASE_URL}/` + columns.find(col => col.key === field).endpoint + "/create";
                 additionalData[field].forEach((item) => {
                     const data = {
                         [field]: item,
@@ -200,7 +201,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                         });
                 });
             } else if (action === "remove") {
-                const additionalEndpoint = "http://localhost:5000/" + columns.find(col => col.key === field).endpoint + "/delete";
+                const additionalEndpoint = `${API_CONFIG.BASE_URL}/` + columns.find(col => col.key === field).endpoint + "/delete";
                 const data = {
                     [field]: formData[field],
                     [idField]: createdId

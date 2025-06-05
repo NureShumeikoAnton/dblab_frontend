@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './styles/Directions.css';
 import ModalNotificationComponent from "../components/ModalNotificationComponent.jsx";
+import API_CONFIG from '../config/api.js';
 
 const DirectionCard = ({name, link, image, description}) => (
     <a href={link} className='direction-card'>
@@ -17,10 +18,9 @@ const DirectionsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchDirections = async () => {
+    useEffect(() => {        const fetchDirections = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/developmentDirection/getAll');
+                const response = await axios.get(`${API_CONFIG.BASE_URL}/developmentDirection/getAll`);
                 setDirections(response.data);
                 setLoading(false);
             } catch (err) {

@@ -3,6 +3,7 @@ import AdminTableComponent from "../../components/AdminTableComponent.jsx";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import API_CONFIG from '../../config/api.js';
 
 const Chapters = () => {
     const [levelOptions, setLevelOptions] = useState([]);
@@ -12,7 +13,7 @@ const Chapters = () => {
     const authHeader = useAuthHeader();
 
     useEffect(() => {
-        axios.get('http://localhost:5000/level/getFromDb', {
+        axios.get(`${API_CONFIG.BASE_URL}/level/getFromDb`, {
             headers: {
                 'Authorization': authHeader.split(' ')[1],
             }
@@ -28,7 +29,7 @@ const Chapters = () => {
                 console.error('Error fetching levels:', error);
             });
 
-        axios.get('http://localhost:5000/developmentDirection/getFromDb', {
+        axios.get(`${API_CONFIG.BASE_URL}/developmentDirection/getFromDb`, {
             headers: {
                 'Authorization': authHeader.split(' ')[1],
             }
@@ -44,7 +45,7 @@ const Chapters = () => {
                 console.error('Error fetching development directions:', error);
             });
 
-        axios.get('http://localhost:5000/skill/getFromDb', {
+        axios.get(`${API_CONFIG.BASE_URL}/skill/getFromDb`, {
             headers: {
                 'Authorization': authHeader.split(' ')[1],
             }
