@@ -10,6 +10,12 @@ dayjs.extend(customParseFormat);
 dayjs.locale("uk");
 
 const Events = () => {
+    const statusOptions = [
+        { id: "planned", name: "Заплановано" },
+        { id: "confirmed", name: "Підтверджено" },
+        { id: "completed", name: "Завершено" },
+        { id: "cancelled", name: "Скасовано" },
+    ];
     const [teacherOptions, setTeacherOptions] = useState([]);
     const [lessonOptions, setLessonOptions] = useState([]);
 
@@ -70,7 +76,7 @@ const Events = () => {
         { key: "type", title: "Тип" },
         { key: "format", title: "Формат", type: "select", options: formatOptions },
         { key: "begin_date", title: "Дата початку" },
-        { key: "status", title: "Статус" },
+        { key: "status", title: "Статус", type: "select", options: statusOptions },
     ];
 
     return (

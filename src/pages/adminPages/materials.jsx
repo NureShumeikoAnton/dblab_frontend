@@ -4,6 +4,36 @@ import axios from "axios";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const Materials = () => {
+    const typeOptions = [
+        {
+            id: "db_model",
+            name: "Логічна модель БД",
+        },
+        {
+            id: "erd",
+            name: "ER-діаграма",
+        },
+        {
+            id: "sql_script",
+            name: "SQL-скрипт",
+        },
+        {
+            id: "presentation",
+            name: "Презентація",
+        },
+        {
+            id: "video",
+            name: "Відео",
+        },
+        {
+            id: "text",
+            name: "Текстовий документ",
+        },
+        {
+            id: "other",
+            name: "Інше",
+        },
+    ];
     const [eventOptions, setEventOptions] = useState([]);
 
     const authToken = useAuthHeader().split(' ')[1];
@@ -34,7 +64,7 @@ const Materials = () => {
         { key: "event_Id", title: "Подія", type: "select", options: eventOptions, hidden: true },
         { key: "event_name", title: "Подія", modalHidden: true },
         { key: "file", title: "Посилання" },
-        { key: "material_type", title: "Тип" },
+        { key: "material_type", title: "Тип", type: "select", options: typeOptions },
     ];
 
     return (
