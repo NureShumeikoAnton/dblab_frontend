@@ -1,4 +1,4 @@
-import { X, FileText, Film, Image, FileCode, FileSpreadsheet } from "lucide-react";
+import { X, FileText, Film, FileCode, FileSpreadsheet, Video } from "lucide-react";
 import dayjs from "dayjs";
 import "./styles/EventModal.css";
 
@@ -24,14 +24,20 @@ const EventModalComponent = ({ event, onClose }) => {
 
   const getMaterialIcon = (materialType) => {
     switch (materialType?.toLowerCase()) {
+      case 'db_model':
+        return <FileSpreadsheet size={16} />;
+      case 'erd':
+        return <FileText size={16} />;
+      case 'sql_script':
+        return <FileCode size={16} />;
       case 'presentation':
         return <Film size={16} />;
-      case 'image':
-        return <Image size={16} />;
-      case 'code':
-        return <FileCode size={16} />;
-      case 'spreadsheet':
-        return <FileSpreadsheet size={16} />;
+      case 'video':
+        return <Video size={16} />;
+      case 'text':
+        return <FileText size={16} />;
+      case 'other':
+        return <FileText size={16} />;
       default:
         return <FileText size={16} />;
     }
