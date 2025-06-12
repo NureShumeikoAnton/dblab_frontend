@@ -177,6 +177,12 @@
   font-weight: 500;
   color: var(--text-light);
   align-content: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  line-clamp: 4;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
 }
 
 .directions__all-directions-button {
