@@ -1,4 +1,3 @@
-import React from 'react';
 import './styles/HomePage.css'
 import { Video } from 'lucide-react';
 import axios from 'axios';
@@ -21,26 +20,56 @@ const DirectionCard = ({ name, link, description }) => (
     </a>
 )
 
-const ExpertCard = ({ name, image, titles, description }) => {
+const ExpertCard = ({ name, role, image, position, placeOfEmployment, level, description }) => {
     let imageSrc = "#";
     if (image != null) {
         imageSrc = Array.from(new Uint8Array(image.data))
             .map(byte => String.fromCharCode(byte)).join('');
     }
-    console.log(imageSrc);
     return (
         <div className='expert-card'>
-            {image != null && <img src={imageSrc} alt={name} className='expert-card__img'/>}
+            <p className='expert-card__role'>{role}</p>
+            {image != null && <img src={imageSrc} alt={name} className='expert-card__img' />}
             {image == null && <div className='expert-card__img'></div>}
             <p className='expert-card__name'>{name}</p>
-            <p className='expert-card__titles'>{titles}</p>
+            {(position || placeOfEmployment) &&
+                <p className='expert-card__employment'>
+                    <span className='expert-card__position'>{position}</span>
+                    {(position ? '' : 'Працює') + (placeOfEmployment ? ' у ' : '')}
+                    {placeOfEmployment &&
+                        <span className='expert-card__place-of-employment'>{placeOfEmployment}</span>
+                    }
+                </p>
+            }
+            <p className='expert-card__level'>{level}</p>
             <p className='expert-card__description'>{description}</p>
         </div>
     );
 }
 
 const HomePage = () => {
-    const [skills, setSkills] = useState([]);
+    const skills = [
+        {
+            id: 1,
+            name: "Моделювання БД",
+        },
+        {
+            id: 2,
+            name: "Високопродуктивні БД",
+        },
+        {
+            id: 3,
+            name: "Експертиза проєктів БД",
+        },
+        {
+            id: 4,
+            name: "Реінжиніринг БД",
+        },
+        {
+            id: 5,
+            name: "Реляційні та NoSQL СУБД",
+        },
+    ];
     const [directions, setDirections] = useState([]);
     const [experts, setExperts] = useState([]);
 
@@ -63,24 +92,16 @@ const HomePage = () => {
                 setExperts(response.data.map(teacher => ({
                     id: teacher.teacher_Id,
                     name: teacher.full_name,
+                    role: teacher.teacher_role,
                     image: teacher.photo,
-                    titles: teacher.position,
+                    position: teacher.position,
+                    placeOfEmployment: teacher.place_of_Employment,
+                    level: teacher.level,
                     description: teacher.text,
                 })));
             })
             .catch(error => {
                 console.error("Error fetching experts:", error)
-            });
-
-        axios.get(`${API_CONFIG.BASE_URL}/skill/getall`)
-            .then(response => {
-                setSkills(response.data.map(skill => ({
-                    id: skill.skill_Id,
-                    name: skill.skill_name,
-                })));
-            })
-            .catch(error => {
-                console.error("Error fetching skills:", error)
             });
     }, []);
 
@@ -153,12 +174,15 @@ const HomePage = () => {
                 </h3>
                 <div className='info__skills-container'>
                     <Slider {...{
-                        arrows: skills.length > 4,
-                        slidesToShow: 4,
-                        infinite: skills.length > 4,
-                        dots: skills.length > 4,
+                        arrows: skills.length > 5,
+                        slidesToShow: 5,
+                        infinite: skills.length > 5,
+                        dots: false,
                         centerMode: true,
                         centerPadding: 0,
+                        touchMove: false,
+                        swipe: false,
+                        draggable: false,
                     }}>
                         {skills.map(skill => (
                             <SkillCard key={skill.id} {...skill} />
@@ -168,7 +192,7 @@ const HomePage = () => {
             </section>
             <section className='directions'>
                 <h3 className='directions__heading'>
-                    Напрями розвитку
+                    Обери свій напрям професійного розвитку з базами даних
                 </h3>
                 <div className='directions__directions-container'>
                     {directions.map(direction => (
@@ -191,6 +215,9 @@ const HomePage = () => {
                         dots: experts.length > 3,
                         centerMode: true,
                         centerPadding: 0,
+                        touchMove: false,
+                        swipe: false,
+                        draggable: false,
                     }}>
                         {experts.map(expert => (
                             <ExpertCard key={expert.id} {...expert} />
