@@ -12,6 +12,8 @@ dayjs.extend(customParseFormat);
 dayjs.locale("uk");
 
 const DAYS_IN_WEEK = 7;
+const START_HOUR = 15;
+const END_HOUR = 20;
 
 const getWeekDays = (date) => {
     const weekDays = [];
@@ -25,52 +27,53 @@ const getWeekDays = (date) => {
     return weekDays;
 };
 
-const getHours = (startHour = 7, endHour = 19) => {
-    return Array.from({ length: endHour - startHour + 1 }, (_, i) => {
+const getHours = () => {
+    return Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => {
         return dayjs()
-            .hour(startHour + i)
+            .hour(START_HOUR + i)
             .minute(0)
             .second(0)
             .millisecond(0);
     });
 };
 
-const getLessonStyle = (lesson, startHour = 7, endHour = 19) => {
+const getLessonStyle = (lesson) => {
     const style = {
         left: `${((lesson.datetime.day() + 6) % 7) / 7.0 * 98 + 1}%`,
         width: `${98 / 7.0}%`,
-        top: `${(lesson.datetime.hour() + lesson.datetime.minute() / 60.0 - startHour) / (endHour - startHour) * 98 + 1}%`,
-        height: `${(1 + 35 / 60.0) / (endHour - startHour) * 98}%`
+        top: `${(lesson.datetime.hour() + lesson.datetime.minute() / 60.0 - START_HOUR) / (END_HOUR - START_HOUR) * 98 + 2}%`,
+        height: `${(1 + 35 / 60.0) / (END_HOUR - START_HOUR) * 98}%`
     };
     return style;
 };
 
-const ScheduleGrid = ({ startHour = 7, endHour = 19 }) => {
+const ScheduleGrid = () => {
     const FIRST_VERTICAL = 1;
     const LAST_VERTICAL = 99;
     const FIRST_HORIZONTAL = 1;
-    const LAST_HORIZONTAL = 99;
+    const LAST_HORIZONTAL = 98;
     const STROKE_WIDTH = 0.3;
+    const GRID_HEIGHT_RATIO = 0.5;
 
     return (
         <svg
             className="schedule-grid-lines"
             xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 100 100"
+            viewBox={`0 0 100 ${100 * GRID_HEIGHT_RATIO}`}
         >
             {Array.from({ length: 8 }, (_, i) => (
                 <path
                     key={`vertical-${i}`}
-                    d={`M ${FIRST_VERTICAL + i * ((LAST_VERTICAL - FIRST_VERTICAL) / 7.0)} ${FIRST_HORIZONTAL} v ${LAST_HORIZONTAL - FIRST_HORIZONTAL}`}
+                    d={`M ${FIRST_VERTICAL + i * ((LAST_VERTICAL - FIRST_VERTICAL) / 7.0)} ${FIRST_HORIZONTAL} v ${(LAST_HORIZONTAL - FIRST_HORIZONTAL) * GRID_HEIGHT_RATIO}`}
                     stroke="#ddd"
                     strokeWidth={STROKE_WIDTH}
                 />
             ))}
 
-            {Array.from({ length: endHour - startHour + 1 }, (_, i) => (
+            {Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => (
                 <path
                     key={`horizontal-${i}`}
-                    d={`M ${FIRST_VERTICAL} ${FIRST_HORIZONTAL + i * ((LAST_HORIZONTAL - FIRST_HORIZONTAL) / (endHour * 1.0 - startHour))} h ${LAST_VERTICAL - FIRST_VERTICAL}`}
+                    d={`M ${FIRST_VERTICAL} ${FIRST_HORIZONTAL + i * ((LAST_HORIZONTAL - FIRST_HORIZONTAL) / (END_HOUR * 1.0 - START_HOUR)) * GRID_HEIGHT_RATIO} h ${LAST_VERTICAL - FIRST_VERTICAL}`}
                     stroke="#ddd"
                     strokeWidth={STROKE_WIDTH}
                 />
