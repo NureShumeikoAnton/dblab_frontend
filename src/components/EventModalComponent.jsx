@@ -43,6 +43,16 @@ const EventModalComponent = ({ event, onClose }) => {
     }
   };
 
+  const getStatusUkr = (status) => {
+    const statusMap = {
+      "planned": "Заплановано",
+      "confirmed": "Підтверджено",
+      "completed": "Завершено",
+      "cancelled": "Скасовано"
+    };
+    return statusMap[status?.toLowerCase()] || status;
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div 
@@ -86,8 +96,7 @@ const EventModalComponent = ({ event, onClose }) => {
           <div className="event-modal__detail">
             <span className="event-modal__label">Статус:</span>
             <span className="event-modal__value event-status">
-              <span className={`status-indicator status-${event.status?.toLowerCase()}`}></span>
-              {event.status}
+              {getStatusUkr(event.status)}
             </span>
           </div>
         </div>
