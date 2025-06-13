@@ -13,10 +13,10 @@ const EventModalComponent = ({ event, onClose }) => {
     return dayjs(dateTimeString).format("dddd, DD.MM.YYYY");
   };
   
-  const formatTimeRange = (dateTimeString) => {
-    if (!dateTimeString) return "";
+  const formatTimeRange = (timeString) => {
+    if (!timeString) return "";
     
-    const startTime = dayjs(dateTimeString);
+    const startTime = dayjs(timeString, "HH:mm");
     const endTime = startTime.add(95, 'minute');
     
     return `${startTime.format("HH:mm")} – ${endTime.format("HH:mm")}`;
@@ -68,7 +68,7 @@ const EventModalComponent = ({ event, onClose }) => {
         <div className="event-modal__details">
           <div className="event-modal__detail">
             <span className="event-modal__label">Дата:</span>
-            <span className="event-modal__value">{formatDate(event.begin_date)}</span>
+            <span className="event-modal__value">{formatDate(event.lesson_date)}</span>
           </div>
           
           <div className="event-modal__detail">
