@@ -1,4 +1,4 @@
-import { X, FileText, Film, Image, FileCode, FileSpreadsheet } from "lucide-react";
+import { X, FileText, Film, FileCode, FileSpreadsheet, Video } from "lucide-react";
 import dayjs from "dayjs";
 import "./styles/EventModal.css";
 
@@ -13,10 +13,10 @@ const EventModalComponent = ({ event, onClose }) => {
     return dayjs(dateTimeString).format("dddd, DD.MM.YYYY");
   };
   
-  const formatTimeRange = (dateTimeString) => {
-    if (!dateTimeString) return "";
+  const formatTimeRange = (timeString) => {
+    if (!timeString) return "";
     
-    const startTime = dayjs(dateTimeString);
+    const startTime = dayjs(timeString, "HH:mm");
     const endTime = startTime.add(95, 'minute');
     
     return `${startTime.format("HH:mm")} – ${endTime.format("HH:mm")}`;
@@ -24,17 +24,33 @@ const EventModalComponent = ({ event, onClose }) => {
 
   const getMaterialIcon = (materialType) => {
     switch (materialType?.toLowerCase()) {
+      case 'db_model':
+        return <FileSpreadsheet size={16} />;
+      case 'erd':
+        return <FileText size={16} />;
+      case 'sql_script':
+        return <FileCode size={16} />;
       case 'presentation':
         return <Film size={16} />;
-      case 'image':
-        return <Image size={16} />;
-      case 'code':
-        return <FileCode size={16} />;
-      case 'spreadsheet':
-        return <FileSpreadsheet size={16} />;
+      case 'video':
+        return <Video size={16} />;
+      case 'text':
+        return <FileText size={16} />;
+      case 'other':
+        return <FileText size={16} />;
       default:
         return <FileText size={16} />;
     }
+  };
+
+  const getStatusUkr = (status) => {
+    const statusMap = {
+      "planned": "Заплановано",
+      "confirmed": "Підтверджено",
+      "completed": "Завершено",
+      "cancelled": "Скасовано"
+    };
+    return statusMap[status?.toLowerCase()] || status;
   };
 
   return (
@@ -52,7 +68,7 @@ const EventModalComponent = ({ event, onClose }) => {
         <div className="event-modal__details">
           <div className="event-modal__detail">
             <span className="event-modal__label">Дата:</span>
-            <span className="event-modal__value">{formatDate(event.begin_date)}</span>
+            <span className="event-modal__value">{formatDate(event.lesson_date)}</span>
           </div>
           
           <div className="event-modal__detail">
@@ -80,8 +96,7 @@ const EventModalComponent = ({ event, onClose }) => {
           <div className="event-modal__detail">
             <span className="event-modal__label">Статус:</span>
             <span className="event-modal__value event-status">
-              <span className={`status-indicator status-${event.status?.toLowerCase()}`}></span>
-              {event.status}
+              {getStatusUkr(event.status)}
             </span>
           </div>
         </div>

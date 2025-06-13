@@ -50,7 +50,7 @@ const LessonCardComponent = ({ lesson, style }) => {
     <div className="lesson-card-container" style={style}>
       {selectedEvent && (
         <EventModalComponent 
-          event={selectedEvent} 
+          event={{...selectedEvent, lesson_date: lesson.datetime}} 
           onClose={closeModal} 
         />
       )}

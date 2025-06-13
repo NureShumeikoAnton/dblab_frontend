@@ -97,35 +97,6 @@
   font-weight: 500;
 }
 
-.event-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.status-indicator {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.status-scheduled {
-  background-color: #4CAF50;
-}
-
-.status-completed {
-  background-color: #9E9E9E;
-}
-
-.status-cancelled {
-  background-color: #F44336;
-}
-
-.status-postponed {
-  background-color: #FFC107;
-}
-
 .event-modal__materials {
   padding-top: 15px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
