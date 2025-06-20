@@ -185,7 +185,7 @@ const CoursesPage = () => {
                         >
                             <option value="all">Усі дисципліни</option>
                             <option value="Обов'язкова">Обов'язкова</option>
-                            <option value="Необов'язкова">Вибіркова</option>
+                            <option value="Вибіркова">Вибіркова</option>
                         </select>
                     </div>
 
