@@ -12,15 +12,6 @@ const EventModalComponent = ({ event, onClose }) => {
     
     return dayjs(dateTimeString).format("dddd, DD.MM.YYYY");
   };
-  
-  const formatTimeRange = (timeString) => {
-    if (!timeString) return "";
-    
-    const startTime = dayjs(timeString, "HH:mm");
-    const endTime = startTime.add(95, 'minute');
-    
-    return `${startTime.format("HH:mm")} – ${endTime.format("HH:mm")}`;
-  };
 
   const getMaterialIcon = (materialType) => {
     switch (materialType?.toLowerCase()) {
@@ -73,7 +64,7 @@ const EventModalComponent = ({ event, onClose }) => {
           
           <div className="event-modal__detail">
             <span className="event-modal__label">Час:</span>
-            <span className="event-modal__value">{formatTimeRange(event.begin_date)}</span>
+            <span className="event-modal__value">{event.begin_date}</span>
           </div>
           
           <div className="event-modal__detail">

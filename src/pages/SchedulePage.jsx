@@ -98,7 +98,6 @@ const SchedulePage = () => {
     useEffect(() => {
         if (cachedFrom !== null && cachedTo !== null
             && currentDate.isAfter(cachedFrom) && currentDate.isBefore(cachedTo)) {
-                console.log("cached");
             return;
         }
         axios.get(`${API_CONFIG.BASE_URL}/lesson/getLessonsBetweenDates`
@@ -109,13 +108,7 @@ const SchedulePage = () => {
                     ...lesson,
                     datetime: dayjs(`${lesson.lesson_date} ${lesson.lesson_time}`, "DD.MM.YYYY HH:mm"),
                 }));
-                setLessons(prevLessons => {
-                    const lessonMap = [...prevLessons, ...newLessons].reduce((acc, lesson) => {
-                        acc[lesson.lesson_Id] = lesson;
-                        return acc;
-                    }, {});
-                    return Object.values(lessonMap);
-                });
+                setLessons([...lessons, ...newLessons]);
                 if (cachedFrom === null || cachedFrom.isAfter(startOfWeek)) {
                     setCachedFrom(startOfWeek);
                 }
