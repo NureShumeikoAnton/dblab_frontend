@@ -30,7 +30,7 @@ yarn.lock
 .pnp.js
 *.pnp.js
 
-.env
+.env*
 .env.local
 .env.*.local
 
