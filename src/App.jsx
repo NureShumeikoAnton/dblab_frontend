@@ -8,6 +8,7 @@ import SchedulePage from "./pages/SchedulePage.jsx";
 import ContactPage from "./pages/ContactPage.jsx";
 import CourseDetailsPage from "./pages/CourseDetailsPage.jsx";
 import DirectionDetailsPage from "./pages/DirectionDetailsPage.jsx";
+import LibraryPage from "./pages/LibraryPage.jsx";
 
 import MainLayout from "./layouts/MainLayout.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
@@ -24,6 +25,8 @@ import DisciplineSkills from "./pages/adminPages/disciplineSkills.jsx";
 import Lessons from "./pages/adminPages/lessons.jsx";
 import Events from "./pages/adminPages/events.jsx";
 import Materials from './pages/adminPages/materials.jsx';
+import ResourcePage from './pages/ResourcePage.jsx';
+import MyResourcesPage from './pages/MyResourcesPage.jsx';
 
 
 const App = () => {
@@ -40,6 +43,9 @@ const App = () => {
                     <Route path={"/directions/:directionId"} element={<DirectionDetailsPage/>}></Route>
                     <Route path={"/schedule"} element={<SchedulePage/>}/>
                     <Route path={"/contact"} element={<ContactPage/>}/>
+                    <Route path={"/library"} element={<LibraryPage/>}/>
+                    <Route path={"/library/resource/:resourceId"} element={<ResourcePage/>}/>
+                    <Route path={"/library/myresources/:userId"} element={<MyResourcesPage/>}/>
                 </Route>
                 <Route path={'/apanel'} Component={AdminLayout}>
                     <Route path={"teachers"} element={<Teachers/>}></Route>

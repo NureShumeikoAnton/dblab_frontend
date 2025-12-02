@@ -1,0 +1,648 @@
+.library-page {
+    background-color: var(--bg-secondary);
+    color: black;
+    font-family: 'Roboto';
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.library-page__heading {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    color: var(--primary-color);
+    font-size: 48px;
+    font-weight: 500;
+}
+
+.library-page__search-results {
+
+}
+
+.search-results__heading {
+    font-size: 36px;
+}
+
+.search-results__list {
+    height: 500px;
+    width: 1134px;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem
+}
+
+
+.resource-card {
+  display: grid;
+  grid-template-areas:
+    "header  icons"
+    "meta    icons"
+    "tags    ."
+    "stats   actions";
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
+  align-items: start;
+
+  background: #fff;
+  border-left: 4px solid var(--secondary-color);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', sans-serif;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.resource-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* HEADER */
+.resource-card__header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.resource-card__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.resource-card__verified {
+  color: #2196f3;
+  font-size: 0.9rem;
+}
+
+.resource-card__top-tag {
+  background: #ffe9d6;
+  color: #f57c00;
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.85rem;
+  overflow: scroll;
+  height: 20px;
+}
+
+/* META */
+.resource-card__meta {
+  grid-area: meta;
+  display: flex;
+  gap: 0.4rem;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+/* TAGS */
+.resource-card__tags {
+  grid-area: tags;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.resource-card__tag {
+  background: #f0f0f0;
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* STATS */
+.resource-card__stats {
+  grid-area: stats;
+  display: flex;
+  gap: 1rem;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+/* STATS */
+.resource-card__stats {
+  grid-area: stats;
+  display: flex;
+  gap: 1rem;
+  color: #333;
+  font-size: 0.9rem;
+  align-self: end;
+  padding-bottom: 4px;
+}
+
+/* ACTIONS (Button) */
+.resource-card__actions {
+  grid-area: actions;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  align-self: end;
+}
+
+.resource-card__button {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.resource-card__button:hover {
+  background: var(--primary-dark);
+}
+
+/* ICONS (Top Right Actions) */
+.resource-card__icons {
+  grid-area: icons;
+  display: flex;
+  gap: 12px; 
+  justify-self: end; 
+}
+
+.icon-action-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-action-btn:hover {
+    color: var(--primary-light);
+    transform: scale(1.1);
+}
+
+.icon-action-btn.active {
+    color: var(--primary-color);
+}
+
+.resource-card__icon {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.resource-card__icon:hover {
+  opacity: 0.6;
+}
+
+.resource-card__likes,
+.resource-card__views {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+
+
+
+.library-page__search-panel {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+  max-width: 1200px;
+  width: 100%;
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.search-panel__main-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+  margin-right: auto;
+}
+
+.search-panel__sub-label {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+  margin-bottom: 0.25rem; 
+}
+
+.search-panel__label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+/* --- Загальні стилі для полів вводу --- */
+
+.search-panel__input,
+.search-panel__input--date,
+.search-panel__dropdown {
+  border: 1px solid var(--text-light);
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  background-color: var(--white);
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+
+.search-panel__input:focus,
+.search-panel__input--date:focus,
+.search-panel__dropdown:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 148, 200, 0.2); /* Світла тінь */
+}
+
+.search-panel__input::placeholder {
+  color: var(--text-light);
+}
+
+.search-panel__input--name {
+  width: 100%;
+}
+
+/* --- Секція фільтрів --- */
+
+.search-panel__filter-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+/* Ліва колонка фільтрів (Автор, Дати, Рекомендовані) */
+.search-panel__filter-params-left-section {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Контейнер для інпутів в одному рядку */
+.row-flex-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Інпут "Автор" */
+.search-panel__input--author {
+  flex-grow: 1;
+  min-width: 150px;
+  max-width: 260px;
+}
+
+/* Інпути дати */
+.search-panel__input--date {
+  width: auto;
+  min-width: 140px;
+}
+
+/* Стилізація чекбоксів та їх міток */
+input[type="checkbox"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+  margin: 0;
+}
+
+.search-panel__filter-item label,
+.row-flex-container label,
+.row-flex-container span {
+  color: var(--text-light);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Контейнер для чекбокса "Тільки рекомендовані" */
+.row-flex-container input[type="checkbox"] + label {
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+/* Права колонка фільтрів (Напрями) */
+.search-panel__filter-params-right-section {
+  display: flex;
+  flex: 1.2;
+  min-width: 320px;
+  flex-direction: row;
+  gap: 2rem;
+}
+
+.search-panel__directions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+/* Окремий елемент фільтра (чекбокс + мітка) */
+.search-panel__filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* --- Нижня секція (Сортування та Кнопка) (Новий клас) --- */
+
+.search-panel__bottom-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+  border-top: 1px solid var(--bg-secondary);
+  padding-top: 1.5rem;
+}
+
+/* Контейнер параметрів сортування */
+.search-panel__search-params {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Випадаючі списки */
+.search-panel__dropdown {
+  width: auto;
+  min-width: 180px;
+  flex-grow: 1;
+  background-color: var(--bg-secondary);
+}
+
+/* --- Кнопка Пошуку --- */
+
+.search-panel__search-button {
+  padding: 0.75rem 2.5rem;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.search-panel__search-button:hover {
+  background-color: var(--primary-dark);
+  scale: 1.05;
+}
+
+/* --- Стани завантаження та помилки --- */
+.loading, .error {
+  grid-column: 1 / -1;
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.error {
+  color: var(--secondary-dark);
+  background-color: rgba(245, 150, 80, 0.1);
+  border-radius: var(--border-radius);
+}
+
+/* --- Library Page Header Layout --- */
+.library-header-wrapper {
+    display: grid;
+    /* 1fr spacer | auto title | 1fr actions - keeps title centered */
+    grid-template-columns: 1fr auto 1fr; 
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.library-page__heading {
+    margin: 0; 
+    grid-column: 2;
+}
+
+.library-header-actions {
+    grid-column: 3;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+/* --- Header Icon Buttons --- */
+.header-icon-btn {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+}
+
+.header-icon-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 148, 200, 0.3);
+}
+
+/* --- Floating Menu --- */
+.header-dropdown-menu {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: 1px solid #e5e5e5;
+    min-width: 160px;
+    z-index: 100;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.2s ease;
+}
+
+.header-menu-item {
+    padding: 12px 16px;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.header-menu-item:hover {
+    background-color: var(--bg-secondary);
+    color: var(--primary-color);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+
+/* Панель пошуку V2 стилі */
+
+/* --- Зміни для головного контейнера --- */
+.library-page__search-panel--V2 {
+  /* Перепризначаємо gap, оскільки структуру контролює .search-panel-v2__main-layout */
+  gap: 0; 
+}
+
+/* --- Нова 2-колонкова структура --- */
+.search-panel-v2__main-layout {
+  display: flex;
+  flex-wrap: wrap; /* Для адаптивності */
+  gap: 3rem; /* Збільшений проміжок між колонками */
+}
+
+.search-panel-v2__left-column {
+  flex: 2; /* Ліва колонка ширша */
+  min-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Проміжок між секціями */
+}
+
+.search-panel-v2__right-column {
+  flex: 1; /* Права колонка вужча */
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Проміжок між групами */
+  
+  /* Вирівнюємо групи елементів по верху */
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.search-panel-v2__right-column-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%; /* Групи займають всю ширину колонки */
+}
+
+/* --- Нові стилі для секцій, що згортаються --- */
+
+.search-panel-v2__collapsible-section {
+  width: 100%;
+  border-bottom: 1px solid var(--bg-secondary); /* Розділювач */
+  padding-bottom: 1.5rem;
+}
+
+.search-panel-v2__collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Використовуємо .search-panel__label для заголовка */
+.search-panel-v2__collapsible-header .search-panel__label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.search-panel-v2__toggle-arrow {
+  width: 0; 
+  height: 0; 
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--primary-color);
+  transition: transform 0.3s ease-out; 
+  transform: rotate(180deg);
+}
+
+.search-panel-v2__toggle-arrow--open {
+  transform: rotate(0deg);
+}
+
+.search-panel-v2__collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, padding-top 0.3s ease-out;
+  padding-left: 0.5rem; 
+  padding-top: 0; /* Стан "закрито" */
+}
+
+.search-panel-v2__collapsible-content--open {
+  max-height: 500px;
+  padding-top: 1rem; /* Стан "відкрито" */
+}
+
+/* --- Нові допоміжні класи --- */
+.search-panel-v2__input-full-width {
+  width: 100%;
+}
+
+/* --- Адаптація існуючих класів --- */
+
+/* Робимо дропдауни на всю ширину колонки */
+.search-panel-v2__right-column .search-panel__dropdown {
+  width: 100%;
+  background-color: var(--white); /* Робимо фон білим, як на скріні */
+}
+
+/* Адаптація чекбоксу "рекомендовані" */
+.search-panel-v2__right-column .row-flex-container {
+    justify-content: flex-start;
+}
+.search-panel-v2__right-column .row-flex-container label {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* Адаптація кнопки */
+.search-panel-v2__right-column .search-panel__search-button {
+    width: 100%; /* Кнопка на всю ширину */
+}
+
+/* Адаптація сітки напрямків */
+.search-panel-v2__collapsible-content .search-panel__directions {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Робимо сітку адаптивною */
+}
+
+
+/* V3 Search Panel Styles */
+
+.search-panel-v3__section-group {
+  display: flex;
+  flex-direction: column;
+  /* Невеликий проміжок між міткою та її контентом */
+  gap: 0.75rem; 
+}
+
+/*DEMO*/
+
+.library-page__search-panels-demo-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  margin-bottom: 2rem;
+}

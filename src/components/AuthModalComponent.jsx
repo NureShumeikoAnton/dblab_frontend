@@ -112,7 +112,8 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
                     type: 'Bearer'
                 },
                 userState: {
-                    username: response.data.nickname
+                    username: response.data.nickname,
+                    user_Id: response.data.user_Id
                 }
             })
 
