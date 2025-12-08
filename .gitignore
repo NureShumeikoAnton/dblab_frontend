@@ -34,3 +34,4 @@ yarn.lock
 .env.local
 .env.*.local
 
+src/components/LibSearchPanelsV1V2.jsx

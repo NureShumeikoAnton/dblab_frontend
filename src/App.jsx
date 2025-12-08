@@ -27,6 +27,8 @@ import Events from "./pages/adminPages/events.jsx";
 import Materials from './pages/adminPages/materials.jsx';
 import ResourcePage from './pages/ResourcePage.jsx';
 import MyResourcesPage from './pages/MyResourcesPage.jsx';
+import StackPage from './pages/StackPage.jsx';
+import MyStacksPage from './pages/MyStacksPage.jsx';
 
 
 const App = () => {
@@ -46,6 +48,8 @@ const App = () => {
                     <Route path={"/library"} element={<LibraryPage/>}/>
                     <Route path={"/library/resource/:resourceId"} element={<ResourcePage/>}/>
                     <Route path={"/library/myresources/:userId"} element={<MyResourcesPage/>}/>
+                    <Route path={"/library/mystacks/:userId"} element={<MyStacksPage/>}/>
+                    <Route path={"/library/stack/:stackId"} element={<StackPage/>}/>
                 </Route>
                 <Route path={'/apanel'} Component={AdminLayout}>
                     <Route path={"teachers"} element={<Teachers/>}></Route>

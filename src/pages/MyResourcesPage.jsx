@@ -158,19 +158,16 @@ const MyResourcesPage = () => {
             if (isEditMode) {
                 response = await axios.put(`${API_CONFIG.BASE_URL}/resource/${currentResourceId}`, payload, config);
                 
-                // Update local list
                 setResources(prev => prev.map(r => 
                     r.resource_Id === currentResourceId ? response.data : r
                 ));
             } else {
                 response = await axios.post(`${API_CONFIG.BASE_URL}/resource/create`, payload, config);
-                // Add to local list
                 setResources(prev => [response.data, ...prev]);
             }
             setIsModalOpen(false);
         } catch (error) {
             console.error("Save failed:", error);
-            // Handle backend unique constraint error
             if (error.response?.data?.message?.toLowerCase().includes("unique")) {
                 setFormErrors(prev => ({ ...prev, name: "Ресурс з такою назвою вже існує" }));
             } else {
@@ -329,7 +326,6 @@ const ResourceListItem = ({ resource, onEdit, onDelete, onNavigate }) => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Only navigate if verified
     const handleCardClick = () => {
         if (isVerified) {
             onNavigate();
@@ -337,7 +333,6 @@ const ResourceListItem = ({ resource, onEdit, onDelete, onNavigate }) => {
     };
 
     return (
-        // Add 'disabled' class if not verified to kill hover effects in CSS
         <div className={`resource-list-item ${!isVerified ? 'disabled' : ''}`}>
             
             <div className="resource-info" onClick={handleCardClick}>
