@@ -1,19 +1,20 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useLayoutEffect } from 'react'
 import './styles/LibraryPage.css'
 import axios from 'axios';
 import API_CONFIG from '../config/api.js';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Clock, Eye, Plus, Star, ThumbsUp, TrendingUp, Check, X } from 'lucide-react';
+import { useNavigate, useSearchParams, createSearchParams } from "react-router-dom";
+import { Clock, Eye, Plus, Star, ThumbsUp, TrendingUp, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+
 
 const LibraryPage = () => {
   const [resources, setResources] = useState([]);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   
-  // Stack mode state
-  const [searchParams] = useSearchParams();
-  const stackId = searchParams.get('stackId'); // Check if we are in stack filling mode
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const stackId = searchParams.get('stackId');
   const [stackResourceIds, setStackResourceIds] = useState(new Set());
   const isStackMode = !!stackId;
 
@@ -22,25 +23,64 @@ const LibraryPage = () => {
   const navigate = useNavigate();
 
   const menuTimeoutRef = useRef(null);
+  const scrollRestorationRef = useRef(0);
+  const isRestoringScrollRef = useRef(false);
 
-  // Fetch Resources
-  useEffect(() => {
-    if(!authHeader) return; 
-    axios.get(`${API_CONFIG.BASE_URL}/resource/getRecentResourcesPreview/1/10`,
-              {
-               headers: {
-                 'Authorization': authHeader.split(' ')[1],
-               }
-             })
+  const [pagination, setPagination] = useState({
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0
+  });
+
+  const fetchResources = (paramsObj) => {
+    if(!authHeader) return;
+    const token = authHeader.split(' ')[1];
+
+    const queryParams = {
+        page: paramsObj.page || 1,
+        page_size: 10,
+        ...paramsObj
+    };
+
+    axios.get(`${API_CONFIG.BASE_URL}/resource/search`, {
+        headers: { 'Authorization': token },
+        params: queryParams
+    })
       .then(response => {
-        setResources(response.data);
+          setResources(response.data.resources);
+          setPagination({
+              currentPage: response.data.currentPage,
+              totalPages: response.data.totalPages,
+              totalItems: response.data.totalItems
+          });
       })
       .catch(error => {
-        console.error("Error fetching resources:", error);
+          console.error("Search error:", error);
       });
-  }, [authHeader]);
+  };
 
-  // Stack mode logic (fetch existing resources in stack)
+  useEffect(() => {
+    const currentParams = Object.fromEntries([...searchParams]);
+    
+    const savedScroll = sessionStorage.getItem('libraryScrollY');
+    if (savedScroll) {
+        scrollRestorationRef.current = parseInt(savedScroll, 10);
+        isRestoringScrollRef.current = true;
+        sessionStorage.removeItem('libraryScrollY');
+    }
+
+    fetchResources(currentParams);
+  }, [searchParams, authHeader]); 
+
+  
+  useLayoutEffect(() => {
+      if (isRestoringScrollRef.current && resources.length > 0) {
+          window.scrollTo(0, scrollRestorationRef.current);
+          isRestoringScrollRef.current = false;
+      }
+  }, [resources]);
+
+  // Stack mode logic
   useEffect(() => {
     if (isStackMode && authHeader) {
         const token = authHeader.split(' ')[1];
@@ -54,7 +94,7 @@ const LibraryPage = () => {
     }
   }, [isStackMode, stackId, authHeader]);
 
-  // Stack mode handler
+  // Stack toggle handlers
   const handleToggleStackResource = async (resourceId, isAdded) => {
       const token = authHeader.split(' ')[1];
       const url = `${API_CONFIG.BASE_URL}/stack/${isAdded ? 'removeResource' : 'addResource'}/${stackId}/${resourceId}`;
@@ -81,6 +121,7 @@ const LibraryPage = () => {
       navigate(`/library/mystacks/${authUser?.user_Id}?openEdit=true&stackId=${stackId}`);
   };
 
+  // Menu handlers
   useEffect(() => {
     return () => {
       if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
@@ -101,8 +142,23 @@ const LibraryPage = () => {
     }, 200);
   };
 
+  const handlePageChange = (newPage) => {
+      if (newPage >= 1 && newPage <= pagination.totalPages) {
+          const newParams = new URLSearchParams(searchParams);
+          newParams.set('page', newPage);
+          setSearchParams(newParams);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+  };
+
+  const handleNavigateToResource = (resourceId) => {
+      sessionStorage.setItem('libraryScrollY', window.scrollY.toString());
+      navigate(`/library/resource/${resourceId}`);
+  };
+
   return (
     <div className='library-page'>
+        {/* Header */}
         <div className='library-header-wrapper'>
             <div></div>
             <h1 className='library-page__heading'>
@@ -142,11 +198,14 @@ const LibraryPage = () => {
                 )}
             </div>
         </div>
+
             <SearchPanelComponent />
+
         <div className='library-page__search-results'>
           <div className='search-results__heading'>
-            Результати пошуку:
+            Знайдено {pagination.totalItems} результатів:
           </div>
+          
           <div className='search-results__list'>
             {resources?.map((resource) => (
               <ResourceSearchResultComponent 
@@ -155,9 +214,35 @@ const LibraryPage = () => {
                 stackMode={isStackMode}
                 isInStack={stackResourceIds.has(resource.resource_Id)}
                 onToggleStack={handleToggleStackResource}
+                onNavigate={handleNavigateToResource}
               />
             ))}
+            {resources.length === 0 && <p style={{textAlign:'center', color:'#666', marginTop:'20px'}}>Нічого не знайдено</p>}
           </div>
+
+          {pagination.totalItems > 0 && (
+              <div className="pagination-container">
+                  <button 
+                    className="pagination-arrow" 
+                    disabled={pagination.currentPage === 1}
+                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  >
+                      <ChevronLeft size={24} />
+                  </button>
+                  
+                  <span className="pagination-info">
+                      {pagination.currentPage} / {pagination.totalPages}
+                  </span>
+                  
+                  <button 
+                    className="pagination-arrow" 
+                    disabled={pagination.currentPage === pagination.totalPages}
+                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  >
+                      <ChevronRight size={24} />
+                  </button>
+              </div>
+          )}
         </div>
 
         {isStackMode && (
@@ -171,8 +256,7 @@ const LibraryPage = () => {
   )
 }
 
-const ResourceSearchResultComponent = ({ resource, stackMode, isInStack, onToggleStack }) => {
-  const navigate = useNavigate();
+const ResourceSearchResultComponent = ({ resource, stackMode, isInStack, onToggleStack, onNavigate }) => {
   const authHeader = useAuthHeader();
 
   const {
@@ -253,7 +337,7 @@ const ResourceSearchResultComponent = ({ resource, stackMode, isInStack, onToggl
       <div className="resource-card__actions">
         <button 
             className="resource-card__button"
-            onClick={() => navigate(`/library/resource/${resource_Id}`)}
+            onClick={() => onNavigate(resource_Id)}
         >
             Переглянути
         </button>
@@ -295,67 +379,120 @@ const ResourceSearchResultComponent = ({ resource, stackMode, isInStack, onToggl
 
 
 const SearchPanelComponent = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+
     const [directions, setDirections] = useState([]);
     const [loadingDirections, setLoading] = useState(true);
     const [directionsError, setDirectionsErrorError] = useState(null);
+
+    // Form states
+    const [searchName, setSearchName] = useState('');
+    const [searchAuthor, setSearchAuthor] = useState('');
+    const [selectedDirections, setSelectedDirections] = useState([]);
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
+    const [isRecommended, setIsRecommended] = useState(false);
+    
+    // Default sorting
+    const [sortBy, setSortBy] = useState('PublishDate');
+    const [sortOrder, setSortOrder] = useState('DESC');
 
+    const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+    const authorInputRef = useRef(null);
+
+    // Ініціалізація полів форми з URL
+    useEffect(() => {
+        setSearchName(searchParams.get('name') || '');
+        setSearchAuthor(searchParams.get('author') || '');
+        setDateFrom(searchParams.get('dateFrom') || '');
+        setDateTo(searchParams.get('dateTo') || '');
+        setIsRecommended(searchParams.get('is_recommended') === 'true');
+        setSortBy(searchParams.get('sortBy') || 'PublishDate');
+        setSortOrder(searchParams.get('sortOrder') || 'DESC');
+        
+        const dirsParam = searchParams.get('directions');
+        if (dirsParam) {
+            setSelectedDirections(dirsParam.split(',').map(Number));
+        } else {
+            setSelectedDirections([]);
+        }
+        
+        if (searchParams.get('author') || searchParams.get('dateFrom')) {
+            setIsAdvancedOpen(true);
+        }
+    }, [searchParams]);
+
+    // Завантаження напрямів
     useEffect(() => { 
       const fetchDirections = async () => {
             try {
                 const response = await axios.get(`${API_CONFIG.BASE_URL}/developmentDirection/getAll`);
                 setDirections(response.data);
-
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching directions:', err);
-                setDirectionsErrorError('Failed to load directions. Please try again later.');
+                setDirectionsErrorError('Failed to load directions.');
                 setLoading(false);
             }
         };
         fetchDirections();
     }, []);
 
-    const handleDateFromChange = (event) => {
-        const newDateFrom = event.target.value;
-        setDateFrom(newDateFrom);
+    // Handlers
+    const handleNameChange = (e) => setSearchName(e.target.value);
+    const handleAuthorChange = (e) => setSearchAuthor(e.target.value);
+    
+    const handleDirectionToggle = (id) => {
+        setSelectedDirections(prev => {
+            if (prev.includes(id)) return prev.filter(d => d !== id);
+            return [...prev, id];
+        });
+    };
 
-        if (newDateFrom && dateTo === '') {
+    const formatDateToYYYYMMDD = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const handleDateFromChange = (e) => {
+        const val = e.target.value;
+        setDateFrom(val);
+        if (val && !dateTo) {
             const today = new Date();
             setDateTo(formatDateToYYYYMMDD(today));
-        } else if(!newDateFrom) {
-            setDateTo('');
         }
     };
+    const handleDateToChange = (e) => setDateTo(e.target.value);
+    const handleRecommendedChange = (e) => setIsRecommended(e.target.checked);
+    const handleSortByChange = (e) => setSortBy(e.target.value);
+    const handleSortOrderChange = (e) => setSortOrder(e.target.value);
 
-    const handleDateToChange = (event) => {
-        const newDateTo = event.target.value;
-        setDateTo(newDateTo);
+    const handleSearchClick = () => {
+        const newParams = {};
+
+        const currentStackId = searchParams.get('stackId');
+        if (currentStackId) newParams.stackId = currentStackId;
+
+        if (searchName.trim()) newParams.name = searchName.trim();
+        if (searchAuthor.trim()) newParams.author = searchAuthor.trim();
+        if (selectedDirections.length > 0) newParams.directions = selectedDirections.join(',');
+        if (isRecommended) newParams.is_recommended = 'true';
+        if (dateFrom) newParams.dateFrom = dateFrom;
+        if (dateTo) newParams.dateTo = dateTo;
+        
+        newParams.sortBy = sortBy;
+        newParams.sortOrder = sortOrder;
+        
+        newParams.page = 1;
+
+        setSearchParams(newParams);
     };
-
-    const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-    
-    const authorInputRef = useRef(null);
-    const dateFromInputRef = useRef(null); 
 
     useEffect(() => {
         if (isAdvancedOpen) {
             authorInputRef.current?.focus();
-        }
-    }, [isAdvancedOpen]);
-
-    useEffect(() => {
-        if (isAdvancedOpen) {
-            const timer = setTimeout(() => {
-                try {
-                    // dateFromInputRef.current?.showPicker(); 
-                } catch (err) {
-                    console.warn("showPicker() fallback.", err);
-                    // dateFromInputRef.current?.focus();
-                }
-            }, 100); // невелика затримка
-            return () => clearTimeout(timer); 
         }
     }, [isAdvancedOpen]);
 
@@ -365,7 +502,7 @@ const SearchPanelComponent = () => {
 
     return (
         <div className='library-page__search-panel library-page__search-panel--V2'>
-            <div className='search-panel-v2__main-layout'>
+             <div className='search-panel-v2__main-layout'>
                 <div className='search-panel-v2__left-column'>
                     <div className='search-panel-v3__section-group'>
                         <div className="search-panel__main-label">Шукати:</div>
@@ -373,40 +510,51 @@ const SearchPanelComponent = () => {
                             type="text" 
                             placeholder='Назва' 
                             className='search-panel__input search-panel-v2__input-full-width' 
+                            value={searchName}
+                            onChange={handleNameChange}
                         />
                     </div>
-                    <div className='search-panel-v3__section-group'>
+                     <div className='search-panel-v3__section-group'>
                         <div className="search-panel__main-label">Напрями:</div>
                         <div className='search-panel__directions'>
                             {
-                                loadingDirections ? <div className="loading">Loading directions...</div> :
-                                directionsError ? <div className="error">{directionsError}</div> :
+                                loadingDirections ? <div className="loading">Loading...</div> :
+                                directionsError ? <div className="error">Error</div> :
                                 directions.map((direction) => (
                                     <div className='search-panel__filter-item' key={direction.development_direction_Id}>
-                                        <input type="checkbox" id={direction.development_direction_Id} name={direction.development_direction_name} />
-                                        <label htmlFor={direction.development_direction_Id}>{direction.development_direction_name}</label>
+                                        <input 
+                                            type="checkbox" 
+                                            id={`dir-${direction.development_direction_Id}`}
+                                            checked={selectedDirections.includes(direction.development_direction_Id)}
+                                            onChange={() => handleDirectionToggle(direction.development_direction_Id)}
+                                        />
+                                        <label htmlFor={`dir-${direction.development_direction_Id}`}>
+                                            {direction.development_direction_name}
+                                        </label>
                                     </div>
                                 ))
                             }
                         </div>
                     </div>
+
                     <div className='search-panel-v2__collapsible-section'>
-                        <div className='search-panel-v2__collapsible-header' onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}>
+                         <div className='search-panel-v2__collapsible-header' onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}>
                             <div className="search-panel__label" style={{fontSize: "1rem"}}>Просунуті опції</div>
                             <ToggleArrow isOpen={isAdvancedOpen} />
                         </div>
                         <div className={`search-panel-v2__collapsible-content ${isAdvancedOpen ? 'search-panel-v2__collapsible-content--open' : ''}`}>
-                            <div className='search-panel-v3__section-group'>
+                             <div className='search-panel-v3__section-group'>
                                 <input 
                                     ref={authorInputRef}
                                     type="text" 
                                     placeholder='Автор' 
                                     className='search-panel__input search-panel-v2__input-full-width' 
+                                    value={searchAuthor}
+                                    onChange={handleAuthorChange}
                                 />
                                 <div className='row-flex-container'>
                                     <span>Створено від</span>
                                     <input 
-                                        ref={dateFromInputRef}
                                         type="date" 
                                         className='search-panel__input--date'
                                         value={dateFrom}
@@ -424,34 +572,47 @@ const SearchPanelComponent = () => {
                         </div>
                     </div>
                 </div>
+
                 <div className='search-panel-v2__right-column'>
-                    
                     <div className='search-panel-v2__right-column-group'>
                         <div className="search-panel__label">Сортувати:</div>
-                        <select className='search-panel__dropdown'>
+                        <select 
+                            className='search-panel__dropdown'
+                            value={sortBy}
+                            onChange={handleSortByChange}
+                        >
+                            <option value="PublishDate">Дата публікації</option>
+                            <option value="OriginationDate">Дата появи</option>
                             <option value="ViewCount">Кількість переглядів</option>
                             <option value="LikeCount">Кількість лайків</option>
-                            <option value="OriginationDate">Дата появи</option>
-                            <option value="PublishDate">Дата публікації</option>
                         </select>
-                        <select className='search-panel__dropdown'>
-                            <option value="ASC">За зростанням</option>
+                        <select 
+                            className='search-panel__dropdown'
+                            value={sortOrder}
+                            onChange={handleSortOrderChange}
+                        >
                             <option value="DESC">За спаданням</option>
+                            <option value="ASC">За зростанням</option>
                         </select>
                     </div>
 
                     <div className='search-panel-v2__right-column-group'>
                         <div className='row-flex-container'>
-                            <input type="checkbox" id="is-recommended-v3" name="is-recommended-v3" />
+                            <input 
+                                type="checkbox" 
+                                id="is-recommended-v3" 
+                                checked={isRecommended}
+                                onChange={handleRecommendedChange}
+                            />
                             <label htmlFor="is-recommended-v3">Тільки рекомендовані</label>
                         </div>
                         
-                        <button className='search-panel__search-button'>Знайти</button>
+                        <button className='search-panel__search-button' onClick={handleSearchClick}>
+                            Знайти
+                        </button>
                     </div>
-
                 </div>
-
-            </div>
+             </div>
         </div>
     );
 }
