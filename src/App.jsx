@@ -4,6 +4,7 @@ import {Route, Routes} from "react-router-dom";
 import HomePage from "./pages/HomePage.jsx";
 import CoursesPage from "./pages/CoursesPage.jsx";
 import ProjectsPage from "./pages/ProjectsPage.jsx";
+import EditorPage from "./pages/EditorPage.jsx";
 import DirectionsPage from "./pages/DirectionsPage.jsx";
 import SchedulePage from "./pages/SchedulePage.jsx";
 import ContactPage from "./pages/ContactPage.jsx";
@@ -12,6 +13,7 @@ import DirectionDetailsPage from "./pages/DirectionDetailsPage.jsx";
 
 import MainLayout from "./layouts/MainLayout.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
+import EditorLayout from "./layouts/EditorLayout.jsx";
 
 import Teachers from "./pages/adminPages/teachers.jsx";
 import Languages from "./pages/adminPages/languages.jsx";
@@ -42,6 +44,9 @@ const App = () => {
                     <Route path={"/schedule"} element={<SchedulePage/>}/>
                     <Route path={"/contact"} element={<ContactPage/>}/>
                     <Route path={"/projects"} element={<ProjectsPage/>}/>
+                </Route>
+                <Route path={'/projects/:projectId'} Component={EditorLayout}>
+                    <Route index element={<EditorPage/>}/>
                 </Route>
                 <Route path={'/apanel'} Component={AdminLayout}>
                     <Route path={"teachers"} element={<Teachers/>}></Route>

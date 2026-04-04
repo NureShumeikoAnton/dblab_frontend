@@ -1,0 +1,14 @@
+.save-status {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.save-status--saved {
+    color: #7bbf93;
+}
+
+.save-status--unsaved {
+    color: #d4956a;
+}

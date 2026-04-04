@@ -1,0 +1,27 @@
+.show-fds-toggle {
+    padding: 7px 16px;
+    border: 2px solid #e8edf4;
+    border-radius: var(--border-radius);
+    background: transparent;
+    color: #bcc5cf;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: not-allowed;
+    transition: var(--transition);
+}
+
+/* Active state wired in Phase 6 */
+.show-fds-toggle:not(:disabled) {
+    border-color: var(--primary-light);
+    color: var(--primary-color);
+    cursor: pointer;
+}
+
+.show-fds-toggle:not(:disabled):hover {
+    background: #f0f8fc;
+}
+
+.show-fds-toggle--active:not(:disabled) {
+    background: #e8f4fb;
+    border-color: var(--primary-color);
+}

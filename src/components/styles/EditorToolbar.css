@@ -1,0 +1,29 @@
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    background: #fff;
+    border-bottom: 1px solid #e8edf4;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+.editor-toolbar__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 50%;
+}
+
+.editor-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}

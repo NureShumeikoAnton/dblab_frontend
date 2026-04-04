@@ -1,0 +1,17 @@
+.editor-canvas {
+    flex: 1;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.editor-canvas__placeholder {
+    font-size: 15px;
+    color: #adb5bd;
+    font-weight: 500;
+    user-select: none;
+    pointer-events: none;
+}

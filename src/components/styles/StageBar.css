@@ -1,0 +1,28 @@
+.stage-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 60px;
+    background: #fff;
+    border-top: 1px solid #e8edf4;
+    flex-shrink: 0;
+}
+
+.stage-bar__stages {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stage-bar__check-btn {
+    padding: 8px 18px;
+    border: 2px solid #e8edf4;
+    border-radius: var(--border-radius);
+    background: transparent;
+    color: #bcc5cf;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: not-allowed;
+    transition: var(--transition);
+}

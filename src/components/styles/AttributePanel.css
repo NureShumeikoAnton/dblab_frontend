@@ -1,0 +1,71 @@
+.attribute-panel {
+    width: 280px;
+    flex-shrink: 0;
+    background: #fff;
+    border-left: 1px solid #e8edf4;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.attribute-panel__header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid #e8edf4;
+}
+
+.attribute-panel__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.attribute-panel__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 12px 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.attribute-panel__btn {
+    width: 100%;
+    padding: 7px 12px;
+    border: 2px dashed #d1dbe6;
+    border-radius: var(--border-radius);
+    background: transparent;
+    color: #bcc5cf;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: not-allowed;
+    text-align: left;
+    transition: var(--transition);
+}
+
+/* Active state wired in Phase 8 */
+.attribute-panel__btn:not(:disabled) {
+    border-color: var(--primary-light);
+    color: var(--primary-color);
+    cursor: pointer;
+}
+
+.attribute-panel__btn:not(:disabled):hover {
+    background: #f0f8fc;
+}
+
+.attribute-panel__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.attribute-panel__empty {
+    font-size: 13px;
+    color: #adb5bd;
+    text-align: center;
+    margin-top: 24px;
+}
