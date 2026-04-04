@@ -1,9 +1,15 @@
+import { useMemo } from 'react';
 import useEditorStore from '../store/editorStore.js';
 import './styles/TableNode.css';
 
 const TableNode = ({ data }) => {
     const { table } = data;
     const attributePool = useEditorStore((s) => s.attributePool);
+
+    const attrMap = useMemo(
+        () => new Map(attributePool.map((a) => [a.id, a])),
+        [attributePool]
+    );
 
     const sorted = [...table.tableAttributes].sort((a, b) => a.order - b.order);
 
@@ -17,7 +23,7 @@ const TableNode = ({ data }) => {
             </div>
             <div className="table-node__body">
                 {sorted.map((ta) => {
-                    const attr = attributePool.find((a) => a.id === ta.attributeId);
+                    const attr = attrMap.get(ta.attributeId);
                     if (!attr) return null;
                     const displayName = ta.alias ?? attr.name;
                     return (

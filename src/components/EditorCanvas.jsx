@@ -13,18 +13,13 @@ const nodeTypes = {
 
 const EditorCanvas = () => {
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
-
-    // Extract raw arrays from the store — immer preserves referential equality
-    // for unchanged data, so these selectors return stable references.
-    // Calling store methods (reactFlowNodes/reactFlowEdges) directly as selectors
-    // returns a new array on every call, causing an infinite render loop.
     const tables = useEditorStore((s) => s.stages[currentStageIndex]?.tables ?? []);
     const relationships = useEditorStore((s) => s.stages[currentStageIndex]?.relationships ?? []);
     const fds = useEditorStore((s) => s.stages[currentStageIndex]?.fds ?? []);
     const showFDs = useEditorStore((s) => s.ui.showFDs);
     const updateTablePosition = useEditorStore((s) => s.updateTablePosition);
 
-    // activeNodeId tracks which node was clicked last — used to bring it to the front.
+    // activeNodeId tracks which node was last clicked or grabbed — keeps it on top via zIndex.
     const [activeNodeId, setActiveNodeId] = useState(null);
 
     const storeNodes = useMemo(
@@ -33,20 +28,33 @@ const EditorCanvas = () => {
             type: 'tableNode',
             position: table.position,
             data: { table },
-            draggable: true,
-            zIndex: table.id === activeNodeId ? 1 : 0,
         })),
-        [tables, activeNodeId]
+        [tables]
     );
 
-    // localNodes bridges Zustand state and React Flow's internal change system.
-    // onNodesChange applies position deltas during drag so the node follows the cursor.
-    // Zustand is only updated on dragStop — keeping the store free of high-frequency writes.
+    // localNodes bridges Zustand and React Flow's internal change system.
+    // onNodesChange applies position deltas during drag; Zustand is only written on dragStop.
     const [localNodes, setLocalNodes] = useState(storeNodes);
 
+    // Sync store → local on stage switch or table data change.
+    // Preserves selected and zIndex so a drag-stop position write doesn't reset them.
     useEffect(() => {
-        setLocalNodes(storeNodes);
+        setLocalNodes((prev) => {
+            const prevMap = new Map(prev.map((n) => [n.id, n]));
+            return storeNodes.map((n) => ({
+                ...n,
+                selected: prevMap.get(n.id)?.selected ?? false,
+                zIndex: prevMap.get(n.id)?.zIndex ?? 0,
+            }));
+        });
     }, [storeNodes]);
+
+    // Separate effect so zIndex updates never overwrite RF's selected state.
+    useEffect(() => {
+        setLocalNodes((prev) =>
+            prev.map((n) => ({ ...n, zIndex: n.id === activeNodeId ? 1 : 0 }))
+        );
+    }, [activeNodeId]);
 
     const onNodesChange = useCallback((changes) => {
         setLocalNodes((nds) => applyNodeChanges(changes, nds));
@@ -92,11 +100,7 @@ const EditorCanvas = () => {
         updateTablePosition(currentStageIndex, node.id, node.position);
     }, [currentStageIndex, updateTablePosition]);
 
-    const handleNodeDragStart = useCallback((_event, node) => {
-        setActiveNodeId(node.id);
-    }, []);
-
-    const handleNodeClick = useCallback((_event, node) => {
+    const handleNodeActivate = useCallback((_event, node) => {
         setActiveNodeId(node.id);
     }, []);
 
@@ -107,9 +111,9 @@ const EditorCanvas = () => {
                 edges={edges}
                 nodeTypes={nodeTypes}
                 onNodesChange={onNodesChange}
-                onNodeDragStart={handleNodeDragStart}
+                onNodeDragStart={handleNodeActivate}
                 onNodeDragStop={handleNodeDragStop}
-                onNodeClick={handleNodeClick}
+                onNodeClick={handleNodeActivate}
                 fitView
                 fitViewOptions={{ padding: 0.2 }}
                 minZoom={0.2}
