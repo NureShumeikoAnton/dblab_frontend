@@ -22,7 +22,7 @@ API calls are deferred to the final phases — all earlier phases use mock/hardc
 ## Phase 2 — My Projects Page (UI only, no API)
 
 **Build:**
-- Route `/projects` → `MyProjectsPage`
+- Route `/projects` → `ProjectsPage`
 - Project card grid (name, description, created date, NF progress placeholder dots)
 - Empty state illustration + CTA
 - "New Project" button → modal with Name + Description fields (submit just console.logs, no API)

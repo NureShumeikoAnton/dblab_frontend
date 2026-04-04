@@ -3,6 +3,7 @@ import {Route, Routes} from "react-router-dom";
 
 import HomePage from "./pages/HomePage.jsx";
 import CoursesPage from "./pages/CoursesPage.jsx";
+import ProjectsPage from "./pages/ProjectsPage.jsx";
 import DirectionsPage from "./pages/DirectionsPage.jsx";
 import SchedulePage from "./pages/SchedulePage.jsx";
 import ContactPage from "./pages/ContactPage.jsx";
@@ -40,6 +41,7 @@ const App = () => {
                     <Route path={"/directions/:directionId"} element={<DirectionDetailsPage/>}></Route>
                     <Route path={"/schedule"} element={<SchedulePage/>}/>
                     <Route path={"/contact"} element={<ContactPage/>}/>
+                    <Route path={"/projects"} element={<ProjectsPage/>}/>
                 </Route>
                 <Route path={'/apanel'} Component={AdminLayout}>
                     <Route path={"teachers"} element={<Teachers/>}></Route>

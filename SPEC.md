@@ -21,7 +21,7 @@ A visual, interactive database schema editor embedded in the DBLAB student platf
 ## 3. Routes & Navigation
 
 ```
-/projects                    → MyProjectsPage   (student dashboard)
+/projects                    → ProjectsPage   (student dashboard)
 /projects/new                → redirect → creates project + redirect to editor
 /projects/:projectId         → EditorPage        (main editor)
 ```

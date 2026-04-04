@@ -55,3 +55,12 @@ Every admin entity page follows the same pattern:
 Each component has a co-located CSS file under a `styles/` subdirectory next to the component. No CSS-in-JS or utility framework is used.
 
 Spaces 4 formatting using across the files.
+
+## Component Architecture
+
+Always split UI into focused, single-responsibility components. For any feature or page:
+- **Page component** (`src/pages/`) — owns state, assembles sub-components, no inline UI logic.
+- **Display components** (`src/components/`) — pure/presentational, receive props only; each in its own file with a co-located CSS file under `styles/`.
+- **Examples of required separation:** a modal lives in its own component file, a card lives in its own file, a list/grid of cards lives in its own file.
+
+Never bundle multiple unrelated components in a single file. If a component grows beyond its single responsibility, extract it.

@@ -32,6 +32,7 @@ const HeaderComponent = () => {
                             <li><NavLink to="/directions">Напрямки</NavLink></li>
                             <li><NavLink to="/courses">Дисципліни</NavLink></li>
                             <li><NavLink to="/schedule">Розклад</NavLink></li>
+                            <li><NavLink to="/projects">Проєкти</NavLink></li>
                         </ul>
                     </nav>
                     <div className="auth-buttons">
