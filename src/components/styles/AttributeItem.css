@@ -1,13 +1,13 @@
 .attribute-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     padding: 7px 12px;
     border-radius: 6px;
     background: #f8fafc;
     border: 1px solid #e8edf4;
     cursor: grab;
-    transition: var(--transition);
+    transition: background 0.15s ease, border-color 0.15s ease;
     user-select: none;
 }
 
@@ -21,9 +21,8 @@
 }
 
 .attribute-item--retired {
-    opacity: 0.45;
+    opacity: 0.5;
     cursor: default;
-    text-decoration: line-through;
 }
 
 .attribute-item--retired:hover {
@@ -31,10 +30,29 @@
     border-color: #e8edf4;
 }
 
+/* Name — takes all remaining space, truncates if too long */
 .attribute-item__name {
+    flex: 1;
+    min-width: 0;
     font-size: 13px;
     font-weight: 500;
     color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.attribute-item--retired .attribute-item__name {
+    text-decoration: line-through;
+    color: var(--text-light);
+}
+
+/* Right section — type badge + hidden action buttons */
+.attribute-item__right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
 }
 
 .attribute-item__type {
@@ -45,9 +63,80 @@
     padding: 2px 6px;
     border-radius: 4px;
     letter-spacing: 0.03em;
+    white-space: nowrap;
+    transition: transform 0.18s ease;
 }
 
 .attribute-item--retired .attribute-item__type {
     color: var(--text-light);
     background: #f1f5f9;
+}
+
+/* Slide type badge left on hover to make room for buttons */
+.attribute-item:hover .attribute-item__type {
+    transform: translateX(-4px);
+}
+
+/* Action buttons — overflow-clipped, expand from 0 width on hover */
+.attribute-item__actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 0.18s ease, opacity 0.18s ease;
+}
+
+.attribute-item:hover .attribute-item__actions {
+    max-width: 64px;
+    opacity: 1;
+}
+
+.attribute-item__action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    color: var(--text-light);
+    transition: color 0.15s ease, background 0.15s ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.attribute-item__action-btn:hover {
+    color: var(--primary-color);
+    background: #dbeafe;
+}
+
+/* Eye-off state (retired attribute) */
+.attribute-item__action-btn--muted {
+    color: #94a3b8;
+}
+
+.attribute-item__action-btn--muted:hover {
+    color: var(--text-color);
+    background: #f1f5f9;
+}
+
+/* Trash button hover */
+.attribute-item__action-btn--danger:hover {
+    color: #e53e3e;
+    background: #fff0f0;
+}
+
+/* Disabled retire button */
+.attribute-item__action-btn--disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.attribute-item__action-btn--disabled:hover {
+    color: var(--text-light);
+    background: none;
 }

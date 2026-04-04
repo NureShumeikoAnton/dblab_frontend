@@ -1,0 +1,129 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    padding: 24px;
+}
+
+.modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.modal__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 4px;
+}
+
+.modal__subtitle {
+    font-size: 12px;
+    color: var(--text-light);
+    margin: 0;
+}
+
+.modal__close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0 4px;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.modal__close:hover {
+    color: var(--text-color);
+    background: #f1f5f9;
+}
+
+.modal__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal__label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.modal__input,
+.modal__select {
+    padding: 8px 10px;
+    border: 1px solid #d1dbe8;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-color);
+    background: #fff;
+    transition: var(--transition);
+    outline: none;
+}
+
+.modal__input:focus,
+.modal__select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.modal__error {
+    font-size: 12px;
+    color: #e53e3e;
+    font-weight: 400;
+}
+
+.modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.modal__btn {
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+}
+
+.modal__btn--secondary {
+    background: #f1f5f9;
+    color: var(--text-color);
+}
+
+.modal__btn--secondary:hover {
+    background: #e2e8f0;
+}
+
+.modal__btn--primary {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.modal__btn--primary:hover {
+    background: var(--primary-dark, #2563eb);
+}

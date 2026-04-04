@@ -242,6 +242,23 @@ const useEditorStore = create(
             });
         },
 
+        unretireAttribute(attributeId) {
+            set((state) => {
+                const attr = state.attributePool.find((a) => a.id === attributeId);
+                if (attr) {
+                    attr.retired_at_stage_Id = null;
+                    state.ui.hasUnsavedChanges = true;
+                }
+            });
+        },
+
+        deleteAttribute(attributeId) {
+            set((state) => {
+                state.attributePool = state.attributePool.filter((a) => a.id !== attributeId);
+                state.ui.hasUnsavedChanges = true;
+            });
+        },
+
         // ─── Relationship actions ────────────────────────────────────────────────
 
         addRelationship(stageIndex, relationship) {
@@ -356,6 +373,28 @@ const useEditorStore = create(
                         : Infinity;
                 return introOrder <= currentOrder && retireOrder > currentOrder;
             });
+        },
+
+        /**
+         * All attributes introduced at or before the current stage, annotated with
+         * `isRetired: true` when their retirement stage ≤ current stage.
+         * Used by AttributePanel to show greyed-out retired entries.
+         */
+        panelAttributes(stageIndex) {
+            const { attributePool, stages } = get();
+            const stageOrder = ['stage-0nf', 'stage-1nf', 'stage-2nf', 'stage-3nf'];
+            const currentStageId = stages[stageIndex]?.stageId;
+            const currentOrder = stageOrder.indexOf(currentStageId);
+
+            return attributePool
+                .filter((attr) => stageOrder.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
+                .map((attr) => {
+                    const retireOrder =
+                        attr.retired_at_stage_Id !== null
+                            ? stageOrder.indexOf(attr.retired_at_stage_Id)
+                            : Infinity;
+                    return { ...attr, isRetired: retireOrder <= currentOrder };
+                });
         },
 
         /** Attributes visible at the current stage that are not placed in any table. */

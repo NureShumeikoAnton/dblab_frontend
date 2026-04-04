@@ -14,20 +14,17 @@ const EditorPage = () => {
     const projectName = useEditorStore((s) => s.project.name);
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const setCurrentStageIndex = useEditorStore((s) => s.setCurrentStageIndex);
-    const visibleAttributes = useEditorStore((s) => s.visibleAttributes);
 
     useEffect(() => {
         loadMockData();
     }, [projectId]);
-
-    const attributes = visibleAttributes(currentStageIndex);
 
     return (
         <div className="editor-page">
             <EditorToolbar projectName={projectName} />
             <div className="editor-page__main">
                 <EditorCanvas />
-                <AttributePanel attributes={attributes} />
+                <AttributePanel />
             </div>
             <StageBar
                 currentStageIndex={currentStageIndex}
