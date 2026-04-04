@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useEditorStore from '../store/editorStore.js';
+import useEditorStore, { STAGE_ORDER } from '../store/editorStore.js';
 import AttributeItem from './AttributeItem.jsx';
 import NewAttributeModal from './NewAttributeModal.jsx';
 import './styles/AttributePanel.css';
@@ -16,14 +16,13 @@ const AttributePanel = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('global');
 
-    const stageOrder = ['stage-0nf', 'stage-1nf', 'stage-2nf', 'stage-3nf'];
-    const currentOrder = stageOrder.indexOf(stages[currentStageIndex]?.stageId);
+    const currentOrder = STAGE_ORDER.indexOf(stages[currentStageIndex]?.stageId);
 
     const attributes = attributePool
-        .filter((attr) => stageOrder.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
+        .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
         .map((attr) => {
             const retireOrder = attr.retired_at_stage_Id !== null
-                ? stageOrder.indexOf(attr.retired_at_stage_Id)
+                ? STAGE_ORDER.indexOf(attr.retired_at_stage_Id)
                 : Infinity;
             return { ...attr, isRetired: retireOrder <= currentOrder };
         });
@@ -38,7 +37,7 @@ const AttributePanel = () => {
     );
     const unusedIds = new Set(
         attributePool
-            .filter((attr) => stageOrder.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
+            .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
             .filter((attr) => !globallyUsedIds.has(attr.id))
             .map((attr) => attr.id)
     );
@@ -74,7 +73,7 @@ const AttributePanel = () => {
                 ? stages[0].stageId
                 : stages[currentStageIndex].stageId;
         addAttribute({
-            id: `attr-${Date.now()}`,
+            id: crypto.randomUUID(),
             name,
             data_type,
             introduced_at_stage_Id: stageId,

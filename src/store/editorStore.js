@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { MOCK_PROJECT, MOCK_ATTRIBUTES, MOCK_STAGES } from './mockData.js';
 
+export const STAGE_ORDER = ['stage-0nf', 'stage-1nf', 'stage-2nf', 'stage-3nf'];
+
 /**
  * EditorStore — single Zustand store with immer middleware.
  * Shape matches SPEC.md §15.
@@ -254,6 +256,12 @@ const useEditorStore = create(
 
         deleteAttribute(attributeId) {
             set((state) => {
+                const isUsed = state.stages.some((stage) =>
+                    stage.tables.some((t) =>
+                        t.tableAttributes.some((ta) => ta.attributeId === attributeId)
+                    )
+                );
+                if (isUsed) return;
                 state.attributePool = state.attributePool.filter((a) => a.id !== attributeId);
                 state.ui.hasUnsavedChanges = true;
             });
@@ -361,15 +369,14 @@ const useEditorStore = create(
         /** Attributes visible at a given stage (by stage array index). */
         visibleAttributes(stageIndex) {
             const { attributePool, stages } = get();
-            const stageOrder = ['stage-0nf', 'stage-1nf', 'stage-2nf', 'stage-3nf'];
             const currentStageId = stages[stageIndex]?.stageId;
-            const currentOrder = stageOrder.indexOf(currentStageId);
+            const currentOrder = STAGE_ORDER.indexOf(currentStageId);
 
             return attributePool.filter((attr) => {
-                const introOrder = stageOrder.indexOf(attr.introduced_at_stage_Id);
+                const introOrder = STAGE_ORDER.indexOf(attr.introduced_at_stage_Id);
                 const retireOrder =
                     attr.retired_at_stage_Id !== null
-                        ? stageOrder.indexOf(attr.retired_at_stage_Id)
+                        ? STAGE_ORDER.indexOf(attr.retired_at_stage_Id)
                         : Infinity;
                 return introOrder <= currentOrder && retireOrder > currentOrder;
             });
@@ -382,16 +389,15 @@ const useEditorStore = create(
          */
         panelAttributes(stageIndex) {
             const { attributePool, stages } = get();
-            const stageOrder = ['stage-0nf', 'stage-1nf', 'stage-2nf', 'stage-3nf'];
             const currentStageId = stages[stageIndex]?.stageId;
-            const currentOrder = stageOrder.indexOf(currentStageId);
+            const currentOrder = STAGE_ORDER.indexOf(currentStageId);
 
             return attributePool
-                .filter((attr) => stageOrder.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
+                .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
                 .map((attr) => {
                     const retireOrder =
                         attr.retired_at_stage_Id !== null
-                            ? stageOrder.indexOf(attr.retired_at_stage_Id)
+                            ? STAGE_ORDER.indexOf(attr.retired_at_stage_Id)
                             : Infinity;
                     return { ...attr, isRetired: retireOrder <= currentOrder };
                 });
