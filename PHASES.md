@@ -179,7 +179,7 @@ API calls are deferred to the final phases — all earlier phases use mock/hardc
 **Build:**
 - Double-click on an attribute row inside a table → `TableAttributeEditModal`:
   - Alias (text input)
-  - Is Primary Key (checkbox) → row renders bold + `*`
+  - Is Primary Key (checkbox) → row renders bold and special indicator to appropriate field
   - Is Foreign Key (checkbox)
 - Context menu on attribute row (right-click): "Edit", "Remove from table" (returns to unused pool)
 
