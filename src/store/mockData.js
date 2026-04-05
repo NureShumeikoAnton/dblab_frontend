@@ -84,10 +84,12 @@ const STAGE_1NF = {
             id: 'rel-1-1',
             table1Id: 'tbl-1-1',
             table2Id: 'tbl-1-2',
+            ta1Id: 'ta-1-1',   // Members.member_id (PK)
+            ta2Id: null,        // Books has no FK for member_id in 1NF — falls back to center
             type: 'non-identifying',
             color: '#9B59B6',
-            cardinality_t1: '1',
-            cardinality_t2: '0..*',
+            cardinality_t1: '0..1',   // varied for cardinality test coverage
+            cardinality_t2: '1..*',
         },
     ],
     fds: [
@@ -151,6 +153,8 @@ const STAGE_2NF = {
             id: 'rel-2-1',
             table1Id: 'tbl-2-1',
             table2Id: 'tbl-2-3',
+            ta1Id: 'ta-2-1',   // Members.member_id (PK)
+            ta2Id: 'ta-2-7',   // Loans.member_id (FK)
             type: 'identifying',
             color: '#9B59B6',
             cardinality_t1: '1',
@@ -160,6 +164,8 @@ const STAGE_2NF = {
             id: 'rel-2-2',
             table1Id: 'tbl-2-2',
             table2Id: 'tbl-2-3',
+            ta1Id: 'ta-2-4',   // Books.book_id (PK)
+            ta2Id: 'ta-2-8',   // Loans.book_id (FK)
             type: 'identifying',
             color: '#2980B9',
             cardinality_t1: '1',

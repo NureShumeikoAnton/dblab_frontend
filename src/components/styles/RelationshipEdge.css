@@ -1,0 +1,8 @@
+.relationship-edge__path {
+    fill: none;
+    stroke-linecap: square;
+}
+
+.relationship-edge__path--dashed {
+    stroke-dasharray: 6 3;
+}

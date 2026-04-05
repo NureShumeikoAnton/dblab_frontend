@@ -3,12 +3,18 @@ import { ReactFlow, Background, Controls, applyNodeChanges } from '@xyflow/react
 import '@xyflow/react/dist/style.css';
 import useEditorStore from '../store/editorStore.js';
 import TableNode from './TableNode.jsx';
+import RelationshipEdge from './RelationshipEdge.jsx';
 import './styles/EditorCanvas.css';
 
 // nodeTypes must be defined at module level — defining inside the component
 // causes React Flow to remount all nodes on every render.
 const nodeTypes = {
     tableNode: TableNode,
+};
+
+// edgeTypes must be defined at module level — same reason as nodeTypes.
+const edgeTypes = {
+    relationshipEdge: RelationshipEdge,
 };
 
 const EditorCanvas = () => {
@@ -60,14 +66,15 @@ const EditorCanvas = () => {
         setLocalNodes((nds) => applyNodeChanges(changes, nds));
     }, []);
 
-    // Edge types are normalized to 'default' — custom edge types
-    // (relationshipEdge, fdEdge) are registered in Phase 5/6.
+    // Edge types — relationshipEdge is registered at module level. fdEdge will be added in Phase 6.
     const edges = useMemo(() => {
         const relEdges = relationships.map((rel) => ({
             id: rel.id,
-            type: 'default',
+            type: 'relationshipEdge',
             source: rel.table1Id,
             target: rel.table2Id,
+            sourceHandle: rel.ta1Id ? `right-${rel.ta1Id}` : null,
+            targetHandle: rel.ta2Id ? `left-${rel.ta2Id}` : null,
             data: { relationship: rel },
         }));
 
@@ -98,6 +105,7 @@ const EditorCanvas = () => {
 
     const handleNodeDragStop = useCallback((_event, node) => {
         updateTablePosition(currentStageIndex, node.id, node.position);
+        setLocalNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
     }, [currentStageIndex, updateTablePosition]);
 
     const handleNodeActivate = useCallback((_event, node) => {
@@ -110,6 +118,7 @@ const EditorCanvas = () => {
                 nodes={localNodes}
                 edges={edges}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 onNodesChange={onNodesChange}
                 onNodeDragStart={handleNodeActivate}
                 onNodeDragStop={handleNodeDragStop}

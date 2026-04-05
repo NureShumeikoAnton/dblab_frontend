@@ -1,0 +1,200 @@
+<h2>Phase 5 — Final render target</h2>
+<p class="subtitle">Confirm this is the visual direction. The right side shows how Phase 6 FD edges will differ.</p>
+
+<div class="section">
+
+<div class="mockup">
+  <div class="mockup-header">Canvas — relationships rendered with crow's foot at attribute row level</div>
+  <div class="mockup-body" style="background:#f3f4f6;padding:32px 20px;min-height:320px;position:relative;overflow:visible">
+
+    <svg width="100%" height="300" viewBox="0 0 760 300" style="overflow:visible;display:block">
+
+      <!-- ───── Members table ───── -->
+      <rect x="20" y="30" width="195" height="152" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.07))"/>
+      <rect x="20" y="30" width="195" height="36" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+      <rect x="20" y="30" width="4" height="152" rx="2" fill="#27AE60"/>
+      <text x="48" y="53" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Members</text>
+
+      <!-- Rows -->
+      <rect x="22" y="68" width="191" height="24" rx="0" fill="white"/>
+      <rect x="22" y="68" width="4" height="0"/> <!-- separator -->
+      <rect x="28" y="72" width="26" height="14" rx="3" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
+      <text x="31" y="83" font-size="9" fill="#92400e" font-weight="700" font-family="system-ui">PK</text>
+      <text x="60" y="83" font-size="11" font-weight="700" fill="#1e293b" font-family="system-ui">member_id</text>
+      <text x="148" y="83" font-size="10" fill="#94a3b8" font-family="system-ui">INT</text>
+      <!-- Right-side relationship handle (invisible anchor, shown faint for diagram) -->
+      <circle cx="215" cy="80" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.6"/>
+
+      <line x1="22" y1="92" x2="213" y2="92" stroke="#f1f5f9" stroke-width="1"/>
+      <text x="60" y="107" font-size="11" fill="#475569" font-family="system-ui">member_name</text>
+      <text x="158" y="107" font-size="10" fill="#94a3b8" font-family="system-ui">VARCHAR</text>
+      <circle cx="215" cy="104" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.4"/>
+
+      <line x1="22" y1="116" x2="213" y2="116" stroke="#f1f5f9" stroke-width="1"/>
+      <text x="60" y="131" font-size="11" fill="#475569" font-family="system-ui">member_email</text>
+      <text x="158" y="131" font-size="10" fill="#94a3b8" font-family="system-ui">VARCHAR</text>
+      <circle cx="215" cy="128" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.4"/>
+
+      <line x1="22" y1="140" x2="213" y2="140" stroke="#f1f5f9" stroke-width="1"/>
+      <text x="60" y="155" font-size="11" fill="#475569" font-family="system-ui">joined_date</text>
+      <text x="162" y="155" font-size="10" fill="#94a3b8" font-family="system-ui">DATE</text>
+      <circle cx="215" cy="152" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.4"/>
+      <rect x="215" y="148" width="0.1" height="0.1"/> <!-- anchor -->
+
+      <!-- ───── Loans table ───── -->
+      <rect x="310" y="30" width="195" height="176" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.07))"/>
+      <rect x="310" y="30" width="195" height="36" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+      <rect x="310" y="30" width="4" height="176" rx="2" fill="#16A085"/>
+      <text x="338" y="53" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Loans</text>
+
+      <rect x="22" y="68" width="0" height="0"/>
+      <rect x="318" y="72" width="26" height="14" rx="3" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
+      <text x="321" y="83" font-size="9" fill="#92400e" font-weight="700" font-family="system-ui">PK</text>
+      <text x="350" y="83" font-size="11" font-weight="700" fill="#1e293b" font-family="system-ui">loan_id</text>
+      <text x="448" y="83" font-size="10" fill="#94a3b8" font-family="system-ui">INT</text>
+      <circle cx="310" cy="80" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.4"/>
+
+      <line x1="312" y1="92" x2="503" y2="92" stroke="#f1f5f9" stroke-width="1"/>
+      <!-- FK highlighted row — this is where the relationship anchors -->
+      <rect x="312" y="93" width="191" height="24" rx="0" fill="#fdf4ff"/>
+      <rect x="318" y="97" width="26" height="14" rx="3" fill="#e0e7ff" stroke="#a5b4fc" stroke-width="1"/>
+      <text x="321" y="108" font-size="9" fill="#3730a3" font-weight="700" font-family="system-ui">FK</text>
+      <text x="350" y="108" font-size="11" fill="#475569" font-family="system-ui">member_id</text>
+      <text x="448" y="108" font-size="10" fill="#94a3b8" font-family="system-ui">INT</text>
+      <!-- Relationship handle visible here (active connection point) -->
+      <circle cx="310" cy="105" r="4.5" fill="#9B59B6" stroke="white" stroke-width="2"/>
+
+      <line x1="312" y1="117" x2="503" y2="117" stroke="#f1f5f9" stroke-width="1"/>
+      <text x="350" y="132" font-size="11" fill="#475569" font-family="system-ui">loan_date</text>
+      <text x="458" y="132" font-size="10" fill="#94a3b8" font-family="system-ui">DATE</text>
+      <circle cx="310" cy="129" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.4"/>
+
+      <line x1="312" y1="141" x2="503" y2="141" stroke="#f1f5f9" stroke-width="1"/>
+      <text x="350" y="156" font-size="11" fill="#475569" font-family="system-ui">return_date</text>
+      <text x="458" y="156" font-size="10" fill="#94a3b8" font-family="system-ui">DATE</text>
+      <circle cx="310" cy="153" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.4"/>
+
+      <line x1="312" y1="165" x2="503" y2="165" stroke="#f1f5f9" stroke-width="1"/>
+      <text x="350" y="180" font-size="11" fill="#475569" font-family="system-ui">book_id</text>
+      <text x="448" y="180" font-size="10" fill="#94a3b8" font-family="system-ui">INT</text>
+      <circle cx="310" cy="177" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.4"/>
+
+      <!-- ───── Books table ───── -->
+      <rect x="560" y="30" width="185" height="128" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.07))"/>
+      <rect x="560" y="30" width="185" height="36" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+      <rect x="560" y="30" width="4" height="128" rx="2" fill="#E67E22"/>
+      <text x="588" y="53" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Books</text>
+
+      <rect x="568" y="72" width="26" height="14" rx="3" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
+      <text x="571" y="83" font-size="9" fill="#92400e" font-weight="700" font-family="system-ui">PK</text>
+      <text x="600" y="83" font-size="11" font-weight="700" fill="#1e293b" font-family="system-ui">book_id</text>
+      <text x="670" y="83" font-size="10" fill="#94a3b8" font-family="system-ui">INT</text>
+      <circle cx="560" cy="80" r="4.5" fill="#2980B9" stroke="white" stroke-width="2"/>
+
+      <line x1="562" y1="92" x2="743" y2="92" stroke="#f1f5f9" stroke-width="1"/>
+      <text x="600" y="107" font-size="11" fill="#475569" font-family="system-ui">book_title</text>
+      <text x="670" y="107" font-size="10" fill="#94a3b8" font-family="system-ui">VARCHAR</text>
+      <circle cx="560" cy="104" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.4"/>
+
+      <line x1="562" y1="116" x2="743" y2="116" stroke="#f1f5f9" stroke-width="1"/>
+      <text x="600" y="131" font-size="11" fill="#475569" font-family="system-ui">book_author</text>
+      <text x="670" y="131" font-size="10" fill="#94a3b8" font-family="system-ui">VARCHAR</text>
+      <circle cx="560" cy="128" r="3.5" fill="white" stroke="#d1d9e0" stroke-width="1.5" opacity="0.4"/>
+
+      <!-- ═══════ RELATIONSHIP EDGES ═══════ -->
+
+      <!-- Edge 1: Members.member_id (right) → Loans.member_id FK (left) -->
+      <!-- Orthogonal path: right side of Members row 80 → left side of Loans row 105 -->
+      <path d="M 215 80 C 263 80, 263 105, 310 105" fill="none" stroke="#9B59B6" stroke-width="2.5"/>
+      <!-- ONE marker at Members end -->
+      <line x1="222" y1="72" x2="222" y2="88" stroke="#9B59B6" stroke-width="2.5"/>
+      <line x1="228" y1="72" x2="228" y2="88" stroke="#9B59B6" stroke-width="2.5"/>
+      <!-- CROW'S FOOT (0..*) at Loans end -->
+      <line x1="304" y1="105" x2="292" y2="95" stroke="#9B59B6" stroke-width="2"/>
+      <line x1="304" y1="105" x2="292" y2="115" stroke="#9B59B6" stroke-width="2"/>
+      <line x1="300" y1="97" x2="300" y2="113" stroke="#9B59B6" stroke-width="2.5"/>
+      <circle cx="304" cy="105" r="5" fill="white" stroke="#9B59B6" stroke-width="2"/>
+
+      <!-- Edge 2: Loans.book_id (right) → Books.book_id (left) -->
+      <path d="M 505 177 C 533 177, 533 80, 560 80" fill="none" stroke="#2980B9" stroke-width="2.5"/>
+      <!-- ONE marker at Books end -->
+      <line x1="553" y1="72" x2="553" y2="88" stroke="#2980B9" stroke-width="2.5"/>
+      <line x1="547" y1="72" x2="547" y2="88" stroke="#2980B9" stroke-width="2.5"/>
+      <!-- CROW'S FOOT (0..*) at Loans end -->
+      <line x1="511" y1="177" x2="523" y2="167" stroke="#2980B9" stroke-width="2"/>
+      <line x1="511" y1="177" x2="523" y2="187" stroke="#2980B9" stroke-width="2"/>
+      <line x1="515" y1="169" x2="515" y2="185" stroke="#2980B9" stroke-width="2.5"/>
+      <circle cx="511" cy="177" r="5" fill="white" stroke="#2980B9" stroke-width="2"/>
+
+      <!-- ═══════ LEGEND ═══════ -->
+      <rect x="20" y="225" width="720" height="58" rx="8" fill="white" stroke="#e8edf4" stroke-width="1"/>
+      <text x="36" y="244" font-size="11" font-weight="700" fill="#475569" font-family="system-ui" text-transform="uppercase">LEGEND</text>
+
+      <!-- Relationship line sample -->
+      <line x1="100" y1="256" x2="160" y2="256" stroke="#9B59B6" stroke-width="2.5"/>
+      <line x1="106" y1="248" x2="106" y2="264" stroke="#9B59B6" stroke-width="2.5"/>
+      <line x1="112" y1="248" x2="112" y2="264" stroke="#9B59B6" stroke-width="2.5"/>
+      <line x1="154" y1="256" x2="142" y2="246" stroke="#9B59B6" stroke-width="2"/>
+      <line x1="154" y1="256" x2="142" y2="266" stroke="#9B59B6" stroke-width="2"/>
+      <circle cx="154" cy="256" r="5" fill="white" stroke="#9B59B6" stroke-width="2"/>
+      <text x="168" y="260" font-size="11" fill="#475569" font-family="system-ui">Relationship edge — thick, colored, crow's foot (Phase 5)</text>
+
+      <!-- FD line sample (Phase 6 preview) -->
+      <line x1="400" y1="256" x2="460" y2="256" stroke="#E74C3C" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.7"/>
+      <polygon points="458,251 466,256 458,261" fill="#E74C3C" opacity="0.7"/>
+      <text x="475" y="260" font-size="11" fill="#94a3b8" font-family="system-ui">FD edge — thin, arrow only, no cardinality (Phase 6)</text>
+
+      <!-- Handle indicators -->
+      <circle cx="36" cy="273" r="4.5" fill="#9B59B6" stroke="white" stroke-width="1.5"/>
+      <text x="46" y="277" font-size="11" fill="#475569" font-family="system-ui">Rel. anchor handle (right side, faint unless active)</text>
+      <circle cx="280" cy="273" r="4" fill="white" stroke="#0094c8" stroke-width="1.5"/>
+      <text x="290" y="277" font-size="11" fill="#475569" font-family="system-ui">FD source handle (left side, visible on hover — Phase 6)</text>
+    </svg>
+
+  </div>
+</div>
+
+</div>
+
+<div class="section">
+  <h3>Handle placement on each attribute row</h3>
+  <p class="subtitle">Two handle slots per row, each used for a different flow. No drag confusion.</p>
+
+  <div style="display:flex;gap:20px;margin-top:12px">
+
+    <div style="flex:1;background:#f8fafc;border:1px solid #e8edf4;border-radius:8px;padding:16px">
+      <div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Left side of row</div>
+      <div style="font-size:13px;color:#1e293b;margin-bottom:6px">⬅ FD source handle (Phase 6)</div>
+      <ul style="font-size:12px;color:#64748b;margin:0;padding-left:16px;line-height:1.8">
+        <li>Visible on hover (grab cursor)</li>
+        <li>Draggable — starts FD creation flow</li>
+        <li>Within same table only</li>
+        <li>No cardinality, thin arrow render</li>
+      </ul>
+    </div>
+
+    <div style="flex:1;background:#f8fafc;border:1px solid #e8edf4;border-radius:8px;padding:16px">
+      <div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Right side of row</div>
+      <div style="font-size:13px;color:#1e293b;margin-bottom:6px">➡ Relationship anchor (Phase 5)</div>
+      <ul style="font-size:12px;color:#64748b;margin:0;padding-left:16px;line-height:1.8">
+        <li>Faint by default, colored dot when edge is attached</li>
+        <li>Not draggable (no drag = no confusion with FD)</li>
+        <li>Set by Phase 13 modal (attribute selector)</li>
+        <li>Cross-table, crow's foot render</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div style="margin-top:20px;padding:14px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:12px;color:#166534">
+  <strong>Phase 5 scope summary:</strong>
+  <ol style="margin:8px 0 0 0;padding-left:18px;line-height:1.9">
+    <li>Add right-side <code>Handle</code> components to each attribute row in <code>TableNode</code> (non-draggable, faint)</li>
+    <li>Add <code>attr1Id</code> + <code>attr2Id</code> fields to Relationship in store + mock data</li>
+    <li>Create <code>RelationshipEdge</code> custom RF edge component with crow's foot SVG markers</li>
+    <li>Replace <code>type: 'default'</code> with <code>type: 'relationshipEdge'</code> in <code>EditorCanvas</code></li>
+    <li>Edges connect via <code>sourceHandle</code> / <code>targetHandle</code> pointing to the attribute row handles</li>
+  </ol>
+  <div style="margin-top:8px"><strong>Not in Phase 5:</strong> Left-side FD handles, relationship creation UI (Phase 13), FDEdge component (Phase 6).</div>
+</div>

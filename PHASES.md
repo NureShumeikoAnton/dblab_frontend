@@ -79,25 +79,34 @@ API calls are deferred to the final phases — all earlier phases use mock/hardc
 ## Phase 5 — Relationship Edges (crow's foot)
 
 **Build:**
-- `RelationshipEdge` custom RF edge type
-- Renders crow's foot notation at each end based on `cardinality_t1` / `cardinality_t2`
-- Colored line using `color` field from mock data
-- Replace plain edges from Phase 4 with this custom type
+- Add left + right `<Handle>` components (opacity 0) to each attribute row in `TableNode`
+  - `id: "left-{ta.id}"` — future FD source drag handle (Phase 6)
+  - `id: "right-{ta.id}"` — relationship anchor; pair: source exits right, target enters left
+- Add `ta1Id` / `ta2Id` (nullable tableAttribute IDs) to Relationship shape in store + mock data
+- `RelationshipEdge` custom RF edge type:
+  - Orthogonal routing (`getSmoothStepPath` with `borderRadius: 0`)
+  - 4 cardinality markers at each end: `'1'` `'0..1'` `'1..*'` `'0..*'`
+  - Solid line for `identifying`, dashed `(6 3)` for `non-identifying`
+  - Colored via `relationship.color`
+- Register `relationshipEdge` in `EditorCanvas`; build edges with `sourceHandle`/`targetHandle`
+- Mock data covers all 4 cardinality variants across stages
 
 **Test:**
-- Open `/projects/1` — see styled relationship lines between mock tables
-- Verify each cardinality variant renders correctly (1, 0..1, 1..*, 0..*)
-- Edge color matches mock data color
+- Open `/projects/1` → tables render; edges connect at specific attribute rows (not table centers)
+- Drag tables — edges follow and re-route correctly
+- Verify all 4 cardinality variants render (1NF shows `0..1`→`1..*`, 2NF shows `1`→`0..*`)
+- `identifying` relationship = solid line; `non-identifying` = dashed
+- "Show FDs" toggle off → relationship edges remain, FD edges gone
 
 ---
 
 ## Phase 6 — FD Edges (arrows + bracket visual) + Show/Hide Toggle
 
 **Build:**
+- Each attribute row in `TableNode` already has `left-{ta.id}` and `right-{ta.id}` handles from Phase 5 (opacity 0). Phase 6 makes left handles interactive: visible on hover, draggable to start an FD.
 - `FDEdge` custom RF edge type:
   - Left side: individual arrows from each `FD_Start` attribute handle to each `FD_End` attribute handle
   - Right side: colored bracket grouping all `FD_End` attributes of the same FD
-- Each attribute row in `TableNode` exposes a left handle (source) and right handle (target)
 - "Show FDs" toggle in toolbar — hides/shows all FD edges (UI state only, not persisted)
 
 **Test:**
@@ -212,23 +221,27 @@ API calls are deferred to the final phases — all earlier phases use mock/hardc
 
 ## Phase 13 — Relationship Creation Flow
 
-**Build:**
-- Right-click table header → "Add relationship to..." → canvas enters selection mode:
-  - Other tables highlight on hover
-  - Cursor changes
-  - Pressing `Escape` cancels
-- Click target table → `RelationshipEditModal`:
-  - Type (select)
-  - Color (palette)
-  - Cardinality both sides (select)
-- Confirm → crow's foot edge appears on canvas
+**Relationship creation flow (Phase 13):**
+- Right-click table header → context menu → "Add relationship to..."
+- Canvas enters selection mode; a preview line draws from the source table's center
+- User clicks the target table → `RelationshipEditModal` opens with:
+  - **From attribute** `<select>` — lists tableAttributes of source table (pre-select PK if present)
+  - **To attribute** `<select>` — lists tableAttributes of target table (pre-select FK if present)
+  - Type (`identifying` / `non-identifying` / `many-to-many`)
+  - Color picker
+  - Cardinality selectors (`cardinality_t1` / `cardinality_t2`)
+- On confirm: `addRelationship(stageIndex, { ..., ta1Id, ta2Id })` — edge renders at row level
+- If user leaves attribute selectors empty → `ta1Id: null, ta2Id: null` → edge falls back to table center
+
+**Also in Phase 13:**
 - Double-click existing relationship edge → same modal pre-filled + Delete button
 
 **Test:**
-- Right-click → "Add relationship" → canvas in selection mode (other tables glow)
+- Right-click → "Add relationship to..." → canvas in selection mode (other tables glow)
 - Press Escape → mode cancelled, nothing created
-- Click target → modal appears → fill fields → confirm → edge appears
-- Double-click edge → edit modal → change color → edge color updates
+- Click target → modal appears with attribute selectors → fill fields → confirm → edge appears at row level
+- Double-click edge → edit modal → change attributes/cardinality/color → edge updates
+- Leave attribute selectors empty → edge falls back to table center
 - Delete from modal → edge disappears
 
 ---

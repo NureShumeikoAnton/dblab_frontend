@@ -1,0 +1,168 @@
+<h2>How does the user create a relationship with row-level handles?</h2>
+<p class="subtitle">Two approaches for the creation flow. They can also be combined. Click to select.</p>
+
+<div class="options" style="flex-direction: column; gap: 28px;">
+
+  <!-- Option A: Drag from row handle -->
+  <div class="option" data-choice="drag" onclick="toggleSelect(this)" style="flex-direction: column; align-items: flex-start;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3 style="margin:0">Drag from row handle (replaces right-click flow)</h3>
+        <p style="margin:0;color:#666;font-size:13px">User drags from a source attribute handle → drops on a target table or row → modal opens with type/color/cardinality. Attributes auto-filled from drag source/target.</p>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e8edf4;border-radius:10px;padding:20px 24px;width:100%;box-sizing:border-box;">
+      <svg width="100%" height="150" viewBox="0 0 580 150" style="overflow:visible">
+        <!-- Step 1: hover shows handle -->
+        <text x="10" y="14" font-size="10" fill="#94a3b8" font-family="system-ui" font-weight="600">STEP 1 — hover row, handle appears</text>
+
+        <!-- Members table -->
+        <rect x="10" y="22" width="170" height="110" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="10" y="22" width="170" height="34" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="10" y="22" width="4" height="110" rx="2" fill="#27AE60"/>
+        <text x="36" y="44" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Members</text>
+        <text x="16" y="72" font-size="11" fill="#64748b" font-family="system-ui">🔑 member_id  INT</text>
+        <!-- Active handle on right of PK row -->
+        <circle cx="180" cy="69" r="5" fill="#0094c8" stroke="white" stroke-width="2"/>
+        <text x="16" y="90" font-size="11" fill="#475569" font-family="system-ui">   member_name  VARCHAR</text>
+        <circle cx="180" cy="87" r="3" fill="white" stroke="#d1d9e0" stroke-width="1.5"/>
+        <text x="16" y="108" font-size="11" fill="#475569" font-family="system-ui">   member_email  VARCHAR</text>
+        <circle cx="180" cy="105" r="3" fill="white" stroke="#d1d9e0" stroke-width="1.5"/>
+        <text x="16" y="126" font-size="11" fill="#475569" font-family="system-ui">   loan_date  DATE</text>
+        <circle cx="180" cy="123" r="3" fill="white" stroke="#d1d9e0" stroke-width="1.5"/>
+        <!-- Cursor grab indicator -->
+        <text x="188" y="73" font-size="11" fill="#0094c8" font-family="system-ui">← drag</text>
+
+        <!-- Arrow -->
+        <text x="290" y="80" font-size="22" fill="#d1d9e0" font-family="system-ui" text-anchor="middle">→</text>
+
+        <!-- Step 2: dragging line preview -->
+        <text x="320" y="14" font-size="10" fill="#94a3b8" font-family="system-ui" font-weight="600">STEP 2 — drag to target row, drop → modal</text>
+
+        <!-- Members table (faded) -->
+        <rect x="320" y="22" width="140" height="110" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5" opacity="0.6"/>
+        <rect x="320" y="22" width="140" height="34" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5" opacity="0.6"/>
+        <rect x="320" y="22" width="4" height="110" rx="2" fill="#27AE60" opacity="0.6"/>
+        <text x="346" y="44" font-size="12" font-weight="700" fill="#94a3b8" font-family="system-ui">Members</text>
+        <text x="326" y="72" font-size="10" fill="#94a3b8" font-family="system-ui">🔑 member_id</text>
+        <circle cx="460" cy="69" r="5" fill="#0094c8" stroke="white" stroke-width="2"/>
+
+        <!-- Dragging line -->
+        <line x1="460" y1="69" x2="500" y2="88" stroke="#9B59B6" stroke-width="2" stroke-dasharray="5,3"/>
+
+        <!-- Loans table -->
+        <rect x="490" y="22" width="82" height="110" rx="8" fill="white" stroke="#9B59B6" stroke-width="2"/>
+        <rect x="490" y="22" width="82" height="34" rx="8" fill="#f8fafc" stroke="#9B59B6" stroke-width="2"/>
+        <rect x="490" y="22" width="4" height="110" rx="2" fill="#16A085"/>
+        <text x="504" y="44" font-size="12" font-weight="700" fill="#1e293b" font-family="system-ui">Loans</text>
+        <text x="496" y="72" font-size="9" fill="#64748b" font-family="system-ui">🔑 loan_id</text>
+        <!-- Target row highlighted -->
+        <rect x="492" y="78" width="78" height="16" rx="2" fill="#f3e8ff" stroke="#9B59B6" stroke-width="1"/>
+        <text x="496" y="89" font-size="9" fill="#7c3aed" font-weight="600" font-family="system-ui">🔗 member_id</text>
+        <circle cx="490" cy="86" r="5" fill="#9B59B6" stroke="white" stroke-width="2"/>
+        <text x="496" y="107" font-size="9" fill="#475569" font-family="system-ui">   loan_date</text>
+      </svg>
+
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <div style="flex:1;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;font-size:12px;color:#166534">
+          <strong>✓ Pros</strong><br>
+          Very direct — source + target attributes picked by gesture.<br>
+          No extra modal fields needed.<br>
+          Phase 6 FD drag uses exactly the same handle pattern.
+        </div>
+        <div style="flex:1;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px;font-size:12px;color:#991b1b">
+          <strong>✗ Cons</strong><br>
+          Right-click context menu "Add relationship" becomes redundant or needs repurposing.<br>
+          Relationship type → still needs a modal after drop.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B: Right-click + modal with attribute selectors -->
+  <div class="option" data-choice="rightclick" onclick="toggleSelect(this)" style="flex-direction: column; align-items: flex-start;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3 style="margin:0">Right-click → modal gains "from / to attribute" selectors</h3>
+        <p style="margin:0;color:#666;font-size:13px">Keep the existing right-click flow from Phase 13. RelationshipEditModal gets two new dropdowns: source attribute and target attribute. Handles on rows are display-only (show where the edge exits).</p>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e8edf4;border-radius:10px;padding:20px 24px;width:100%;box-sizing:border-box;">
+      <svg width="100%" height="40" viewBox="0 0 580 40">
+        <text x="10" y="24" font-size="12" fill="#475569" font-family="system-ui">Right-click header → select target table → modal opens with full config including attribute pickers</text>
+      </svg>
+      <!-- Modal mockup -->
+      <div style="display:flex;gap:20px;align-items:flex-start;margin-top:4px">
+        <div style="background:white;border:1px solid #e8edf4;border-radius:10px;padding:16px;min-width:240px;box-shadow:0 4px 12px rgba(0,0,0,0.08)">
+          <div style="font-weight:700;font-size:14px;color:#1e293b;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f1f5f9">Add Relationship</div>
+          <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">From attribute (Members)</div>
+          <select style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;margin-bottom:12px;background:white">
+            <option selected>🔑 member_id (PK)</option>
+            <option>member_name</option>
+            <option>member_email</option>
+          </select>
+          <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">To attribute (Loans)</div>
+          <select style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;margin-bottom:12px;background:white">
+            <option>loan_id</option>
+            <option selected>🔗 member_id (FK)</option>
+            <option>loan_date</option>
+          </select>
+          <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Type</div>
+          <select style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;margin-bottom:12px;background:white">
+            <option>non-identifying</option>
+            <option>identifying</option>
+            <option>many-to-many</option>
+          </select>
+          <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Cardinality</div>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <select style="flex:1;padding:6px 6px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;background:white"><option>1</option></select>
+            <span style="line-height:30px;color:#94a3b8">→</span>
+            <select style="flex:1;padding:6px 6px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;background:white"><option selected>0..*</option></select>
+          </div>
+          <button style="width:100%;padding:8px;background:#0094c8;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">Confirm</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px">
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;font-size:12px;color:#166534;max-width:260px">
+            <strong>✓ Pros</strong><br>
+            Right-click menu stays — familiar pattern.<br>
+            Works even when rows are too small to hit precisely.<br>
+            No change to Phase 13 creation flow spec.
+          </div>
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px;font-size:12px;color:#991b1b;max-width:260px">
+            <strong>✗ Cons</strong><br>
+            Modal gets bigger (2 extra dropdowns).<br>
+            Row handles are decorative only in creation — they just show where the edge lands, not interactively used.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C: Both -->
+  <div class="option" data-choice="both" onclick="toggleSelect(this)" style="flex-direction: column; align-items: flex-start;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3 style="margin:0">Both — drag OR right-click (recommended)</h3>
+        <p style="margin:0;color:#666;font-size:13px">Drag from a row handle = fast path, attributes auto-selected. Right-click header = still works, modal includes attribute selectors as a fallback/edit path. Same handles serve both FDs (Phase 6) and relationships.</p>
+      </div>
+    </div>
+    <div style="background:#eef6fb;border:1px solid #bfdbf7;border-radius:10px;padding:14px 18px;font-size:12px;color:#1e3a5f">
+      <strong>How it works together:</strong>
+      <ul style="margin:8px 0 0 0;padding-left:18px;line-height:1.8">
+        <li>Hovering a row reveals the handle dot on the right side</li>
+        <li><strong>Drag from handle →</strong> drop on target table (any area) → modal opens, source attribute pre-filled, user picks target attribute + type/cardinality</li>
+        <li><strong>Drag from handle →</strong> drop on a specific target row → both source + target pre-filled, modal just confirms type/cardinality</li>
+        <li><strong>Right-click header → "Add relationship"</strong> still works → modal opens with all fields including attribute selectors (nothing pre-filled)</li>
+        <li>Phase 6 FD drag uses left-side handles on the same rows — no conflict</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:20px;padding:14px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:12px;color:#78350f">
+  <strong>Note on data model:</strong> All options require adding <code>attr1Id</code> and <code>attr2Id</code> to the Relationship store shape (currently only has <code>table1Id</code> / <code>table2Id</code>). Both can be optional/null for table-level relationships if needed.
+</div>

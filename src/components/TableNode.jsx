@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Handle, Position } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
 import './styles/TableNode.css';
 
@@ -31,12 +32,24 @@ const TableNode = ({ data }) => {
                             key={ta.id}
                             className={`table-node__row${ta.is_PK ? ' table-node__row--pk' : ''}`}
                         >
+                            <Handle
+                                type="target"
+                                position={Position.Left}
+                                id={`left-${ta.id}`}
+                                className="table-node__handle"
+                            />
                             <div className="table-node__key-col">
                                 {ta.is_PK && <span className="table-node__badge table-node__badge--pk">PK</span>}
                                 {ta.is_FK && !ta.is_PK && <span className="table-node__badge table-node__badge--fk">FK</span>}
                             </div>
                             <span className="table-node__attr-name">{displayName}</span>
                             <span className="table-node__attr-type">{attr.data_type}</span>
+                            <Handle
+                                type="source"
+                                position={Position.Right}
+                                id={`right-${ta.id}`}
+                                className="table-node__handle"
+                            />
                         </div>
                     );
                 })}

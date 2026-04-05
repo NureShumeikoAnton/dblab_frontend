@@ -5,7 +5,9 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     min-width: 200px;
     max-width: 280px;
-    overflow: hidden;
+    /* overflow: visible so that absolutely-positioned React Flow handles
+       on attribute rows are not clipped at the node boundary. */
+    overflow: visible;
     font-family: inherit;
     cursor: grab;
 }
@@ -17,6 +19,8 @@
     border-left: 4px solid transparent;
     display: flex;
     align-items: center;
+    /* Clip header background to the node's rounded top corners */
+    border-radius: 8px 8px 0 0;
 }
 
 .table-node__name {
@@ -32,6 +36,8 @@
     max-height: 220px;
     overflow-y: auto;
     padding: 4px 0;
+    /* Clip body background to the node's rounded bottom corners */
+    border-radius: 0 0 8px 8px;
 }
 
 .table-node__row {
@@ -109,4 +115,17 @@
 .react-flow__node-tableNode.selected .table-node {
     border-color: var(--primary-light);
     box-shadow: 0 0 0 1px var(--primary-light);
+}
+
+/* Attribute row handles — invisible anchors for edge connections.
+   Phase 6 will make the left handle interactive (hover-visible, draggable). */
+.table-node__handle {
+    width: 8px;
+    height: 8px;
+    background: transparent;
+    border: none;
+    pointer-events: none;
+    opacity: 0;
+    min-width: unset;
+    min-height: unset;
 }

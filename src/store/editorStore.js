@@ -267,6 +267,14 @@ const useEditorStore = create(
             });
         },
 
+        /**
+         * Relationship shape:
+         * { id, table1Id, table2Id,
+         *   ta1Id: string|null,  -- tableAttribute ID for source row handle (right-{ta1Id})
+         *   ta2Id: string|null,  -- tableAttribute ID for target row handle (left-{ta2Id})
+         *   type: 'identifying'|'non-identifying'|'many-to-many',
+         *   color: string, cardinality_t1: string, cardinality_t2: string }
+         */
         // ─── Relationship actions ────────────────────────────────────────────────
 
         addRelationship(stageIndex, relationship) {
@@ -436,6 +444,8 @@ const useEditorStore = create(
                 type: 'relationshipEdge',
                 source: rel.table1Id,
                 target: rel.table2Id,
+                sourceHandle: rel.ta1Id ? `right-${rel.ta1Id}` : null,
+                targetHandle: rel.ta2Id ? `left-${rel.ta2Id}` : null,
                 data: { relationship: rel },
             }));
 

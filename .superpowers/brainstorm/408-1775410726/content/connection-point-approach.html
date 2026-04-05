@@ -1,0 +1,152 @@
+<h2>Where do relationship edges connect?</h2>
+<p class="subtitle">Three approaches for how edges attach to table nodes. Click an option to select it.</p>
+
+<div class="options" style="flex-direction: column; gap: 28px;">
+
+  <!-- Option A -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)" style="flex-direction: column; align-items: flex-start;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3 style="margin:0">Table-center connections</h3>
+        <p style="margin:0;color:#666;font-size:13px">Edges connect to the center of each table. Simplest, spec default. No attribute-level selection.</p>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e8edf4;border-radius:10px;padding:20px 28px;width:100%;box-sizing:border-box;">
+      <svg width="100%" height="120" viewBox="0 0 560 120" style="overflow:visible">
+        <!-- Members table -->
+        <rect x="10" y="10" width="170" height="100" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="10" y="10" width="170" height="34" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="10" y="10" width="4" height="100" rx="2" fill="#27AE60"/>
+        <text x="36" y="32" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Members</text>
+        <text x="16" y="62" font-size="11" fill="#64748b" font-family="system-ui">🔑 member_id  INT</text>
+        <text x="16" y="80" font-size="11" fill="#475569" font-family="system-ui">   member_name  VARCHAR</text>
+        <text x="16" y="98" font-size="11" fill="#475569" font-family="system-ui">   member_email  VARCHAR</text>
+
+        <!-- Loans table -->
+        <rect x="380" y="10" width="170" height="100" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="380" y="10" width="170" height="34" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="380" y="10" width="4" height="100" rx="2" fill="#16A085"/>
+        <text x="406" y="32" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Loans</text>
+        <text x="386" y="62" font-size="11" fill="#64748b" font-family="system-ui">🔑 loan_id  INT</text>
+        <text x="386" y="80" font-size="11" fill="#475569" font-family="system-ui">🔗 member_id  INT</text>
+        <text x="386" y="98" font-size="11" fill="#475569" font-family="system-ui">   loan_date  DATE</text>
+
+        <!-- Edge from center to center -->
+        <line x1="180" y1="60" x2="380" y2="60" stroke="#9B59B6" stroke-width="2.5"/>
+        <!-- One mark -->
+        <line x1="188" y1="52" x2="188" y2="68" stroke="#9B59B6" stroke-width="2.5"/>
+        <!-- Crow's foot -->
+        <line x1="372" y1="60" x2="360" y2="50" stroke="#9B59B6" stroke-width="2.5"/>
+        <line x1="372" y1="60" x2="360" y2="70" stroke="#9B59B6" stroke-width="2.5"/>
+        <line x1="367" y1="52" x2="367" y2="68" stroke="#9B59B6" stroke-width="2.5"/>
+        <circle cx="372" cy="60" r="4" fill="white" stroke="#9B59B6" stroke-width="2"/>
+
+        <text x="270" y="48" font-size="11" fill="#9B59B6" font-family="system-ui" text-anchor="middle">1 : 0..*</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)" style="flex-direction: column; align-items: flex-start;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3 style="margin:0">Border-snap connections with row highlight</h3>
+        <p style="margin:0;color:#666;font-size:13px">Edge exits from the nearest side border. User optionally clicks a row to anchor the connection to that row's Y position — but the edge still snaps to the border edge.</p>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e8edf4;border-radius:10px;padding:20px 28px;width:100%;box-sizing:border-box;">
+      <svg width="100%" height="120" viewBox="0 0 560 120" style="overflow:visible">
+        <!-- Members table -->
+        <rect x="10" y="10" width="170" height="100" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="10" y="10" width="170" height="34" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="10" y="10" width="4" height="100" rx="2" fill="#27AE60"/>
+        <text x="36" y="32" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Members</text>
+        <text x="16" y="62" font-size="11" fill="#64748b" font-family="system-ui">🔑 member_id  INT</text>
+        <text x="16" y="80" font-size="11" fill="#475569" font-family="system-ui">   member_name  VARCHAR</text>
+        <text x="16" y="98" font-size="11" fill="#475569" font-family="system-ui">   member_email  VARCHAR</text>
+
+        <!-- Loans table — member_id row highlighted -->
+        <rect x="380" y="10" width="170" height="100" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="380" y="10" width="170" height="34" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="380" y="10" width="4" height="100" rx="2" fill="#16A085"/>
+        <text x="406" y="32" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Loans</text>
+        <text x="386" y="62" font-size="11" fill="#64748b" font-family="system-ui">🔑 loan_id  INT</text>
+        <!-- Highlighted row -->
+        <rect x="382" y="68" width="166" height="18" rx="3" fill="#f3e8ff" stroke="#9B59B6" stroke-width="1" opacity="0.7"/>
+        <text x="386" y="80" font-size="11" fill="#7c3aed" font-weight="600" font-family="system-ui">🔗 member_id  INT</text>
+        <text x="386" y="98" font-size="11" fill="#475569" font-family="system-ui">   loan_date  DATE</text>
+
+        <!-- Edge from right border of Members (center) to left border at row Y -->
+        <line x1="180" y1="60" x2="380" y2="77" stroke="#9B59B6" stroke-width="2.5"/>
+        <!-- One mark -->
+        <line x1="188" y1="52" x2="188" y2="68" stroke="#9B59B6" stroke-width="2.5"/>
+        <!-- Crow's foot at left border of Loans at row 77 -->
+        <line x1="380" y1="77" x2="368" y2="67" stroke="#9B59B6" stroke-width="2.5"/>
+        <line x1="380" y1="77" x2="368" y2="87" stroke="#9B59B6" stroke-width="2.5"/>
+        <line x1="375" y1="69" x2="375" y2="85" stroke="#9B59B6" stroke-width="2.5"/>
+        <circle cx="380" cy="77" r="4" fill="white" stroke="#9B59B6" stroke-width="2"/>
+
+        <text x="270" y="58" font-size="11" fill="#9B59B6" font-family="system-ui" text-anchor="middle">1 : 0..*</text>
+        <text x="270" y="72" font-size="10" fill="#94a3b8" font-family="system-ui" text-anchor="middle">anchored to member_id row</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="option" data-choice="c" onclick="toggleSelect(this)" style="flex-direction: column; align-items: flex-start;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3 style="margin:0">Full attribute-row handles (Phase 5 + Phase 6 unified)</h3>
+        <p style="margin:0;color:#666;font-size:13px">Each attribute row has explicit React Flow handles. Relationships AND FDs both use the same row-level handles. Does more now, Phase 6 FD work is smaller.</p>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e8edf4;border-radius:10px;padding:20px 28px;width:100%;box-sizing:border-box;">
+      <svg width="100%" height="120" viewBox="0 0 560 120" style="overflow:visible">
+        <!-- Members table with row handles -->
+        <rect x="10" y="10" width="170" height="100" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="10" y="10" width="170" height="34" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="10" y="10" width="4" height="100" rx="2" fill="#27AE60"/>
+        <text x="36" y="32" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Members</text>
+        <!-- Row with handle -->
+        <rect x="12" y="50" width="166" height="18" rx="2" fill="#fef9ff"/>
+        <text x="16" y="62" font-size="11" fill="#64748b" font-family="system-ui">🔑 member_id  INT</text>
+        <circle cx="180" cy="59" r="4" fill="#9B59B6" stroke="white" stroke-width="1.5"/>
+        <text x="16" y="80" font-size="11" fill="#475569" font-family="system-ui">   member_name  VARCHAR</text>
+        <circle cx="180" cy="77" r="3" fill="white" stroke="#d1d9e0" stroke-width="1.5"/>
+        <text x="16" y="98" font-size="11" fill="#475569" font-family="system-ui">   member_email  VARCHAR</text>
+        <circle cx="180" cy="95" r="3" fill="white" stroke="#d1d9e0" stroke-width="1.5"/>
+
+        <!-- Loans table with row handles -->
+        <rect x="380" y="10" width="170" height="100" rx="8" fill="white" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="380" y="10" width="170" height="34" rx="8" fill="#f8fafc" stroke="#e8edf4" stroke-width="1.5"/>
+        <rect x="380" y="10" width="4" height="100" rx="2" fill="#16A085"/>
+        <text x="406" y="32" font-size="13" font-weight="700" fill="#1e293b" font-family="system-ui">Loans</text>
+        <text x="386" y="62" font-size="11" fill="#64748b" font-family="system-ui">🔑 loan_id  INT</text>
+        <circle cx="380" cy="59" r="3" fill="white" stroke="#d1d9e0" stroke-width="1.5"/>
+        <!-- Highlighted FK row -->
+        <rect x="382" y="68" width="166" height="18" rx="2" fill="#fef9ff"/>
+        <text x="386" y="80" font-size="11" fill="#475569" font-family="system-ui">🔗 member_id  INT</text>
+        <circle cx="380" cy="77" r="4" fill="#9B59B6" stroke="white" stroke-width="1.5"/>
+        <text x="386" y="98" font-size="11" fill="#475569" font-family="system-ui">   loan_date  DATE</text>
+        <circle cx="380" cy="95" r="3" fill="white" stroke="#d1d9e0" stroke-width="1.5"/>
+
+        <!-- Edge from member_id handle to member_id FK handle -->
+        <line x1="180" y1="59" x2="380" y2="77" stroke="#9B59B6" stroke-width="2.5"/>
+        <!-- One mark near Members side -->
+        <line x1="192" y1="51" x2="192" y2="67" stroke="#9B59B6" stroke-width="2.5"/>
+        <!-- Crow's foot near Loans side -->
+        <line x1="370" y1="77" x2="358" y2="67" stroke="#9B59B6" stroke-width="2.5"/>
+        <line x1="370" y1="77" x2="358" y2="87" stroke="#9B59B6" stroke-width="2.5"/>
+        <line x1="365" y1="69" x2="365" y2="85" stroke="#9B59B6" stroke-width="2.5"/>
+        <circle cx="370" cy="77" r="4" fill="white" stroke="#9B59B6" stroke-width="2"/>
+
+        <text x="280" y="55" font-size="10" fill="#94a3b8" font-family="system-ui" text-anchor="middle">handle-to-handle</text>
+        <text x="280" y="68" font-size="10" fill="#9B59B6" font-family="system-ui" text-anchor="middle">member_id → member_id FK</text>
+      </svg>
+    </div>
+  </div>
+
+</div>
