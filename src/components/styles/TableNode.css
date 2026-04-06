@@ -100,6 +100,18 @@
     white-space: nowrap;
 }
 
+/* Relationship handles — functional but invisible in Phase 5 */
+.table-node__handle,
+.react-flow__node-tableNode .react-flow__handle {
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    min-width: 1px;
+    min-height: 1px;
+    border: none;
+    background: transparent;
+}
+
 /* React Flow wrapper overrides */
 .react-flow__node-tableNode {
     font-family: inherit;

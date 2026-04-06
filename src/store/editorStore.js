@@ -22,6 +22,10 @@ const useEditorStore = create(
         /**
          * stages: StageState[4]
          * Each stage holds its own tables, relationships, FDs, and checklist.
+         *
+         * FD shape (denormalized FunctionalDependency + FD_Stage per SCHEMA.md):
+         *   { id, color, level: number, type: 'partial'|'full'|'transitive',
+         *     starts: [{ id, attributeId }], ends: [{ id, attributeId }] }
          */
         stages: [
             {

@@ -51,11 +51,17 @@ Project
 FunctionalDependency
   ├── fd_Id
   ├── color
-  ├── level
+  ├── level                      integer — bracket lane:
+  │                              positive = left side (1=nearest, 2=next out…)
+  │                              negative = right side (−1=nearest, −2=next out…)
   ├── fdStages: FD_Stage[]       (which stages include this FD)
+  │     └── type: 'partial' | 'full' | 'transitive'
   ├── fdStarts: FD_Start[]       (determinant attributes)
   └── fdEnds: FD_End[]           (dependent attributes)
 ```
+
+> See `SCHEMA.md` for full DB schema. The frontend store denormalizes
+> `FunctionalDependency` + `FD_Stage` into a single object per stage FD entry.
 
 ---
 
@@ -236,7 +242,8 @@ The FD bracket visual on the right (as shown in the reference image) is rendered
 | Field | Type |
 |---|---|
 | Color | palette picker |
-| Level | select: `partial`, `full`, `transitive` |
+| Type | select: `partial`, `full`, `transitive` (maps to `FD_Stage.type`) |
+| Level | integer — bracket lane (auto-suggested, user can override) |
 | This attribute is | select: `start (determinant)`, `end (dependent)` |
 
 4. To add more attributes to the same FD (multi-attribute determinant or multiple dependents), the user can open the FD's edit modal and add additional `FD_Start` or `FD_End` entries.
@@ -338,8 +345,10 @@ EditorStore (single store, immer middleware)
 │     │           └── id, attributeId, is_PK, is_FK, alias, order
 │     ├── relationships: Relationship[]
 │     │     └── id, table1Id, table2Id, type, color, cardinality_t1, cardinality_t2
-│     ├── fds: FunctionalDependency[]
-│     │     ├── id, color, level
+│     ├── fds: FunctionalDependency[]          (denorm. FD + FD_Stage)
+│     │     ├── id, color
+│     │     ├── level: number                  (integer bracket lane)
+│     │     ├── type: 'partial'|'full'|'transitive'
 │     │     ├── starts: FD_Start[]  (attributeId)
 │     │     └── ends: FD_End[]      (attributeId)
 │     └── violationChecks: boolean[]   (index maps to hardcoded rule)

@@ -94,7 +94,8 @@ const STAGE_1NF = {
         {
             id: 'fd-1-1',
             color: '#E74C3C',
-            level: 'full',
+            level: 1,           // integer bracket lane (1 = nearest left)
+            type: 'full',       // FD_Stage.type
             starts: [{ id: 'fds-1-1', attributeId: 'attr-4' }],
             ends: [
                 { id: 'fde-1-1', attributeId: 'attr-5' },
@@ -170,7 +171,8 @@ const STAGE_2NF = {
         {
             id: 'fd-2-1',
             color: '#E74C3C',
-            level: 'full',
+            level: 1,
+            type: 'full',
             starts: [{ id: 'fds-2-1', attributeId: 'attr-4' }],
             ends: [
                 { id: 'fde-2-1', attributeId: 'attr-5' },
@@ -180,7 +182,8 @@ const STAGE_2NF = {
         {
             id: 'fd-2-2',
             color: '#F39C12',
-            level: 'full',
+            level: -1,
+            type: 'full',
             starts: [{ id: 'fds-2-2', attributeId: 'attr-1' }],
             ends: [
                 { id: 'fde-2-3', attributeId: 'attr-2' },

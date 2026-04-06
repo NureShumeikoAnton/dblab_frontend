@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Handle, Position } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
 import './styles/TableNode.css';
 
@@ -15,6 +16,11 @@ const TableNode = ({ data }) => {
 
     return (
         <div className="table-node">
+            {/* Relationship handles — invisible, left and right sides only */}
+            <Handle type="source" position={Position.Left}  id="src-left"  className="table-node__handle" />
+            <Handle type="target" position={Position.Left}  id="tgt-left"  className="table-node__handle" />
+            <Handle type="source" position={Position.Right} id="src-right" className="table-node__handle" />
+            <Handle type="target" position={Position.Right} id="tgt-right" className="table-node__handle" />
             <div
                 className="table-node__header"
                 style={{ borderLeftColor: table.color }}
