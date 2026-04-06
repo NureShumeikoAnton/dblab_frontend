@@ -30,7 +30,8 @@ yarn.lock
 .pnp.js
 *.pnp.js
 
-.env
+.env*
 .env.local
 .env.*.local
 
+src/components/LibSearchPanelsV1V2.jsx
