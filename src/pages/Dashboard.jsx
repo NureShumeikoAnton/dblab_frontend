@@ -33,7 +33,10 @@ const Dashboard = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!userId) return;
+            if (!userId) {
+                setLoading(false);
+                return;
+            }
             try {
                 const [workRes, resultRes, typeRes] = await Promise.all([
                     axios.get(`${API_CONFIG.BASE_URL}/work/user/${userId}`, {
