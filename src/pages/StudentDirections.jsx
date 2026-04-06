@@ -9,7 +9,7 @@ const StudentDirections = () => {
     const [directions, setDirections] = useState([]);
 
     useEffect(() => {
-        axios.get(`${API_CONFIG.BASE_URL}/Direction/getall`)
+        axios.get(`${API_CONFIG.BASE_URL}/direction/getall`)
             .then(response => {
                 setDirections(response.data.map(d => ({
                     id: d.direction_Id,
