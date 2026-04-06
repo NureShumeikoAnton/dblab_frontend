@@ -64,7 +64,7 @@ const App = () => {
                     <Route path={"/studentresults"} element={<StudentResults/>}/>
                     <Route path={"/studentdirections"} element={<StudentDirections/>}/>
                     <Route path={"/dashboard"} element={<Dashboard/>}/>
-                    <Route path="/work/:id" element={<RequireAuth fallbackPath="/login"><StudentWorkDetails/></RequireAuth>} />
+                    <Route path="/work/:id" element={<RequireAuth fallbackPath="/"><StudentWorkDetails/></RequireAuth>} />
                     <Route path="/workpage/:id" element={<WorkPage/>} />
                 </Route>
                 <Route path={'/apanel'} Component={AdminLayout}>
