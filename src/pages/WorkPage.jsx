@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_CONFIG from '../config/api';
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import { ArrowLeft, FileText, Calendar, User, Tag, ExternalLink } from 'lucide-react';
 import './styles/ClientPages.css';
 import './styles/WorkPage.css';
@@ -9,6 +10,7 @@ import './styles/WorkPage.css';
 const WorkPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const authHeader = useAuthHeader();
     const [work, setWork] = useState(null);
     const [loading, setLoading] = useState(true);
     const [results, setResults] = useState([]);
@@ -23,7 +25,9 @@ const WorkPage = () => {
                     setWork(currentWork);
 
                     try {
-                        const resRes = await axios.get(`${API_CONFIG.BASE_URL}/result/work/${id}`);
+                        const resRes = await axios.get(`${API_CONFIG.BASE_URL}/result/work/${id}`, {
+                            headers: { 'Authorization': authHeader }
+                        });
                         setResults(resRes.data);
                     } catch (error) {
                         console.error("Error loading results:", error);
