@@ -91,20 +91,25 @@ API calls are deferred to the final phases — all earlier phases use mock/hardc
 
 ---
 
-## Phase 6 — FD Edges (arrows + bracket visual) + Show/Hide Toggle
+## Phase 6 — FD Edges (bracket visual) + Drag-to-Create + Show/Hide Toggle
 
 **Build:**
-- `FDEdge` custom RF edge type:
-  - Left side: individual arrows from each `FD_Start` attribute handle to each `FD_End` attribute handle
-  - Right side: colored bracket grouping all `FD_End` attributes of the same FD
-- Each attribute row in `TableNode` exposes a left handle (source) and right handle (target)
-- "Show FDs" toggle in toolbar — hides/shows all FD edges (UI state only, not persisted)
+- Each attribute row in `TableNode` exposes a left-side `<Handle>` with id `fd-left-{attributeId}`. Handle is visible when: row is hovered, attribute participates in an FD, or the user is actively dragging a connection.
+- `FDEdge` custom RF edge type — one edge per FD, self-loop on the table node. Renders a bracket:
+  - Vertical spine at `|level| * 28px` from the table left edge (left side for positive levels, right side for negative)
+  - Horizontal stubs from each start attribute (plain line) and each end attribute (line + arrowhead)
+  - Orphaned FDs (attribute not in any table) are silently hidden
+- `EditorCanvas` enables `connectionMode="loose"` and wires `onConnect` to create a new FD with defaults (random color, `level: 1`, `type: 'full'`) when user drags from one attribute handle to another within the same table. Cross-table connections are blocked via `isValidConnection`.
+- "Show FDs" toggle in toolbar wired to the store — hides/shows all FD edges (UI state only, not persisted)
 
 **Test:**
-- Open `/projects/1` — see FD arrows on the left side of a table
-- See colored brackets on the right side grouping dependent attributes
-- Click "Show FDs" toggle — FD edges disappear and reappear
-- Relationship edges remain visible when FDs are hidden
+- Open `/projects/1` → 1NF stage — see red bracket on the left of the Loans table (attr-4 → attr-5, attr-6)
+- Switch to 2NF — see left bracket on Books table and right bracket (level=-1) on Members table
+- Hover an attribute row → small dot handle appears on the left edge
+- Drag from one handle to another within the same table → new FD bracket appears immediately
+- Drag between different tables → connection is blocked (no edge created)
+- Click "Show FDs" toggle — all FD brackets disappear; relationship edges remain visible
+- Click toggle again — FD brackets reappear; toggle shows active state
 
 ---
 

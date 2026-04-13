@@ -102,6 +102,19 @@ const STAGE_1NF = {
                 { id: 'fde-1-2', attributeId: 'attr-6' },
             ],
         },
+        {
+            // NOTE: demo-only — not a real normalization FD, added to test
+            // multiple brackets at different levels on the same table
+            id: 'fd-1-2',
+            color: '#2980B9',
+            level: 2,           // outer lane, renders further left than fd-1-1
+            type: 'partial',
+            starts: [{ id: 'fds-1-2', attributeId: 'attr-4' }],
+            ends: [
+                { id: 'fde-1-3', attributeId: 'attr-7' },
+                { id: 'fde-1-4', attributeId: 'attr-8' },
+            ],
+        },
     ],
     violationChecks: [false, false, false, false],
 };

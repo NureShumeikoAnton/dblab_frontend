@@ -417,7 +417,7 @@ EditorPage
 | Student switches stage mid-drag | Drag is cancelled; unsaved changes autosave fires |
 | Two attributes with the same name in the pool | Allowed (DB permits it); displayed with name + data_type to distinguish |
 | Retiring an attribute that is currently placed in a table | The `TableAttribute` row remains visible in the current stage but the attribute is greyed in the panel for future stages. The student must manually remove it from tables in later stages. |
-| FD whose start/end attribute is removed from a table | FD becomes "orphaned" — shown with a warning indicator. Student must delete or reassign it. |
+| FD whose start/end attribute is removed from a table | FD becomes "orphaned" — not rendered on the canvas. Stays in the store and re-appears if the attribute is re-added to a table. Student can delete it via the FD edit modal. |
 | Copying stage with relationships pointing to deleted tables | Only relationships where both table IDs still exist are copied |
 | Autosave fails | Non-blocking toast; unsaved dot remains; no data loss (Zustand still holds state) |
 

@@ -4,6 +4,8 @@ import '@xyflow/react/dist/style.css';
 import useEditorStore from '../store/editorStore.js';
 import TableNode from './TableNode.jsx';
 import RelationshipEdge from './RelationshipEdge.jsx';
+import FDEdge from './FDEdge.jsx';
+import TableFDOverlay from './TableFDOverlay.jsx';
 import './styles/EditorCanvas.css';
 
 // nodeTypes / edgeTypes must be defined at module level — defining inside the
@@ -14,7 +16,11 @@ const nodeTypes = {
 
 const edgeTypes = {
     relationshipEdge: RelationshipEdge,
+    fdEdge: FDEdge,
+    tableFDOverlay: TableFDOverlay,
 };
+
+const FD_COLORS = ['#E74C3C', '#F39C12', '#27AE60', '#2980B9', '#9B59B6', '#16A085'];
 
 const EditorCanvas = () => {
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
@@ -23,6 +29,7 @@ const EditorCanvas = () => {
     const fds = useEditorStore((s) => s.stages[currentStageIndex]?.fds ?? []);
     const showFDs = useEditorStore((s) => s.ui.showFDs);
     const updateTablePosition = useEditorStore((s) => s.updateTablePosition);
+    const addFD = useEditorStore((s) => s.addFD);
 
     // activeNodeId tracks which node was last clicked or grabbed — keeps it on top via zIndex.
     const [activeNodeId, setActiveNodeId] = useState(null);
@@ -76,27 +83,35 @@ const EditorCanvas = () => {
 
         if (!showFDs) return relEdges;
 
-        const fdEdges = fds.flatMap((fd) =>
-            fd.starts.flatMap((start) =>
-                fd.ends.map((end) => {
-                    const sourceTable = tables.find((t) =>
-                        t.tableAttributes.some((ta) => ta.attributeId === start.attributeId)
-                    );
-                    const targetTable = tables.find((t) =>
-                        t.tableAttributes.some((ta) => ta.attributeId === end.attributeId)
-                    );
-                    if (!sourceTable || !targetTable) return null;
-                    return {
-                        id: `fd-${fd.id}-${start.id}-${end.id}`,
-                        type: 'default',
-                        source: sourceTable.id,
-                        target: targetTable.id,
-                    };
-                })
-            )
-        ).filter(Boolean);
+        // One self-loop edge per FD — FDEdge draws the bracket using handle bounds
+        const fdEdges = fds.flatMap((fd) => {
+            const table = tables.find((t) =>
+                t.tableAttributes.some((ta) =>
+                    fd.starts.some((s) => s.attributeId === ta.attributeId)
+                )
+            );
+            if (!table) return [];
+            return [{
+                id: `fd-${fd.id}`,
+                type: 'fdEdge',
+                source: table.id,
+                target: table.id,
+                data: { fd },
+            }];
+        });
 
-        return [...relEdges, ...fdEdges];
+        // One overlay per table — renders the visible handle circles in SVG
+        // (bypasses overflow-y:auto clipping inside the table node DOM)
+        const overlayEdges = tables.map((table) => ({
+            id: `fd-overlay-${table.id}`,
+            type: 'tableFDOverlay',
+            source: table.id,
+            target: table.id,
+            data: {},
+        }));
+
+        // Render order: brackets → circles → relationships (last = on top)
+        return [...fdEdges, ...overlayEdges, ...relEdges];
     }, [tables, relationships, fds, showFDs]);
 
     const handleNodeDragStop = useCallback((_event, node) => {
@@ -106,6 +121,28 @@ const EditorCanvas = () => {
     const handleNodeActivate = useCallback((_event, node) => {
         setActiveNodeId(node.id);
     }, []);
+
+    // Only allow FD connections within the same table node
+    const isValidConnection = useCallback(
+        (connection) => connection.source === connection.target,
+        []
+    );
+
+    const handleConnect = useCallback((connection) => {
+        if (connection.source !== connection.target) return;
+        const srcAttrId = connection.sourceHandle?.replace('fd-left-', '');
+        const tgtAttrId = connection.targetHandle?.replace('fd-left-', '');
+        if (!srcAttrId || !tgtAttrId || srcAttrId === tgtAttrId) return;
+
+        addFD(currentStageIndex, {
+            id: `fd-${crypto.randomUUID()}`,
+            color: FD_COLORS[Math.floor(Math.random() * FD_COLORS.length)],
+            level: 1,
+            type: 'full',
+            starts: [{ id: `fds-${crypto.randomUUID()}`, attributeId: srcAttrId }],
+            ends:   [{ id: `fde-${crypto.randomUUID()}`, attributeId: tgtAttrId }],
+        });
+    }, [addFD, currentStageIndex]);
 
     return (
         <div className="editor-canvas">
@@ -118,6 +155,9 @@ const EditorCanvas = () => {
                 onNodeDragStart={handleNodeActivate}
                 onNodeDragStop={handleNodeDragStop}
                 onNodeClick={handleNodeActivate}
+                connectionMode="loose"
+                onConnect={handleConnect}
+                isValidConnection={isValidConnection}
                 fitView
                 fitViewOptions={{ padding: 0.2 }}
                 minZoom={0.2}
