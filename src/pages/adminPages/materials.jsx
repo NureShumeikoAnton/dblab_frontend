@@ -37,7 +37,7 @@ const Materials = () => {
     ];
     const [eventOptions, setEventOptions] = useState([]);
 
-    const authToken = useAuthHeader().split(' ')[1];
+    const authToken = useAuthHeader()
 
     useEffect(() => {
         axios.get(`${API_CONFIG.BASE_URL}/event/getFromDb`, {

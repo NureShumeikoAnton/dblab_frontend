@@ -16,7 +16,7 @@ const DisciplineSkills = () => {
         // Fetch disciplines
         axios.get(`${API_CONFIG.BASE_URL}/discipline/getFromDb`, {
             headers: {
-                Authorization: authHeader.split(' ')[1],
+                Authorization: authHeader,
             }
         })
             .then(response => {
@@ -33,7 +33,7 @@ const DisciplineSkills = () => {
         // Fetch skills
         axios.get(`${API_CONFIG.BASE_URL}/skill/getFromDb`, {
             headers: {
-                Authorization: authHeader.split(' ')[1],
+                Authorization: authHeader,
             }
         })
             .then(response => {
@@ -48,7 +48,7 @@ const DisciplineSkills = () => {
             });        // Fetch levels
         axios.get(`${API_CONFIG.BASE_URL}/level/getFromDb`, {
             headers: {
-                Authorization: authHeader.split(' ')[1],
+                Authorization: authHeader,
             }
         })
             .then(response => {

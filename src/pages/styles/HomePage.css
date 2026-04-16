@@ -80,8 +80,25 @@
 }
 
 .info__list {
-  list-style-type: disc;
-  padding-left: 1.5em;
+    list-style-type: disc;
+    padding-left: 1.5em;
+}
+
+.info__paragraph {
+    margin: 0.5em 0;
+}
+
+.info__list-item {
+    margin: 0.5em 0;
+}
+
+.info__spacing {
+    display: block;
+    height: 1em;
+}
+
+.home-page {
+    width: 100%;
 }
 
 .info__skills-container {
@@ -107,6 +124,13 @@
 .skill-card:hover {
   border-color: var(--secondary-color);
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2), 0 5px 10px var(--secondary-color);
+}
+
+.skill-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    margin: 0 10px;
 }
 
 .skill-card__name {
@@ -165,6 +189,7 @@
 
 .direction-card:hover {
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+  background-color: white;
 }
 
 .direction-card__name {

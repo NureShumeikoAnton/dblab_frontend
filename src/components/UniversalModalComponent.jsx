@@ -63,10 +63,21 @@ const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onCha
                                         className="textarea-element"
                                         name={row.key}
                                         placeholder={row.title}
-                                        value={data[row.key]}
+                                        value={data[row.key] || ''}
                                         onChange={(e) => onChange(e, row)}
+                                        maxLength={2000}
                                     />
                                 </>
+                            ) : row.type === "date" ? (
+                                <InputFieldComponent
+                                    label={row.title}
+                                    name={row.key}
+                                    type="date"
+                                    placeholder={row.title}
+                                    value={data[row.key] ? String(data[row.key]).split('T')[0] : ''}
+                                    onChange={(e) => onChange(e, row)}
+                                    disabled={isEditing && row.disabledOnEdit}
+                                />
                             ) : (
                                 <InputFieldComponent
                                     label={row.title}

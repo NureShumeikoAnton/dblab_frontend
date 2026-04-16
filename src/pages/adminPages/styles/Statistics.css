@@ -1,0 +1,198 @@
+.statistics-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.statistics-container h1 {
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.statistics-menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    display: block;
+    padding: 25px;
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-card:hover {
+    border-color: #4CAF50;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.stat-card h2 {
+    margin: 0 0 10px 0;
+    color: #4CAF50;
+}
+
+.stat-card p {
+    margin: 0;
+    color: #666;
+    line-height: 1.5;
+}
+
+.statistics-page {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.statistics-header {
+    margin-bottom: 30px;
+}
+
+.statistics-header h1 {
+    margin: 10px 0;
+    color: #333;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 15px;
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.period-form {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.period-form button {
+    padding: 10px 30px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.period-form button:hover:not(:disabled) {
+    background: #45a049;
+}
+
+.period-form button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.statistics-results {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.period-info {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.period-info h2 {
+    margin: 0 0 10px 0;
+    color: #4CAF50;
+}
+
+.period-info p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.statistics-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.statistics-table th {
+    background: #4CAF50;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.statistics-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.statistics-table tr:hover {
+    background: #f5f5f5;
+}
+
+.statistics-table tr:last-child td {
+    border-bottom: none;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .period-form {
+        flex-direction: column;
+    }
+    
+    .statistics-table {
+        font-size: 14px;
+    }
+    
+    .statistics-table th,
+    .statistics-table td {
+        padding: 8px;
+    }
+}
+

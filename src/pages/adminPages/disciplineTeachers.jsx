@@ -14,7 +14,7 @@ const DisciplineTeachers = () => {
     useEffect(() => {
         axios.get(`${API_CONFIG.BASE_URL}/discipline/getFromDb`, {
             headers: {
-                Authorization: authHeader.split(' ')[1],
+                Authorization: authHeader,
             }
         })
             .then(response => {
@@ -30,7 +30,7 @@ const DisciplineTeachers = () => {
 
         axios.get(`${API_CONFIG.BASE_URL}/teacher/getFromDb`, {
             headers: {
-                Authorization: authHeader.split(' ')[1],
+                Authorization: authHeader,
             }
         })
             .then(response => {
@@ -45,7 +45,7 @@ const DisciplineTeachers = () => {
             });
         axios.get(`${API_CONFIG.BASE_URL}/language/getFromDb`, {
             headers: {
-                Authorization: authHeader.split(' ')[1],
+                Authorization: authHeader,
             }
         })
             .then(response => {

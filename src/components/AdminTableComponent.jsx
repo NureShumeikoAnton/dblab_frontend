@@ -3,7 +3,6 @@ import axios from "axios";
 import UniversalModalComponent from "./UniversalModalComponent.jsx";
 import { NotificationContext } from "../layouts/AdminPageLayout.jsx";
 import API_CONFIG from '../config/api.js';
-
 import './styles/AdminTable.css';
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
@@ -14,6 +13,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
     const [currentItem, setCurrentItem] = useState(null);
     const [formData, setFormData] = useState({});
     const [isDeleteWithoutConfirmation, setIsDeleteWithoutConfirmation] = useState(false);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
     const apiUrl = `${API_CONFIG.BASE_URL}/${endpoint}`;
     const authHeader = useAuthHeader();
@@ -44,11 +44,35 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
         });
     }
 
+    const handleInlineUpdate = async (id, field, value) => {
+        const column = columns.find(col => col.key === field);
+        const fieldName = column ? column.title : field;
+        const option = column?.options?.find(opt => opt.id === value);
+        const displayValue = option ? option.name : value;
+        const confirmMessage = `Ви дійсно хочете змінити "${fieldName}" на "${displayValue}"?`;
+        if (!window.confirm(confirmMessage)) {
+            fetchData();
+            return;
+        }
+
+        try {
+            await axios.put(`${apiUrl}/${id}`, 
+                { [field]: value },
+                { headers: { 'Authorization': authHeader } }
+            );
+            notifySuccess(`${fieldName} успішно оновлено`);
+            fetchData();
+        } catch (error) {
+            console.error("Update error:", error);
+            notifyError("Помилка оновлення: " + error.message);
+        }
+    };
+
     const fetchData = () => {
         setLoading(true);
         axios.get(apiUrl + "/getFromDb", {
             headers: {
-                'Authorization': authHeader.split(' ')[1],
+                'Authorization': authHeader,
             }
         })
             .then((response) => {
@@ -94,7 +118,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
         const deleteCall = () => {
             axios.delete(`${apiUrl}/delete/${id}`, {
                 headers: {
-                    'Authorization': authHeader.split(' ')[1],
+                    'Authorization': authHeader,
                 }
             })
             .then(() => {
@@ -119,11 +143,9 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
         try {
             if (currentItem) {
                 // Update existing item
-                console.log(formData);
-                console.log(currentItem[idField]);
                 await axios.put(`${apiUrl}/${currentItem[idField]}`, formData, {
                     headers: {
-                        'Authorization': authHeader.split(' ')[1],
+                        'Authorization': authHeader,
                     }
                 })
                     .then((response) => {
@@ -139,11 +161,10 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                     handleAdditionalFields("add", currentItem[idField]);
                 }, 100);
             } else {
-                console.log(formData);
                 let createdItemId = null;
                 await axios.post(apiUrl + "/create", formData, {
                     headers: {
-                        'Authorization': authHeader.split(' ')[1],
+                        'Authorization': authHeader,
                     }
                 })
                     .then((response) => {
@@ -189,7 +210,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                     };
                     axios.post(additionalEndpoint, data, {
                         headers: {
-                            'Authorization': authHeader.split(' ')[1],
+                            'Authorization': authHeader,
                         }
                     })
                         .then((response) => {
@@ -208,7 +229,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                 };
                 axios.delete(additionalEndpoint, {
                     headers: {
-                        'Authorization': authHeader.split(' ')[1],
+                        'Authorization': authHeader,
                     },
                     data: data
                 })
@@ -232,6 +253,51 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
         return <div className="loading">Loading data...</div>;
     }
 
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('uk-UA', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortedData = () => {
+        if (!sortConfig.key) return data;
+        
+        const sorted = [...data].sort((a, b) => {
+            const aVal = a[sortConfig.key];
+            const bVal = b[sortConfig.key];
+            
+            if (aVal === null || aVal === undefined) return 1;
+            if (bVal === null || bVal === undefined) return -1;
+            
+            if (typeof aVal === 'number' && typeof bVal === 'number') {
+                return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
+            }
+            
+            const aStr = String(aVal).toLowerCase();
+            const bStr = String(bVal).toLowerCase();
+            
+            if (sortConfig.direction === 'asc') {
+                return aStr.localeCompare(bStr, 'uk');
+            } else {
+                return bStr.localeCompare(aStr, 'uk');
+            }
+        });
+        
+        return sorted;
+    };
+
     return (
         <div className="admin-table-container">
             <h2>{tableName}</h2>
@@ -241,32 +307,91 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                 <tr>
                     {columns.map((col) => (
                         !col.hidden && (
-                            <th key={col.key}>{col.title}</th>
+                            //<th key={col.key}>{col.title}</th>
+                            <th 
+                                key={col.key}
+                                onClick={() => handleSort(col.key)}
+                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                            >
+                                {col.title}
+                                {sortConfig.key === col.key && (
+                                    <span style={{ marginLeft: '5px' }}>
+                                        {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                                    </span>
+                                )}
+                            </th>
                         )
                     ))}
                     <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
-                {data.length === 0 ? (
+                {getSortedData().length === 0 ? (
                     <tr>
                         <td colSpan={columns.length + 1} className="no-data">
                             No data available
                         </td>
                     </tr>
                 ) : (
-                    data.map(item => (
+                    getSortedData().map(item => (
                         <tr key={item[idField]}>
                             {columns.map(col => (
                                 !col.hidden && (
                                     <td key={col.key}>
-                                        {col.isMulti ? (
-                                            item[col.key].map((subItem, index) => (
-                                                <span
-                                                    key={index}>{subItem}{index < item[col.key].length - 1 ? ', ' : ''}</span>
-                                            ))
+                                        {col.editable && col.type === 'select' ? (
+                                            <select
+                                                className="status-select"
+                                                value={item[col.key] || ''}
+                                                onChange={(e) => handleInlineUpdate(item[idField], col.key, e.target.value)}
+                                                style={{
+                                                    padding: '5px 10px',
+                                                    borderRadius: '5px',
+                                                    border: '1px solid #ddd',
+                                                    cursor: 'pointer',
+                                                    backgroundColor: 
+                                                        item[col.key] === 'Підтверджено' ? '#e8f5e9' : 
+                                                        item[col.key] === 'Відхилено' ? '#ffebee' : 
+                                                        item[col.key] === 'В обробці' ? '#fff3e0' : '#f5f5f5'
+                                                }}
+                                            >
+                                                {col.options.map(opt => (
+                                                    <option key={opt.id} value={opt.id}>
+                                                        {opt.name}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         ) : (
-                                            item[col.key]
+                                            /* залишається як fallback */
+                                            col.isMulti ? (
+                                                item[col.key].map((subItem, index) => (
+                                                    <span key={index}>
+                                                        {subItem}{index < item[col.key].length - 1 ? ', ' : ''}
+                                                    </span>
+                                                ))
+                                            ) : col.type === 'date' ? (
+                                                formatDate(item[col.key])
+                                            ) : col.type === 'select' && col.options ? (
+                                                (() => {
+                                                    const option = col.options.find(opt => opt.id === item[col.key]);
+                                                    const displayValue = option ? option.name : item[col.key];
+                                                    const statusValue = item[col.key];
+                                                    return (
+                                                        <span style={{
+                                                            padding: '4px 8px',
+                                                            borderRadius: '4px',
+                                                            backgroundColor: 
+                                                                statusValue === 'Підтверджено' ? '#e8f5e9' : 
+                                                                statusValue === 'Відхилено' ? '#ffebee' : 
+                                                                statusValue === 'В обробці' ? '#fff3e0' : '#f5f5f5',
+                                                            display: 'inline-block'
+                                                        }}>
+                                                            {displayValue}
+                                                        </span>
+                                                    );
+                                                })()
+                                            ) : (
+                                                item[col.key]
+                                            )
                                         )}
                                     </td>
                                 )

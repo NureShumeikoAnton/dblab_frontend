@@ -14,15 +14,15 @@ const AdminLayout = () => {
     useEffect(() => {
         axios.get(`${API_CONFIG.BASE_URL}/cache/getLastUpdate`, {
             headers: {
-                'Authorization': authHeader.split(' ')[1],
+                'Authorization': authHeader
             }
         })
-            .then((response) => {
-                setUpToDate(response.data);
-            })
-            .catch((error) => {
-                console.error("Error fetching data:", error);
-            });
+        .then((response) => {
+            setUpToDate(response.data);
+        })
+        .catch((error) => {
+            console.error("Error fetching data:", error);
+        });
     }, []);
     return (
         <div className={"admin-layout-container"}>

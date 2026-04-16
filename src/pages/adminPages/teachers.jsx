@@ -12,7 +12,7 @@ const Teachers = () => {
     useEffect(() => {
             axios.get(`${API_CONFIG.BASE_URL}/user/getFromDb`, {
                 headers: {
-                    'Authorization': authHeader.split(' ')[1]
+                    'Authorization': authHeader
                 }
             })
             .then(response => {

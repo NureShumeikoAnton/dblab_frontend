@@ -29,10 +29,13 @@ const HeaderComponent = () => {
                     <nav>
                         <ul>
                             <li><NavLink to="/" end>Головна</NavLink></li>
+                            <li><NavLink to="/studentresults">Результати</NavLink></li>
+                            <li><NavLink to="/studentproposals">Пропозиції</NavLink></li>
                             <li><NavLink to="/directions">Напрямки</NavLink></li>
                             <li><NavLink to="/courses">Дисципліни</NavLink></li>
                             <li><NavLink to="/schedule">Розклад</NavLink></li>
                             <li><NavLink to="/library">Бібліотека</NavLink></li>
+                            <li><NavLink to="/dashboard">Особистий кабінет</NavLink></li>
                         </ul>
                     </nav>
                     <div className="auth-buttons">

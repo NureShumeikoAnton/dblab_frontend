@@ -22,26 +22,38 @@ const AdminPageLayout = () => {
         {name: 'Lessons', path: '/apanel/lessons'},
         {name: 'Events', path: '/apanel/events'},
         {name: 'Materials', path: '/apanel/materials'},
+        {name: 'Directions', path: '/apanel/directions'},
+        {name: 'Proposals', path: '/apanel/proposals'},
+        {name: 'Proposal Types', path: '/apanel/proposaltypes'},
+        {name: 'Works', path: '/apanel/works'},
+        {name: 'Result Types', path: '/apanel/resulttypes'},
+        {name: 'Results', path: '/apanel/results'},
+        {name: 'Magazines', path: '/apanel/magazines'},
+        {name: 'Conferences', path: '/apanel/conferences'},
+        {name: 'Competitions', path: '/apanel/competitions'},
+        {name: 'Statistics', path: '/apanel/statistics'},
+        {name: 'Reports', path: '/apanel/reports'},
     ];
 
     const authHeader = useAuthHeader();
     const notificationRef = createRef();
 
     const handleUpdate = () => {
+        // Передаємо authHeader повністю, без .split
         axios.post(`${API_CONFIG.BASE_URL}/cache/update`, null, {
             headers: {
-                'Authorization': authHeader.split(' ')[1],
+                'Authorization': authHeader
             }
         })
-            .then(response => {
-                console.log('Cache updated successfully:', response.data);
-                alert("Cache updated successfully");
-                window.location.reload();
-            })
-            .catch(error => {
-                console.error('Error updating cache:', error);
-                alert("Error updating cache");
-            });
+        .then(response => {
+            console.log('Cache updated successfully:', response.data);
+            alert("Cache updated successfully");
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error updating cache:', error);
+            alert("Error updating cache");
+        });
     }
 
     return (

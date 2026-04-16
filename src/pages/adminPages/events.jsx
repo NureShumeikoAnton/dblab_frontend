@@ -14,7 +14,7 @@ const Events = () => {
     const [teacherOptions, setTeacherOptions] = useState([]);
     const [lessonOptions, setLessonOptions] = useState([]);
 
-    const authToken = useAuthHeader().split(' ')[1];
+    const authToken = useAuthHeader()
 
     useEffect(() => {
         axios.get(`${API_CONFIG.BASE_URL}/teacher/getFromDb`, {

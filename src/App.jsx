@@ -1,5 +1,6 @@
 import './App.css'
 import {Route, Routes} from "react-router-dom";
+import { RequireAuth } from 'react-auth-kit';
 
 import HomePage from "./pages/HomePage.jsx";
 import CoursesPage from "./pages/CoursesPage.jsx";
@@ -30,6 +31,25 @@ import MyResourcesPage from './pages/MyResourcesPage.jsx';
 import StackPage from './pages/StackPage.jsx';
 import MyStacksPage from './pages/MyStacksPage.jsx';
 
+import Directions from './pages/adminPages/directions.jsx';
+import Proposals from './pages/adminPages/proposals.jsx';
+import ProposalTypes from './pages/adminPages/proposalTypes.jsx';
+import Results from './pages/adminPages/results.jsx';
+import ResultTypes from './pages/adminPages/resultTypes.jsx';
+import Works from './pages/adminPages/works.jsx';
+import Magazines from './pages/adminPages/magazines.jsx';
+import Conferences from './pages/adminPages/conferences.jsx';
+import Competitions from './pages/adminPages/competitions.jsx';
+import Statistics from './pages/adminPages/statistics.jsx';
+import MagazineStatistics from './pages/adminPages/magazineStatistics.jsx';
+import PeriodStatistics from './pages/adminPages/periodStatistics.jsx';
+import StudentProposals from './pages/StudentProposals';
+import StudentResults from './pages/StudentResults';
+import StudentDirections from './pages/StudentDirections';
+import ReportsPage from './pages/adminPages/ReportsPage.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import StudentWorkDetails from './pages/StudentWorkDetails';
+import WorkPage from './pages/WorkPage';
 
 const App = () => {
 
@@ -50,6 +70,12 @@ const App = () => {
                     <Route path={"/library/myresources/:userId"} element={<MyResourcesPage/>}/>
                     <Route path={"/library/mystacks/:userId"} element={<MyStacksPage/>}/>
                     <Route path={"/library/stack/:stackId"} element={<StackPage/>}/>
+                    <Route path={"/studentproposals"} element={<StudentProposals/>}/>
+                    <Route path={"/studentresults"} element={<StudentResults/>}/>
+                    <Route path={"/studentdirections"} element={<StudentDirections/>}/>
+                    <Route path={"/dashboard"} element={<Dashboard/>}/>
+                    <Route path="/work/:id" element={<RequireAuth fallbackPath="/"><StudentWorkDetails/></RequireAuth>} />
+                    <Route path="/workpage/:id" element={<WorkPage/>} />
                 </Route>
                 <Route path={'/apanel'} Component={AdminLayout}>
                     <Route path={"teachers"} element={<Teachers/>}></Route>
@@ -64,6 +90,20 @@ const App = () => {
                     <Route path={"lessons"} element={<Lessons/>}></Route>
                     <Route path={"events"} element={<Events/>}></Route>
                     <Route path={"materials"} element={<Materials/>}></Route>
+                    
+                    <Route path={"directions"} element={<Directions/>}></Route>
+                    <Route path={"proposals"} element={<Proposals/>}></Route>
+                    <Route path={"proposaltypes"} element={<ProposalTypes/>}></Route>
+                    <Route path={"works"} element={<Works/>}></Route>
+                    <Route path={"resulttypes"} element={<ResultTypes/>}></Route>
+                    <Route path={"magazines"} element={<Magazines/>}></Route>
+                    <Route path={"conferences"} element={<Conferences/>}></Route>
+                    <Route path={"competitions"} element={<Competitions/>}></Route>
+                    <Route path={"results"} element={<Results/>}></Route>
+                    <Route path={"statistics"} element={<Statistics/>}></Route>
+                    <Route path={"statistics/magazines"} element={<MagazineStatistics/>}></Route>
+                    <Route path={"statistics/period"} element={<PeriodStatistics/>}></Route>
+                    <Route path={"reports"} element={<ReportsPage/>}></Route>
                 </Route>
             </Routes>
         </div>
