@@ -57,7 +57,7 @@ const FDEdge = ({ source, data }) => {
     const lp = { stroke: fd.color, strokeWidth: 1.5 };
 
     return (
-        <g opacity={0.65}>
+        <g>
             {/* Vertical spine connecting all stubs */}
             <line x1={laneX} y1={topY} x2={laneX} y2={bottomY} {...lp} />
             {/* Start stubs — plain lines (determinant side) */}

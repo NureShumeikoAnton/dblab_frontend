@@ -1,19 +1,33 @@
-import { useMemo } from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { useMemo, useState } from 'react';
+import { Handle, Position, useStore } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
 import './styles/TableNode.css';
 
 const TableNode = ({ data }) => {
     const { table } = data;
     const attributePool = useEditorStore((s) => s.attributePool);
+    const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
+    const fds = useEditorStore((s) => s.stages[currentStageIndex]?.fds ?? []);
     const showFDs = useEditorStore((s) => s.ui.showFDs);
-    const setHoveredTableAttr = useEditorStore((s) => s.setHoveredTableAttr);
-    const clearHoveredTableAttr = useEditorStore((s) => s.clearHoveredTableAttr);
 
     const attrMap = useMemo(
         () => new Map(attributePool.map((a) => [a.id, a])),
         [attributePool]
     );
+
+    // Set of attributeIds that participate in any FD — keeps handle dot visible
+    const participatingAttrIds = useMemo(() => {
+        const set = new Set();
+        fds.forEach((fd) => {
+            fd.starts.forEach((s) => set.add(s.attributeId));
+            fd.ends.forEach((e) => set.add(e.attributeId));
+        });
+        return set;
+    }, [fds]);
+
+    // Show all handles while the user is actively drawing a connection
+    const isConnecting = useStore((s) => s.connection?.inProgress ?? false);
+    const [hoveredAttrId, setHoveredAttrId] = useState(null);
 
     const sorted = [...table.tableAttributes].sort((a, b) => a.order - b.order);
 
@@ -35,24 +49,23 @@ const TableNode = ({ data }) => {
                     const attr = attrMap.get(ta.attributeId);
                     if (!attr) return null;
                     const displayName = ta.alias ?? attr.name;
+                    const fdHandleVisible = showFDs && (
+                        hoveredAttrId === ta.attributeId ||
+                        participatingAttrIds.has(ta.attributeId) ||
+                        isConnecting
+                    );
                     return (
                         <div
                             key={ta.id}
                             className={`table-node__row${ta.is_PK ? ' table-node__row--pk' : ''}`}
-                            onMouseEnter={() => setHoveredTableAttr(table.id, ta.attributeId)}
-                            onMouseLeave={() => clearHoveredTableAttr()}
+                            onMouseEnter={() => setHoveredAttrId(ta.attributeId)}
+                            onMouseLeave={() => setHoveredAttrId(null)}
                         >
-                            {/*
-                             * FD handle — 10×10px, invisible.
-                             * Functional only: React Flow tracks its Y position for edge routing.
-                             * Visual circles are rendered by TableFDOverlay in the SVG layer
-                             * to bypass overflow-y:auto clipping on this body container.
-                             */}
                             <Handle
                                 type="source"
                                 position={Position.Left}
                                 id={`fd-left-${ta.attributeId}`}
-                                className="table-node__fd-handle"
+                                className={`table-node__fd-handle${fdHandleVisible ? ' table-node__fd-handle--visible' : ''}`}
                                 isConnectable={showFDs}
                                 style={{ left: 0, top: '50%', transform: 'translateY(-50%)' }}
                             />

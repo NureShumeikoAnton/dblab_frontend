@@ -5,7 +5,6 @@ import useEditorStore from '../store/editorStore.js';
 import TableNode from './TableNode.jsx';
 import RelationshipEdge from './RelationshipEdge.jsx';
 import FDEdge from './FDEdge.jsx';
-import TableFDOverlay from './TableFDOverlay.jsx';
 import './styles/EditorCanvas.css';
 
 // nodeTypes / edgeTypes must be defined at module level — defining inside the
@@ -17,7 +16,6 @@ const nodeTypes = {
 const edgeTypes = {
     relationshipEdge: RelationshipEdge,
     fdEdge: FDEdge,
-    tableFDOverlay: TableFDOverlay,
 };
 
 const FD_COLORS = ['#E74C3C', '#F39C12', '#27AE60', '#2980B9', '#9B59B6', '#16A085'];
@@ -100,18 +98,7 @@ const EditorCanvas = () => {
             }];
         });
 
-        // One overlay per table — renders the visible handle circles in SVG
-        // (bypasses overflow-y:auto clipping inside the table node DOM)
-        const overlayEdges = tables.map((table) => ({
-            id: `fd-overlay-${table.id}`,
-            type: 'tableFDOverlay',
-            source: table.id,
-            target: table.id,
-            data: {},
-        }));
-
-        // Render order: brackets → circles → relationships (last = on top)
-        return [...fdEdges, ...overlayEdges, ...relEdges];
+        return [...relEdges, ...fdEdges];
     }, [tables, relationships, fds, showFDs]);
 
     const handleNodeDragStop = useCallback((_event, node) => {

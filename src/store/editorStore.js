@@ -78,7 +78,6 @@ const useEditorStore = create(
             hasUnsavedChanges: false,
             isSaving: false,
             activeModal: null, // null | { type: string, payload: any }
-            hoveredTableAttr: null, // { tableId, attributeId } | null — drives SVG handle dots
         },
 
         // ─── Actions ─────────────────────────────────────────────────────────────
@@ -119,19 +118,6 @@ const useEditorStore = create(
             set((state) => {
                 Object.assign(state.project, fields);
                 state.ui.hasUnsavedChanges = true;
-            });
-        },
-
-        /** Track which attribute row the user is hovering (drives SVG handle dot visibility). */
-        setHoveredTableAttr(tableId, attributeId) {
-            set((state) => {
-                state.ui.hoveredTableAttr = { tableId, attributeId };
-            });
-        },
-
-        clearHoveredTableAttr() {
-            set((state) => {
-                state.ui.hoveredTableAttr = null;
             });
         },
 

@@ -5,7 +5,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     min-width: 200px;
     max-width: 280px;
-    /* overflow: hidden removed — FD handle dots must extend outside the node boundary */
+    overflow: hidden;
     font-family: inherit;
     cursor: grab;
 }
@@ -15,7 +15,6 @@
     background: #f8fafc;
     border-bottom: 1px solid #e8edf4;
     border-left: 4px solid transparent;
-    border-radius: 8px 8px 0 0;  /* replaces overflow:hidden clipping for top corners */
     display: flex;
     align-items: center;
 }
@@ -114,20 +113,24 @@
     background: transparent;
 }
 
-/* FD per-attribute handles — purely functional, always invisible.
-   Visual circles are painted by TableFDOverlay in the SVG edge layer,
-   which bypasses the overflow-y:auto clipping of this body container. */
+/* FD per-attribute handles — visible on hover, active connection, or when attr participates in an FD */
 .react-flow__node-tableNode .react-flow__handle.table-node__fd-handle {
     opacity: 0;
     width: 10px;
     height: 10px;
     min-width: 10px;
     min-height: 10px;
+    border-radius: 50%;
+    background: #64748b;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #64748b;
     cursor: crosshair;
+    transition: opacity 0.15s ease;
     pointer-events: all;
-    border: none;
-    background: transparent;
-    box-shadow: none;
+}
+
+.react-flow__node-tableNode .react-flow__handle.table-node__fd-handle--visible {
+    opacity: 1;
 }
 
 /* React Flow wrapper overrides */
