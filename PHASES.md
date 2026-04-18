@@ -238,24 +238,45 @@ API calls are deferred to the final phases — all earlier phases use mock/hardc
 
 ---
 
-## Phase 14 — FD Drawing
+## Phase 14 — FD Drawing + FD Toolbar
 
 **Build:**
-- Drag from a left handle on an attribute row to another attribute's left handle (within the same table)
-- Releasing creates a `FDEdge` config modal:
-  - Color (palette)
-  - Level (partial / full / transitive)
-  - Which end is "start" (determinant) and which is "end" (dependent)
-- Multiple attributes can be added to the same FD via the edit modal (FD_Start / FD_End lists)
-- Double-click FD edge → `FDEditModal` with full start/end attribute lists + Delete
-- Orphaned FD (attribute removed from table) → edge renders with warning indicator (dashed + warning icon)
+
+*Drag-to-create (smart merge):*
+- Drag from a left handle to another left handle on the same table → FD created automatically with smart defaults:
+  - If the source attribute is already a start in an existing FD on that side AND the target is unused on that side → **extend** the existing FD (add new end, same color/level)
+  - Otherwise → **new FD** at the next outward lane, first unused palette color, type `full`
+- Same logic applies for right-to-right drags (negative levels)
+- Connection preview shows step/elbow dashed line; source handle turns blue; valid target turns lighter blue
+
+*FD Toolbar (click-to-edit, no modal):*
+- Add `selectedFDId: null` to `ui` in Zustand store; add `selectFD(fdId)` and `clearSelectedFD()` actions
+- Clicking any line or spine of an FD bracket sets `selectedFDId`; clicking canvas background clears it
+- When `selectedFDId` is set, `EditorToolbar` replaces its content with `FDToolbar`:
+  - Color swatch → inline 10-color palette → updates `fd.color` immediately
+  - Type select (`partial | full | transitive`) → updates `fd.type`
+  - Level stepper (`← N →`) → adjusts `Math.abs(level)`, min 1, preserves side sign
+  - Delete button → calls `deleteFD`, clears selection
+  - ✕ close → clears selection, restores normal toolbar
+- All edits call `updateFD(stageIndex, fdId, fields)` immediately (no confirm step)
+
+*Deferred to later:*
+- Adding extra start attributes to an existing FD post-creation
+- Orphaned FD warning indicator (dashed + warning icon)
 
 **Test:**
-- Drag from attribute handle → see preview edge → release on another attribute → modal appears
-- Confirm → FD arrow and bracket appear
-- Toggle "Show FDs" → FDs hide and show
-- Add a second attribute to the FD's "end" list → bracket grows to include it
-- Remove an attribute from the table that's in an FD → edge shows warning state
+- Drag A→B on empty table → new FD at level 1 with auto color
+- Drag C→D same table → new FD at level 2, different color
+- Drag A→E where A is already a start and E is unused → same bracket grows (E added as end)
+- Drag A→F where F is already used → new FD at level 3
+- Drag from right handle → bracket appears on right side at level −1
+- Click FD line → toolbar appears, normal controls hidden
+- Change color in toolbar → bracket updates immediately
+- Change level from 1 to 2 → bracket moves to outer lane
+- Change type to `partial` → stored (visual change deferred)
+- Click Delete → bracket disappears, toolbar closes
+- Click canvas → toolbar closes, normal toolbar restores
+- Toggle "Show FDs" → all FD brackets hide; toggle again → reappear
 
 ---
 

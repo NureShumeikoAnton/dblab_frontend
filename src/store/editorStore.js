@@ -77,7 +77,8 @@ const useEditorStore = create(
             showFDs: true,
             hasUnsavedChanges: false,
             isSaving: false,
-            activeModal: null, // null | { type: string, payload: any }
+            activeModal: null,    // null | { type: string, payload: any }
+            selectedFDId: null,   // null | string — FD currently selected for editing
         },
 
         // ─── Actions ─────────────────────────────────────────────────────────────
@@ -318,6 +319,14 @@ const useEditorStore = create(
                     state.ui.hasUnsavedChanges = true;
                 }
             });
+        },
+
+        selectFD(fdId) {
+            set((state) => { state.ui.selectedFDId = fdId; });
+        },
+
+        clearSelectedFD() {
+            set((state) => { state.ui.selectedFDId = null; });
         },
 
         deleteFD(stageIndex, fdId) {

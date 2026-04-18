@@ -87,7 +87,7 @@ FunctionalDependency
 └──────────────────────────────────────────────────────────────┘
 ```
 
-- **Toolbar** (top): project name (editable inline), Save button (dot indicator when unsaved changes exist), Show/Hide FDs toggle button.
+- **Toolbar** (top): project name (editable inline), Save button (dot indicator when unsaved changes exist), Show/Hide FDs toggle button. When an FD is selected, the toolbar content is replaced by the **FD Toolbar** (see §11).
 - **Canvas** (center-left): React Flow viewport with pan/zoom.
 - **Attribute Panel** (right): scrollable list of attributes available at the current stage. Two action buttons at the top.
 - **Stage Bar** (bottom): four stage buttons; active stage is highlighted. `[✓ Check NF Rules]` button opens the violation checklist modal.
@@ -229,30 +229,50 @@ FDs are **within-table only** and rendered as React Flow edges between attribute
 
 ### Architecture Note
 Each attribute row in a table node exposes two React Flow **handles**:
-- **Left handle** (source) — drag from here to start an FD.
-- **Right handle** — used for the bracket grouping visual (target of FDs that have the same color/group).
+- **Left handle** (source/target) — used for FDs rendered on the left side of the table (positive `level`).
+- **Right handle** (source/target) — used for FDs rendered on the right side of the table (negative `level`).
 
-The FD bracket visual on the right (as shown in the reference image) is rendered by a custom React Flow edge type that draws a colored bracket connecting multiple target attribute handles.
+Handles are half-circle tabs visible on hover, when the attribute participates in an FD, or while a connection is being drawn. The source handle turns blue during drag; a valid hover target turns lighter blue.
+
+The FD bracket visual is rendered by a custom React Flow edge type (`FDEdge`) that draws a colored bracket outside the table: vertical spine + horizontal stubs per attribute, with arrowheads on dependent (end) attributes.
 
 ### Creating an FD
-1. User drags from the **left handle** of a source attribute row.
-2. Drops onto the **left handle** of a target attribute row (within the same table).
-3. **FD Config Modal** appears:
+1. User drags from the **left handle** of a source attribute row to the left handle of a target row within the same table (or right-to-right for a right-side bracket).
+2. On release, an FD is created **automatically** using these merge rules:
 
-| Field | Type |
+| Condition | Result |
 |---|---|
-| Color | palette picker |
-| Type | select: `partial`, `full`, `transitive` (maps to `FD_Stage.type`) |
-| Level | integer — bracket lane (auto-suggested, user can override) |
-| This attribute is | select: `start (determinant)`, `end (dependent)` |
+| Source attribute is already a **start** in an existing FD on this side, AND the target attribute is not yet used on this side | **Extend** existing FD: target added as a new end. Same color and level. |
+| Source attribute is already a start, BUT target is already used on this side | **New FD** at the next outward lane |
+| Source attribute is not a start in any FD on this side | **New FD** at the next outward lane |
 
-4. To add more attributes to the same FD (multi-attribute determinant or multiple dependents), the user can open the FD's edit modal and add additional `FD_Start` or `FD_End` entries.
+- **Level auto-assignment**: new FDs take `max(existing levels on this side) + 1` (lane 1, 2, 3 outward).
+- **Color auto-assignment**: first color from the palette not yet used by another FD on this table+side.
+- **Type** defaults to `full`; change it via the FD Toolbar after creation.
+
+### FD Toolbar (contextual editing)
+Clicking any line or spine of an FD bracket **selects** that FD and replaces the normal EditorToolbar content with the FD Toolbar:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  FD:  [● color swatch ▾]  Type: [full ▾]  Level: [← 1 →]  [🗑 Delete]  ✕ │
+└──────────────────────────────────────────────────────────┘
+```
+
+| Control | Behaviour |
+|---|---|
+| Color swatch | Opens inline 10-color palette; updates `fd.color` immediately |
+| Type select | `partial \| full \| transitive`; updates `fd.type` immediately |
+| Level stepper `← →` | Increments or decrements `Math.abs(level)` (min 1); sign (left/right side) is preserved |
+| Delete | Removes the FD; closes toolbar |
+| ✕ | Deselects FD; normal toolbar restores |
+
+All changes are applied immediately to the store (no confirm step). Clicking on the canvas background also deselects the FD and restores the normal toolbar.
+
+> **`selectedFDId`** is stored in `ui` (not persisted). It is cleared on stage switch.
 
 ### Show / Hide FDs
 The toolbar **"Show FDs"** toggle button hides all FD edges from the canvas without deleting them. State is UI-only (not persisted).
-
-### Editing / Deleting an FD
-Double-click on an FD edge → FD Edit Modal with list of start/end attributes, color, level, and a delete button.
 
 ---
 
@@ -377,15 +397,23 @@ EditorStore (single store, immer middleware)
 ```
 EditorPage
 ├── EditorToolbar
-│     ├── ProjectNameInput
-│     ├── SaveButton
-│     └── ShowFDsToggle
+│     ├── [default mode]
+│     │     ├── ProjectNameInput
+│     │     ├── SaveButton
+│     │     └── ShowFDsToggle
+│     └── [FD selected — ui.selectedFDId is set]
+│           └── FDToolbar
+│                 ├── ColorSwatch (inline 10-color palette)
+│                 ├── TypeSelect (partial | full | transitive)
+│                 ├── LevelStepper (← level →)
+│                 ├── DeleteFDButton
+│                 └── CloseButton (clears selectedFDId)
 ├── EditorCanvas (React Flow Provider)
 │     ├── TableNode (custom RF node)
 │     │     ├── TableHeader (right-click menu, double-click edit, color indicator)
-│     │     └── AttributeRow[] (left handle for FD drag, right handle for FD target)
+│     │     └── AttributeRow[] (left handle for left-side FDs, right handle for right-side FDs)
 │     ├── RelationshipEdge (custom RF edge — crow's foot)
-│     └── FDEdge (custom RF edge — arrow/bracket)
+│     └── FDEdge (custom RF edge — bracket; click selects FD)
 ├── AttributePanel
 │     ├── AddToStageButton
 │     ├── AddGlobalButton
@@ -398,7 +426,6 @@ EditorPage
       ├── AttributeEditModal
       ├── TableAttributeEditModal
       ├── RelationshipEditModal
-      ├── FDEditModal
       ├── NewAttributeModal
       ├── NewProjectModal
       ├── NFViolationChecklistModal

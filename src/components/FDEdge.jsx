@@ -1,4 +1,6 @@
+import { useCallback } from 'react';
 import { useInternalNode } from '@xyflow/react';
+import useEditorStore from '../store/editorStore.js';
 
 const LANE_WIDTH = 18; // px per bracket lane
 const ARROW_SIZE = 5;  // arrowhead half-height
@@ -18,6 +20,15 @@ const ARROW_SIZE = 5;  // arrowhead half-height
  */
 const FDEdge = ({ source, data }) => {
     const node = useInternalNode(source);
+    const selectFD = useEditorStore((s) => s.selectFD);
+    const selectedFDId = useEditorStore((s) => s.ui.selectedFDId);
+    const fdId = data?.fd?.id ?? null;
+
+    const handleClick = useCallback((e) => {
+        e.stopPropagation();
+        if (fdId) selectFD(fdId);
+    }, [fdId, selectFD]);
+
     if (!node || !data?.fd) return null;
 
     const { fd } = data;
@@ -55,21 +66,36 @@ const FDEdge = ({ source, data }) => {
         ? `M ${tableEdgeX},${y} L ${tableEdgeX - ARROW_SIZE * 1.5},${y - ARROW_SIZE} L ${tableEdgeX - ARROW_SIZE * 1.5},${y + ARROW_SIZE} Z`
         : `M ${tableEdgeX},${y} L ${tableEdgeX + ARROW_SIZE * 1.5},${y - ARROW_SIZE} L ${tableEdgeX + ARROW_SIZE * 1.5},${y + ARROW_SIZE} Z`;
 
-    const lp = { stroke: fd.color, strokeWidth: 1.5, opacity: 0.55 };
+    const isSelected = selectedFDId === fd.id;
+    const lp = { stroke: fd.color, strokeWidth: isSelected ? 2.5 : 1.5, opacity: 0.55 };
+    // Wide transparent stroke used as a click hit area — thin lines are hard to click
+    const hitProps = {
+        stroke: 'transparent',
+        strokeWidth: 12,
+        style: { cursor: 'pointer', pointerEvents: 'stroke' },
+        onClick: handleClick,
+    };
 
     return (
         <g>
-            {/* Vertical spine connecting all stubs */}
+            {/* Vertical spine */}
             <line x1={laneX} y1={topY} x2={laneX} y2={bottomY} {...lp} />
+            <line x1={laneX} y1={topY} x2={laneX} y2={bottomY} {...hitProps} />
+
             {/* Start stubs — plain lines (determinant side) */}
             {startYs.map((y, i) => (
-                <line key={`s-${i}`} x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
+                <g key={`s-${i}`}>
+                    <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
+                    <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...hitProps} />
+                </g>
             ))}
-            {/* End stubs — line + arrowhead (dependent side) */}
+
+            {/* End stubs — line + solid arrowhead (dependent side) */}
             {endYs.map((y, i) => (
                 <g key={`e-${i}`}>
                     <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
-                    <path d={arrowPath(y)} fill={fd.color} opacity={0.55} />
+                    <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...hitProps} />
+                    <path d={arrowPath(y)} fill={fd.color} />
                 </g>
             ))}
         </g>
