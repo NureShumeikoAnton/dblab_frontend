@@ -113,20 +113,29 @@
     background: transparent;
 }
 
-/* FD per-attribute handles — visible on hover, active connection, or when attr participates in an FD */
+/* FD per-attribute handles — half-circle tab on the node edge.
+ * Edit size/color here: width, height, background.
+ * Left handle:  flat on left,  curve on right  (border-radius: 0 R R 0)
+ * Right handle: curve on left, flat on right   (border-radius: R 0 0 R)
+ * ─────────────────────────────────────────────────────────────────────── */
 .react-flow__node-tableNode .react-flow__handle.table-node__fd-handle {
     opacity: 0;
-    width: 10px;
-    height: 10px;
-    min-width: 10px;
-    min-height: 10px;
-    border-radius: 50%;
-    background: #64748b;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 1px #64748b;
+    width: 4px;
+    height: 8px;
+    min-width: 4px;
+    min-height: 8px;
+    border-radius: 0 4px 4px 0;
+    background: #94a3b8;
+    border: none;
+    box-shadow: none;
     cursor: crosshair;
     transition: opacity 0.15s ease;
     pointer-events: all;
+}
+
+/* Right-edge handle — mirror of the left shape */
+.react-flow__node-tableNode .react-flow__handle.table-node__fd-handle--right {
+    border-radius: 4px 0 0 4px;
 }
 
 .react-flow__node-tableNode .react-flow__handle.table-node__fd-handle--visible {

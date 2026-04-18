@@ -94,7 +94,7 @@ const STAGE_1NF = {
         {
             id: 'fd-1-1',
             color: '#E74C3C',
-            level: 1,           // integer bracket lane (1 = nearest left)
+            level: -1,           // integer bracket lane (1 = nearest left)
             type: 'full',       // FD_Stage.type
             starts: [{ id: 'fds-1-1', attributeId: 'attr-4' }],
             ends: [

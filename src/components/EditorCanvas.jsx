@@ -20,6 +20,13 @@ const edgeTypes = {
 
 const FD_COLORS = ['#E74C3C', '#F39C12', '#27AE60', '#2980B9', '#9B59B6', '#16A085'];
 
+const isFDHandle = (h) => h?.startsWith('fd-left-') || h?.startsWith('fd-right-');
+const parseFDHandle = (h) => {
+    if (h?.startsWith('fd-left-'))  return { attrId: h.slice('fd-left-'.length),  isRight: false };
+    if (h?.startsWith('fd-right-')) return { attrId: h.slice('fd-right-'.length), isRight: true  };
+    return null;
+};
+
 const EditorCanvas = () => {
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const tables = useEditorStore((s) => s.stages[currentStageIndex]?.tables ?? []);
@@ -109,25 +116,26 @@ const EditorCanvas = () => {
         setActiveNodeId(node.id);
     }, []);
 
-    // Only allow FD connections within the same table node
-    const isValidConnection = useCallback(
-        (connection) => connection.source === connection.target,
-        []
-    );
+    // Only allow FD connections within the same table node, via fd-left-* or fd-right-* handles
+    const isValidConnection = useCallback((connection) => (
+        connection.source === connection.target
+        && isFDHandle(connection.sourceHandle)
+        && isFDHandle(connection.targetHandle)
+    ), []);
 
     const handleConnect = useCallback((connection) => {
         if (connection.source !== connection.target) return;
-        const srcAttrId = connection.sourceHandle?.replace('fd-left-', '');
-        const tgtAttrId = connection.targetHandle?.replace('fd-left-', '');
-        if (!srcAttrId || !tgtAttrId || srcAttrId === tgtAttrId) return;
+        const src = parseFDHandle(connection.sourceHandle);
+        const tgt = parseFDHandle(connection.targetHandle);
+        if (!src || !tgt || src.attrId === tgt.attrId) return;
 
         addFD(currentStageIndex, {
             id: `fd-${crypto.randomUUID()}`,
             color: FD_COLORS[Math.floor(Math.random() * FD_COLORS.length)],
-            level: 1,
+            level: src.isRight ? -1 : 1,
             type: 'full',
-            starts: [{ id: `fds-${crypto.randomUUID()}`, attributeId: srcAttrId }],
-            ends:   [{ id: `fde-${crypto.randomUUID()}`, attributeId: tgtAttrId }],
+            starts: [{ id: `fds-${crypto.randomUUID()}`, attributeId: src.attrId }],
+            ends:   [{ id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
         });
     }, [addFD, currentStageIndex]);
 

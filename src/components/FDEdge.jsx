@@ -28,8 +28,15 @@ const FDEdge = ({ source, data }) => {
     const posAbs = node.internals.positionAbsolute;
     const nodeW  = node.measured?.width ?? 200;
 
+    const isLeft        = fd.level >= 0;
+    const tableEdgeX    = isLeft ? posAbs.x : posAbs.x + nodeW;
+    const laneX         = isLeft
+        ? posAbs.x - Math.abs(fd.level) * LANE_WIDTH
+        : posAbs.x + nodeW + Math.abs(fd.level) * LANE_WIDTH;
+    const handleIdPrefix = isLeft ? 'fd-left-' : 'fd-right-';
+
     const getHandleY = (attributeId) => {
-        const h = allHandles.find((h) => h.id === `fd-left-${attributeId}`);
+        const h = allHandles.find((h) => h.id === `${handleIdPrefix}${attributeId}`);
         return h !== undefined ? posAbs.y + h.y + h.height / 2 : null;
     };
 
@@ -43,18 +50,12 @@ const FDEdge = ({ source, data }) => {
     const topY    = Math.min(...allYs);
     const bottomY = Math.max(...allYs);
 
-    const isLeft     = fd.level >= 0;
-    const tableEdgeX = isLeft ? posAbs.x : posAbs.x + nodeW;
-    const laneX      = isLeft
-        ? posAbs.x - Math.abs(fd.level) * LANE_WIDTH
-        : posAbs.x + nodeW + Math.abs(fd.level) * LANE_WIDTH;
-
     // Arrowhead pointing from laneX toward the table edge
     const arrowPath = (y) => isLeft
         ? `M ${tableEdgeX},${y} L ${tableEdgeX - ARROW_SIZE * 1.5},${y - ARROW_SIZE} L ${tableEdgeX - ARROW_SIZE * 1.5},${y + ARROW_SIZE} Z`
         : `M ${tableEdgeX},${y} L ${tableEdgeX + ARROW_SIZE * 1.5},${y - ARROW_SIZE} L ${tableEdgeX + ARROW_SIZE * 1.5},${y + ARROW_SIZE} Z`;
 
-    const lp = { stroke: fd.color, strokeWidth: 1.5 };
+    const lp = { stroke: fd.color, strokeWidth: 1.5, opacity: 0.55 };
 
     return (
         <g>
@@ -68,7 +69,7 @@ const FDEdge = ({ source, data }) => {
             {endYs.map((y, i) => (
                 <g key={`e-${i}`}>
                     <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
-                    <path d={arrowPath(y)} fill={fd.color} />
+                    <path d={arrowPath(y)} fill={fd.color} opacity={0.55} />
                 </g>
             ))}
         </g>

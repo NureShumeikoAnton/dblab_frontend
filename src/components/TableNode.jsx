@@ -15,14 +15,16 @@ const TableNode = ({ data }) => {
         [attributePool]
     );
 
-    // Set of attributeIds that participate in any FD — keeps handle dot visible
-    const participatingAttrIds = useMemo(() => {
-        const set = new Set();
+    // Split participating attrs by bracket side so handles appear on the correct edge
+    const { leftAttrIds, rightAttrIds } = useMemo(() => {
+        const leftAttrIds = new Set();
+        const rightAttrIds = new Set();
         fds.forEach((fd) => {
-            fd.starts.forEach((s) => set.add(s.attributeId));
-            fd.ends.forEach((e) => set.add(e.attributeId));
+            const target = fd.level < 0 ? rightAttrIds : leftAttrIds;
+            fd.starts.forEach((s) => target.add(s.attributeId));
+            fd.ends.forEach((e) => target.add(e.attributeId));
         });
-        return set;
+        return { leftAttrIds, rightAttrIds };
     }, [fds]);
 
     // Show all handles while the user is actively drawing a connection
@@ -49,11 +51,9 @@ const TableNode = ({ data }) => {
                     const attr = attrMap.get(ta.attributeId);
                     if (!attr) return null;
                     const displayName = ta.alias ?? attr.name;
-                    const fdHandleVisible = showFDs && (
-                        hoveredAttrId === ta.attributeId ||
-                        participatingAttrIds.has(ta.attributeId) ||
-                        isConnecting
-                    );
+                    const isHovered = hoveredAttrId === ta.attributeId;
+                    const leftVisible = showFDs && (isHovered || leftAttrIds.has(ta.attributeId) || isConnecting);
+                    const rightVisible = showFDs && (isHovered || rightAttrIds.has(ta.attributeId) || isConnecting);
                     return (
                         <div
                             key={ta.id}
@@ -65,9 +65,17 @@ const TableNode = ({ data }) => {
                                 type="source"
                                 position={Position.Left}
                                 id={`fd-left-${ta.attributeId}`}
-                                className={`table-node__fd-handle${fdHandleVisible ? ' table-node__fd-handle--visible' : ''}`}
+                                className={`table-node__fd-handle${leftVisible ? ' table-node__fd-handle--visible' : ''}`}
                                 isConnectable={showFDs}
                                 style={{ left: 0, top: '50%', transform: 'translateY(-50%)' }}
+                            />
+                            <Handle
+                                type="source"
+                                position={Position.Right}
+                                id={`fd-right-${ta.attributeId}`}
+                                className={`table-node__fd-handle table-node__fd-handle--right${rightVisible ? ' table-node__fd-handle--visible' : ''}`}
+                                isConnectable={showFDs}
+                                style={{ right: 0, left: 'auto', top: '50%', transform: 'translateY(-50%)' }}
                             />
                             <div className="table-node__key-col">
                                 {ta.is_PK && <span className="table-node__badge table-node__badge--pk">PK</span>}
