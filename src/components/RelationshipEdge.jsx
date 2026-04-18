@@ -70,7 +70,7 @@ const RelationshipEdge = ({ id, source, target, data }) => {
     const c2    = relationship?.cardinality_t2 ?? '1';
 
     const { srcX, srcY, srcPos, tgtX, tgtY, tgtPos } =
-        computeRelationshipHandles(sourceNode, targetNode);
+        computeRelationshipHandles(sourceNode, targetNode, 2 * EDGE_OFFSET);
 
     const [edgePath] = getSmoothStepPath({
         sourceX: srcX, sourceY: srcY, sourcePosition: srcPos,
