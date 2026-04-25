@@ -166,3 +166,13 @@
     border-color: var(--primary-light);
     box-shadow: 0 0 0 1px var(--primary-light);
 }
+
+.table-node--drop-target {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px #2563eb40;
+    background: #eff6ff;
+}
+
+.table-node--drop-target .table-node__header {
+    background: #dbeafe;
+}

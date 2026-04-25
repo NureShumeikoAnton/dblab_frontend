@@ -11,9 +11,11 @@ const TableNode = ({ data }) => {
     const fds = useEditorStore((s) => s.stages[currentStageIndex]?.fds ?? []);
     const showFDs = useEditorStore((s) => s.ui.showFDs);
     const deleteTable = useEditorStore((s) => s.deleteTable);
+    const addTableAttribute = useEditorStore((s) => s.addTableAttribute);
 
     const [contextMenu, setContextMenu] = useState(null); // { x, y } | null
     const [hoveredAttrId, setHoveredAttrId] = useState(null);
+    const [isDragOver, setIsDragOver] = useState(false);
 
     const attrMap = useMemo(
         () => new Map(attributePool.map((a) => [a.id, a])),
@@ -43,10 +45,55 @@ const TableNode = ({ data }) => {
         deleteTable(currentStageIndex, table.id);
     }, [currentStageIndex, table.id, deleteTable]);
 
+    const handleDragEnter = useCallback((e) => {
+        if (!e.dataTransfer.types.includes('application/dblab-attribute')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOver(true);
+    }, []);
+
+    const handleDragOver = useCallback((e) => {
+        if (!e.dataTransfer.types.includes('application/dblab-attribute')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'move';
+    }, []);
+
+    const handleDragLeave = useCallback((e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+            setIsDragOver(false);
+        }
+    }, []);
+
+    const handleDrop = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOver(false);
+
+        const attrId = e.dataTransfer.getData('application/dblab-attribute');
+        if (!attrId) return;
+
+        const maxOrder = table.tableAttributes.reduce((max, ta) => Math.max(max, ta.order), -1);
+        addTableAttribute(currentStageIndex, table.id, {
+            id: crypto.randomUUID(),
+            attributeId: attrId,
+            is_PK: false,
+            is_FK: false,
+            alias: null,
+            order: maxOrder + 1,
+        });
+    }, [currentStageIndex, table, addTableAttribute]);
+
     const sorted = [...table.tableAttributes].sort((a, b) => a.order - b.order);
 
     return (
-        <div className="table-node">
+        <div
+            className={`table-node${isDragOver ? ' table-node--drop-target' : ''}`}
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
             {/* Relationship handles — invisible, left and right sides only */}
             <Handle type="source" position={Position.Left}  id="src-left"  className="table-node__handle" />
             <Handle type="target" position={Position.Left}  id="tgt-left"  className="table-node__handle" />

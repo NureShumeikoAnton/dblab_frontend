@@ -32,8 +32,41 @@ const AttributeItem = ({ attribute, isUnused, retireBlocked, onToggleRetire, onD
             ? 'Show from this stage'
             : 'Hide from this stage';
 
+    const handleDragStart = (e) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('application/dblab-attribute', attribute.id);
+
+        const ghost = document.createElement('div');
+        ghost.style.cssText = [
+            'position:fixed', 'top:-9999px', 'left:-9999px',
+            'display:flex', 'align-items:center', 'gap:8px',
+            'padding:7px 12px',
+            'background:#eef6fb', 'border:1.5px solid #7ec8e3', 'border-radius:6px',
+            'font-family:inherit', 'font-size:13px', 'font-weight:500', 'color:#1e293b',
+            'pointer-events:none', 'box-shadow:0 4px 12px rgba(0,0,0,0.18)',
+            'white-space:nowrap',
+        ].join(';');
+        ghost.textContent = name;
+
+        const badge = document.createElement('span');
+        badge.style.cssText = [
+            'font-size:11px', 'font-weight:600', 'color:#2980B9',
+            'background:#e8f4fb', 'padding:2px 6px', 'border-radius:4px',
+        ].join(';');
+        badge.textContent = data_type;
+        ghost.appendChild(badge);
+
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, ghost.offsetWidth / 2, ghost.offsetHeight / 2);
+        setTimeout(() => document.body.removeChild(ghost), 0);
+    };
+
     return (
-        <div className={`attribute-item${isRetired ? ' attribute-item--retired' : ''}`}>
+        <div
+            className={`attribute-item${isRetired ? ' attribute-item--retired' : ''}`}
+            draggable={!isRetired}
+            onDragStart={isRetired ? undefined : handleDragStart}
+        >
             <span className="attribute-item__name">{name}</span>
             <div className="attribute-item__right">
                 <span className="attribute-item__type">{data_type}</span>

@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { ReactFlow, Background, Controls, applyNodeChanges, ConnectionLineType } from '@xyflow/react';
+import {
+    ReactFlow, ReactFlowProvider, Background, Controls,
+    applyNodeChanges, ConnectionLineType, useReactFlow,
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import useEditorStore from '../store/editorStore.js';
+import { TABLE_COLORS } from './TableToolbar.jsx';
 import TableNode from './TableNode.jsx';
 import RelationshipEdge from './RelationshipEdge.jsx';
 import FDEdge from './FDEdge.jsx';
@@ -32,13 +36,17 @@ const pickColor = (sideFDs) => {
     return FD_COLORS.find((c) => !used.has(c)) ?? FD_COLORS[0];
 };
 
-const EditorCanvas = () => {
+// Inner component — lives inside ReactFlowProvider so useReactFlow() works.
+const EditorCanvasFlow = () => {
+    const { screenToFlowPosition } = useReactFlow();
+
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const tables = useEditorStore((s) => s.stages[currentStageIndex]?.tables ?? []);
     const relationships = useEditorStore((s) => s.stages[currentStageIndex]?.relationships ?? []);
     const fds = useEditorStore((s) => s.stages[currentStageIndex]?.fds ?? []);
     const showFDs = useEditorStore((s) => s.ui.showFDs);
     const updateTablePosition = useEditorStore((s) => s.updateTablePosition);
+    const addTable = useEditorStore((s) => s.addTable);
     const addFD = useEditorStore((s) => s.addFD);
     const updateFD = useEditorStore((s) => s.updateFD);
     const clearSelectedFD = useEditorStore((s) => s.clearSelectedFD);
@@ -217,38 +225,88 @@ const EditorCanvas = () => {
         });
     }, [addFD, updateFD, currentStageIndex, tables, fds]);
 
+    // ─── Attribute panel → canvas drop ──────────────────────────────────────────
+
+    const handleDragOver = useCallback((e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }, []);
+
+    const handleDrop = useCallback((e) => {
+        e.preventDefault();
+
+        // TableNode stops propagation on drops over a node — this handler only
+        // fires for drops on the empty canvas.
+        const attrId = e.dataTransfer.getData('application/dblab-attribute');
+        if (!attrId) return;
+
+        const position = screenToFlowPosition({ x: e.clientX, y: e.clientY });
+
+        const nums = tables
+            .map((t) => {
+                const m = t.name.match(/^Table_(\d+)$/);
+                return m ? parseInt(m[1], 10) : NaN;
+            })
+            .filter((n) => !isNaN(n));
+        const nextNum = nums.length ? Math.max(...nums) + 1 : 1;
+        const color = TABLE_COLORS[Math.floor(Math.random() * TABLE_COLORS.length)];
+
+        addTable(currentStageIndex, {
+            id: crypto.randomUUID(),
+            name: `Table_${nextNum}`,
+            color,
+            position,
+            tableAttributes: [{
+                id: crypto.randomUUID(),
+                attributeId: attrId,
+                is_PK: false,
+                is_FK: false,
+                alias: null,
+                order: 0,
+            }],
+        });
+    }, [screenToFlowPosition, currentStageIndex, tables, addTable]);
+
     return (
-        <div className="editor-canvas">
-            <ReactFlow
-                nodes={localNodes}
-                edges={edges}
-                nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
-                onNodesChange={onNodesChange}
-                onNodeDragStart={handleNodeActivate}
-                onNodeDragStop={handleNodeDragStop}
-                onNodeClick={handleNodeClick}
-                connectionMode="loose"
-                onConnect={handleConnect}
-                isValidConnection={isValidConnection}
-                connectionLineType={ConnectionLineType.Step}
-                connectionLineStyle={{ stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '5 3' }}
-                onPaneClick={handlePaneClick}
-                fitView
-                fitViewOptions={{ padding: 0.2 }}
-                minZoom={0.2}
-                maxZoom={2}
-                panOnScroll={false}
-                zoomOnScroll={true}
-                panOnDrag={true}
-                deleteKeyCode={null}
-                selectionKeyCode={null}
-            >
-                <Background variant="dots" gap={20} size={1} color="#d1d9e0" />
-                <Controls showInteractive={false} />
-            </ReactFlow>
-        </div>
+        <ReactFlow
+            nodes={localNodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            onNodesChange={onNodesChange}
+            onNodeDragStart={handleNodeActivate}
+            onNodeDragStop={handleNodeDragStop}
+            onNodeClick={handleNodeClick}
+            connectionMode="loose"
+            onConnect={handleConnect}
+            isValidConnection={isValidConnection}
+            connectionLineType={ConnectionLineType.Step}
+            connectionLineStyle={{ stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '5 3' }}
+            onPaneClick={handlePaneClick}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            fitView
+            fitViewOptions={{ padding: 0.2 }}
+            minZoom={0.2}
+            maxZoom={2}
+            panOnScroll={false}
+            zoomOnScroll={true}
+            panOnDrag={true}
+            deleteKeyCode={null}
+            selectionKeyCode={null}
+        >
+            <Background variant="dots" gap={20} size={1} color="#d1d9e0" />
+            <Controls showInteractive={false} />
+        </ReactFlow>
     );
 };
+
+const EditorCanvas = () => (
+    <div className="editor-canvas">
+        <ReactFlowProvider>
+            <EditorCanvasFlow />
+        </ReactFlowProvider>
+    </div>
+);
 
 export default EditorCanvas;

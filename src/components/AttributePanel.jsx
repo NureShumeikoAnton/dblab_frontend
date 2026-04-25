@@ -18,6 +18,17 @@ const AttributePanel = () => {
 
     const currentOrder = STAGE_ORDER.indexOf(stages[currentStageIndex]?.stageId);
 
+    // Attributes placed in the current stage — hidden from the panel while they live on canvas.
+    const usedInCurrentStageIds = useMemo(
+        () => new Set(
+            stages[currentStageIndex]?.tables.flatMap((t) =>
+                t.tableAttributes.map((ta) => ta.attributeId)
+            ) ?? []
+        ),
+        [stages, currentStageIndex]
+    );
+
+    // Show retired attrs (greyed-out) but hide active attrs that are already on canvas.
     const attributes = useMemo(
         () => attributePool
             .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
@@ -26,8 +37,10 @@ const AttributePanel = () => {
                     ? STAGE_ORDER.indexOf(attr.retired_at_stage_Id)
                     : Infinity;
                 return { ...attr, isRetired: retireOrder <= currentOrder };
-            }),
-        [attributePool, currentOrder]
+            })
+            .filter((attr) => attr.isRetired || !usedInCurrentStageIds.has(attr.id))
+            .sort((a, b) => (a.isRetired ? 1 : 0) - (b.isRetired ? 1 : 0)),
+        [attributePool, currentOrder, usedInCurrentStageIds]
     );
 
     // Delete removes from attributePool entirely — must check ALL stages, not just current.
