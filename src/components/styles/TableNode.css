@@ -17,6 +17,8 @@
     border-left: 4px solid transparent;
     display: flex;
     align-items: center;
+    cursor: pointer;
+    user-select: none;
 }
 
 .table-node__name {

@@ -79,6 +79,7 @@ const useEditorStore = create(
             isSaving: false,
             activeModal: null,    // null | { type: string, payload: any }
             selectedFDId: null,   // null | string — FD currently selected for editing
+            selectedTableId: null, // null | string — table node currently selected for inline editing
         },
 
         // ─── Actions ─────────────────────────────────────────────────────────────
@@ -184,11 +185,28 @@ const useEditorStore = create(
 
         deleteTable(stageIndex, tableId) {
             set((state) => {
+                const table = state.stages[stageIndex].tables.find((t) => t.id === tableId);
+                if (!table) return;
+
+                const attrIds = new Set(table.tableAttributes.map((ta) => ta.attributeId));
+
+                // Cascade: remove FDs that reference any attribute in this table
+                state.stages[stageIndex].fds = state.stages[stageIndex].fds.filter((fd) =>
+                    !fd.starts.some((s) => attrIds.has(s.attributeId)) &&
+                    !fd.ends.some((e) => attrIds.has(e.attributeId))
+                );
+
+                // Cascade: remove relationships that involve this table
+                state.stages[stageIndex].relationships = state.stages[stageIndex].relationships.filter(
+                    (r) => r.table1Id !== tableId && r.table2Id !== tableId
+                );
+
                 state.stages[stageIndex].tables = state.stages[stageIndex].tables.filter(
                     (t) => t.id !== tableId
                 );
-                // Remove FDs whose start/end attributes belonged to this table
-                // (full cleanup deferred to later phases)
+                if (state.ui.selectedTableId === tableId) {
+                    state.ui.selectedTableId = null;
+                }
                 state.ui.hasUnsavedChanges = true;
             });
         },
@@ -327,6 +345,17 @@ const useEditorStore = create(
 
         clearSelectedFD() {
             set((state) => { state.ui.selectedFDId = null; });
+        },
+
+        selectTable(tableId) {
+            set((state) => {
+                state.ui.selectedTableId = tableId;
+                state.ui.selectedFDId = null; // selecting a table deselects any active FD
+            });
+        },
+
+        clearSelectedTable() {
+            set((state) => { state.ui.selectedTableId = null; });
         },
 
         deleteFD(stageIndex, fdId) {

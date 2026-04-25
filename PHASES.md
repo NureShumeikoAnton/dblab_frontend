@@ -116,17 +116,23 @@ API calls are deferred to the final phases — all earlier phases use mock/hardc
 ## Phase 7 — Table Interactions (edit, delete, context menu)
 
 **Build:**
-- Right-click on table header → context menu: "Edit table", "Add relationship to..." (disabled for now), "Delete table"
-- "Edit table" → `TableEditModal`: name field + 10-color palette picker → confirm updates store
-- "Delete table" → removes table from current stage in store; attributes return to unused pool
-- Double-click on table header → same `TableEditModal`
+- Clicking a table node → sets `ui.selectedTableId` in Zustand; `EditorToolbar` replaces its content with `TableToolbar`
+- `TableToolbar`: inline name input (live updates on each keystroke) + 10-color palette (immediate on click) + ✕ close button
+- Clicking canvas background or ✕ → clears `selectedTableId`, restores default toolbar
+- Right-click on table header → context menu: "Add relationship to..." (disabled), "Delete table"
+- "Delete table" → removes table from current stage in store; cascades to remove related FDs; attributes return to unused pool; clears `selectedTableId` if the deleted table was selected
+- Add `selectedTableId: null`, `selectTable(id)`, `clearSelectedTable()` to Zustand `ui`
+- Selecting a table clears any active `selectedFDId` (and vice versa)
 
 **Test:**
-- Right-click table header → menu appears
-- Edit table name → header updates immediately
-- Change table color → color bar on table updates
-- Delete table → table disappears from canvas
-- Deleted table's attributes reappear as "unused" in the attribute panel
+- Click a table node → toolbar switches to show name input pre-filled + palette with current color highlighted
+- Type in the name input → table header on canvas updates live with each keystroke
+- Click a color swatch → table border color updates immediately
+- Click ✕ → toolbar restores to default (project name + Show FDs + Save)
+- Click canvas background → same as ✕
+- Right-click table header → context menu shows "Add relationship to..." (disabled) and "Delete table" only
+- Click outside context menu (on canvas) → menu closes
+- Click "Delete table" → table disappears, toolbar restores, attributes reappear in panel
 
 ---
 

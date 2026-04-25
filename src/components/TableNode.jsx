@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Handle, Position, useStore } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
+import TableContextMenu from './TableContextMenu.jsx';
 import './styles/TableNode.css';
 
 const TableNode = ({ data }) => {
@@ -9,13 +10,16 @@ const TableNode = ({ data }) => {
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const fds = useEditorStore((s) => s.stages[currentStageIndex]?.fds ?? []);
     const showFDs = useEditorStore((s) => s.ui.showFDs);
+    const deleteTable = useEditorStore((s) => s.deleteTable);
+
+    const [contextMenu, setContextMenu] = useState(null); // { x, y } | null
+    const [hoveredAttrId, setHoveredAttrId] = useState(null);
 
     const attrMap = useMemo(
         () => new Map(attributePool.map((a) => [a.id, a])),
         [attributePool]
     );
 
-    // Split participating attrs by bracket side so handles appear on the correct edge
     const { leftAttrIds, rightAttrIds } = useMemo(() => {
         const leftAttrIds = new Set();
         const rightAttrIds = new Set();
@@ -27,9 +31,17 @@ const TableNode = ({ data }) => {
         return { leftAttrIds, rightAttrIds };
     }, [fds]);
 
-    // Show all handles while the user is actively drawing a connection
     const isConnecting = useStore((s) => s.connection?.inProgress ?? false);
-    const [hoveredAttrId, setHoveredAttrId] = useState(null);
+
+    const handleContextMenu = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenu({ x: e.clientX, y: e.clientY });
+    }, []);
+
+    const handleDelete = useCallback(() => {
+        deleteTable(currentStageIndex, table.id);
+    }, [currentStageIndex, table.id, deleteTable]);
 
     const sorted = [...table.tableAttributes].sort((a, b) => a.order - b.order);
 
@@ -40,12 +52,15 @@ const TableNode = ({ data }) => {
             <Handle type="target" position={Position.Left}  id="tgt-left"  className="table-node__handle" />
             <Handle type="source" position={Position.Right} id="src-right" className="table-node__handle" />
             <Handle type="target" position={Position.Right} id="tgt-right" className="table-node__handle" />
+
             <div
                 className="table-node__header"
                 style={{ borderLeftColor: table.color }}
+                onContextMenu={handleContextMenu}
             >
                 <span className="table-node__name">{table.name}</span>
             </div>
+
             <div className="table-node__body">
                 {sorted.map((ta) => {
                     const attr = attrMap.get(ta.attributeId);
@@ -87,8 +102,20 @@ const TableNode = ({ data }) => {
                     );
                 })}
             </div>
+
+            {contextMenu && (
+                <TableContextMenu
+                    x={contextMenu.x}
+                    y={contextMenu.y}
+                    onDelete={handleDelete}
+                    onClose={() => setContextMenu(null)}
+                />
+            )}
         </div>
     );
 };
 
-export default TableNode;
+// Re-render only when the table data reference changes.
+// React Flow also passes xPos/yPos/dragging/selected — those don't affect
+// this component's output (React Flow applies position via its own wrapper).
+export default memo(TableNode, (prev, next) => prev.data.table === next.data.table);

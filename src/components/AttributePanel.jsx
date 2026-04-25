@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import useEditorStore, { STAGE_ORDER } from '../store/editorStore.js';
 import AttributeItem from './AttributeItem.jsx';
 import NewAttributeModal from './NewAttributeModal.jsx';
@@ -18,43 +18,56 @@ const AttributePanel = () => {
 
     const currentOrder = STAGE_ORDER.indexOf(stages[currentStageIndex]?.stageId);
 
-    const attributes = attributePool
-        .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
-        .map((attr) => {
-            const retireOrder = attr.retired_at_stage_Id !== null
-                ? STAGE_ORDER.indexOf(attr.retired_at_stage_Id)
-                : Infinity;
-            return { ...attr, isRetired: retireOrder <= currentOrder };
-        });
+    const attributes = useMemo(
+        () => attributePool
+            .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
+            .map((attr) => {
+                const retireOrder = attr.retired_at_stage_Id !== null
+                    ? STAGE_ORDER.indexOf(attr.retired_at_stage_Id)
+                    : Infinity;
+                return { ...attr, isRetired: retireOrder <= currentOrder };
+            }),
+        [attributePool, currentOrder]
+    );
 
     // Delete removes from attributePool entirely — must check ALL stages, not just current.
-    const globallyUsedIds = new Set(
-        stages.flatMap((stage) =>
-            stage.tables.flatMap((t) =>
-                t.tableAttributes.map((ta) => ta.attributeId)
+    const globallyUsedIds = useMemo(
+        () => new Set(
+            stages.flatMap((stage) =>
+                stage.tables.flatMap((t) =>
+                    t.tableAttributes.map((ta) => ta.attributeId)
+                )
             )
-        )
+        ),
+        [stages]
     );
-    const unusedIds = new Set(
-        attributePool
-            .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
-            .filter((attr) => !globallyUsedIds.has(attr.id))
-            .map((attr) => attr.id)
+
+    const unusedIds = useMemo(
+        () => new Set(
+            attributePool
+                .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
+                .filter((attr) => !globallyUsedIds.has(attr.id))
+                .map((attr) => attr.id)
+        ),
+        [attributePool, currentOrder, globallyUsedIds]
     );
 
     // Retire is blocked when the attribute is placed in any table at the current
     // stage or any later stage — retiring it would hide an attribute that is still
     // actively used in the canvas.
-    const retireBlockedIds = new Set(
-        attributePool
-            .filter((attr) =>
-                stages.slice(currentStageIndex).some((stage) =>
-                    stage.tables.some((t) =>
-                        t.tableAttributes.some((ta) => ta.attributeId === attr.id)
+    const retireBlockedIds = useMemo(
+        () => new Set(
+            attributePool
+                .filter((attr) =>
+                    stages.slice(currentStageIndex).some((stage) =>
+                        stage.tables.some((t) =>
+                            t.tableAttributes.some((ta) => ta.attributeId === attr.id)
+                        )
                     )
                 )
-            )
-            .map((attr) => attr.id)
+                .map((attr) => attr.id)
+        ),
+        [attributePool, stages, currentStageIndex]
     );
 
     const openGlobalModal = () => {

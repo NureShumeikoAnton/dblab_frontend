@@ -42,6 +42,8 @@ const EditorCanvas = () => {
     const addFD = useEditorStore((s) => s.addFD);
     const updateFD = useEditorStore((s) => s.updateFD);
     const clearSelectedFD = useEditorStore((s) => s.clearSelectedFD);
+    const selectTable = useEditorStore((s) => s.selectTable);
+    const clearSelectedTable = useEditorStore((s) => s.clearSelectedTable);
 
     // activeNodeId tracks which node was last clicked or grabbed — keeps it on top via zIndex.
     const [activeNodeId, setActiveNodeId] = useState(null);
@@ -122,6 +124,15 @@ const EditorCanvas = () => {
     const handleNodeActivate = useCallback((_event, node) => {
         setActiveNodeId(node.id);
     }, []);
+
+    const handleNodeClick = useCallback((_event, node) => {
+        selectTable(node.id);
+    }, [selectTable]);
+
+    const handlePaneClick = useCallback(() => {
+        clearSelectedFD();
+        clearSelectedTable();
+    }, [clearSelectedFD, clearSelectedTable]);
 
     // Only allow FD connections within the same table node, via fd-left-* or fd-right-* handles
     const isValidConnection = useCallback((connection) => (
@@ -216,13 +227,13 @@ const EditorCanvas = () => {
                 onNodesChange={onNodesChange}
                 onNodeDragStart={handleNodeActivate}
                 onNodeDragStop={handleNodeDragStop}
-                onNodeClick={handleNodeActivate}
+                onNodeClick={handleNodeClick}
                 connectionMode="loose"
                 onConnect={handleConnect}
                 isValidConnection={isValidConnection}
                 connectionLineType={ConnectionLineType.Step}
                 connectionLineStyle={{ stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '5 3' }}
-                onPaneClick={clearSelectedFD}
+                onPaneClick={handlePaneClick}
                 fitView
                 fitViewOptions={{ padding: 0.2 }}
                 minZoom={0.2}

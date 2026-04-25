@@ -87,7 +87,7 @@ FunctionalDependency
 └──────────────────────────────────────────────────────────────┘
 ```
 
-- **Toolbar** (top): project name (editable inline), Save button (dot indicator when unsaved changes exist), Show/Hide FDs toggle button. When an FD is selected, the toolbar content is replaced by the **FD Toolbar** (see §11).
+- **Toolbar** (top): project name (editable inline), Save button (dot indicator when unsaved changes exist), Show/Hide FDs toggle button. When a **table node** is selected, the toolbar content is replaced by the **Table Toolbar** (see §9). When an **FD** is selected, the toolbar content is replaced by the **FD Toolbar** (see §11). Table and FD selection are mutually exclusive.
 - **Canvas** (center-left): React Flow viewport with pan/zoom.
 - **Attribute Panel** (right): scrollable list of attributes available at the current stage. Two action buttons at the top.
 - **Stage Bar** (bottom): four stage buttons; active stage is highlighted. `[✓ Check NF Rules]` button opens the violation checklist modal.
@@ -180,17 +180,26 @@ Double-clicking an attribute row in a table opens an edit modal:
 - Alternatively: double-click empty canvas → "New Table" modal, then add attributes.
 
 ### Editing a Table
-Double-click on the **table header** opens a modal:
-- Table Name (text, required)
-- Color (fixed palette picker: 10 colors)
+Clicking a table node **selects** it. The top toolbar is replaced by the **Table Toolbar**:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  [ table name input ]  [● ● ● ● ● ● ● ● ● ●]  ✕         │
+└──────────────────────────────────────────────────────────┘
+```
+
+- **Name input**: updates the table header live on each keystroke (blank values are not committed).
+- **Color palette**: 10 fixed colors; clicking a swatch updates the table's border color immediately.
+- **✕ button** or clicking the canvas background deselects the table and restores the default toolbar.
+
+`selectedTableId` is stored in `ui` (not persisted). It is cleared on stage switch and when the table is deleted.
 
 ### Deleting a Table
-Right-click on table header → **Delete table**. Attributes are returned to the "unused" pool (their `TableAttribute` records are deleted; the `Attribute` records persist).
+Right-click on table header → **Delete table**. Attributes are returned to the "unused" pool (their `TableAttribute` records are deleted; the `Attribute` records persist). Any FDs referencing the table's attributes are removed cascadingly.
 
 ### Context Menu on Table Header (right-click)
 ```
 ┌─────────────────────────────┐
-│ ✏  Edit table               │
 │ 🔗 Add relationship to...   │
 │ 🗑  Delete table             │
 └─────────────────────────────┘
@@ -380,7 +389,9 @@ EditorStore (single store, immer middleware)
       showFDs: boolean,
       hasUnsavedChanges: boolean,
       isSaving: boolean,
-      activeModal: null | ModalDescriptor
+      activeModal: null | ModalDescriptor,
+      selectedTableId: null | string,
+      selectedFDId: null | string
     }
 ```
 
@@ -401,6 +412,11 @@ EditorPage
 │     │     ├── ProjectNameInput
 │     │     ├── SaveButton
 │     │     └── ShowFDsToggle
+│     ├── [table selected — ui.selectedTableId is set]
+│     │     └── TableToolbar
+│     │           ├── NameInput (live updates table name)
+│     │           ├── ColorPalette (10 swatches, immediate update)
+│     │           └── CloseButton (clears selectedTableId)
 │     └── [FD selected — ui.selectedFDId is set]
 │           └── FDToolbar
 │                 ├── ColorSwatch (inline 10-color palette)
@@ -410,7 +426,7 @@ EditorPage
 │                 └── CloseButton (clears selectedFDId)
 ├── EditorCanvas (React Flow Provider)
 │     ├── TableNode (custom RF node)
-│     │     ├── TableHeader (right-click menu, double-click edit, color indicator)
+│     │     ├── TableHeader (right-click menu, color indicator; click selects table)
 │     │     └── AttributeRow[] (left handle for left-side FDs, right handle for right-side FDs)
 │     ├── RelationshipEdge (custom RF edge — crow's foot)
 │     └── FDEdge (custom RF edge — bracket; click selects FD)
