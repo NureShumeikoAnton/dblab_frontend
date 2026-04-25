@@ -1,0 +1,42 @@
+.delete-table-modal {
+    width: 400px;
+}
+
+.delete-table-modal__fd-list {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.delete-table-modal__fd-item {
+    font-size: 13px;
+    color: var(--text-color);
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-family: monospace;
+}
+
+.modal__btn--primary {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+}
+
+.modal__btn--primary:hover {
+    filter: brightness(0.92);
+}
+
+.modal__btn--danger {
+    background: #e53e3e;
+    color: #fff;
+    border: none;
+}
+
+.modal__btn--danger:hover {
+    background: #c53030;
+}

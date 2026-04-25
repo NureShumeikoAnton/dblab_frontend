@@ -50,8 +50,8 @@ const EditorCanvasFlow = () => {
     const addFD = useEditorStore((s) => s.addFD);
     const updateFD = useEditorStore((s) => s.updateFD);
     const clearSelectedFD = useEditorStore((s) => s.clearSelectedFD);
-    const selectTable = useEditorStore((s) => s.selectTable);
     const clearSelectedTable = useEditorStore((s) => s.clearSelectedTable);
+    const clearSelectedTableAttribute = useEditorStore((s) => s.clearSelectedTableAttribute);
 
     // activeNodeId tracks which node was last clicked or grabbed — keeps it on top via zIndex.
     const [activeNodeId, setActiveNodeId] = useState(null);
@@ -133,14 +133,11 @@ const EditorCanvasFlow = () => {
         setActiveNodeId(node.id);
     }, []);
 
-    const handleNodeClick = useCallback((_event, node) => {
-        selectTable(node.id);
-    }, [selectTable]);
-
     const handlePaneClick = useCallback(() => {
         clearSelectedFD();
         clearSelectedTable();
-    }, [clearSelectedFD, clearSelectedTable]);
+        clearSelectedTableAttribute();
+    }, [clearSelectedFD, clearSelectedTable, clearSelectedTableAttribute]);
 
     // Only allow FD connections within the same table node, via fd-left-* or fd-right-* handles
     const isValidConnection = useCallback((connection) => (
@@ -259,7 +256,7 @@ const EditorCanvasFlow = () => {
             tableAttributes: [{
                 id: crypto.randomUUID(),
                 attributeId: attrId,
-                is_PK: false,
+                is_PK: true,
                 is_FK: false,
                 alias: null,
                 order: 0,
@@ -276,7 +273,6 @@ const EditorCanvasFlow = () => {
             onNodesChange={onNodesChange}
             onNodeDragStart={handleNodeActivate}
             onNodeDragStop={handleNodeDragStop}
-            onNodeClick={handleNodeClick}
             connectionMode="loose"
             onConnect={handleConnect}
             isValidConnection={isValidConnection}

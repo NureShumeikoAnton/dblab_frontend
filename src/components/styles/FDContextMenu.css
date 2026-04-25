@@ -1,0 +1,30 @@
+.fd-ctx-menu {
+    position: fixed;
+    z-index: 2000;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+    padding: 4px 0;
+    min-width: 160px;
+    margin: 0;
+    list-style: none;
+}
+
+.fd-ctx-menu__item {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--text-color);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.12s ease;
+    user-select: none;
+}
+
+.fd-ctx-menu__item--danger {
+    color: #e53e3e;
+}
+
+.fd-ctx-menu__item--danger:hover {
+    background: #fff5f5;
+}

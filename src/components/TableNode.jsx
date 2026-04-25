@@ -2,6 +2,8 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { Handle, Position, useStore } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
 import TableContextMenu from './TableContextMenu.jsx';
+import AttributeRowContextMenu from './AttributeRowContextMenu.jsx';
+import DeleteTableModal from './DeleteTableModal.jsx';
 import './styles/TableNode.css';
 
 const TableNode = ({ data }) => {
@@ -11,9 +13,16 @@ const TableNode = ({ data }) => {
     const fds = useEditorStore((s) => s.stages[currentStageIndex]?.fds ?? []);
     const showFDs = useEditorStore((s) => s.ui.showFDs);
     const deleteTable = useEditorStore((s) => s.deleteTable);
+    const deleteFD = useEditorStore((s) => s.deleteFD);
     const addTableAttribute = useEditorStore((s) => s.addTableAttribute);
+    const selectTable = useEditorStore((s) => s.selectTable);
+    const selectTableAttribute = useEditorStore((s) => s.selectTableAttribute);
+    const removeTableAttribute = useEditorStore((s) => s.removeTableAttribute);
+    const selectedTableAttribute = useEditorStore((s) => s.ui.selectedTableAttribute);
 
     const [contextMenu, setContextMenu] = useState(null); // { x, y } | null
+    const [attrContextMenu, setAttrContextMenu] = useState(null); // { x, y, tableAttributeId } | null
+    const [deleteConfirmFDs, setDeleteConfirmFDs] = useState(null); // FD[] | null
     const [hoveredAttrId, setHoveredAttrId] = useState(null);
     const [isDragOver, setIsDragOver] = useState(false);
 
@@ -35,15 +44,53 @@ const TableNode = ({ data }) => {
 
     const isConnecting = useStore((s) => s.connection?.inProgress ?? false);
 
+    const handleHeaderClick = useCallback((e) => {
+        e.stopPropagation();
+        selectTable(table.id);
+    }, [selectTable, table.id]);
+
     const handleContextMenu = useCallback((e) => {
         e.preventDefault();
         e.stopPropagation();
+        setAttrContextMenu(null);
         setContextMenu({ x: e.clientX, y: e.clientY });
     }, []);
 
+    const handleRowClick = useCallback((e, tableAttributeId) => {
+        e.stopPropagation();
+        selectTableAttribute(table.id, tableAttributeId);
+    }, [selectTableAttribute, table.id]);
+
+    const handleRowContextMenu = useCallback((e, tableAttributeId) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenu(null);
+        setAttrContextMenu({ x: e.clientX, y: e.clientY, tableAttributeId });
+    }, []);
+
     const handleDelete = useCallback(() => {
+        const tableAttrIds = new Set(table.tableAttributes.map((ta) => ta.attributeId));
+        const affected = fds.filter((fd) =>
+            fd.starts.some((s) => tableAttrIds.has(s.attributeId)) ||
+            fd.ends.some((e) => tableAttrIds.has(e.attributeId))
+        );
+        if (affected.length === 0) {
+            deleteTable(currentStageIndex, table.id);
+        } else {
+            setDeleteConfirmFDs(affected);
+        }
+    }, [currentStageIndex, table, fds, deleteTable]);
+
+    const handleSaveDelete = useCallback(() => {
         deleteTable(currentStageIndex, table.id);
+        setDeleteConfirmFDs(null);
     }, [currentStageIndex, table.id, deleteTable]);
+
+    const handleDeleteAll = useCallback(() => {
+        deleteConfirmFDs.forEach((fd) => deleteFD(currentStageIndex, fd.id));
+        deleteTable(currentStageIndex, table.id);
+        setDeleteConfirmFDs(null);
+    }, [currentStageIndex, table.id, deleteConfirmFDs, deleteFD, deleteTable]);
 
     const handleDragEnter = useCallback((e) => {
         if (!e.dataTransfer.types.includes('application/dblab-attribute')) return;
@@ -103,6 +150,7 @@ const TableNode = ({ data }) => {
             <div
                 className="table-node__header"
                 style={{ borderLeftColor: table.color }}
+                onClick={handleHeaderClick}
                 onContextMenu={handleContextMenu}
             >
                 <span className="table-node__name">{table.name}</span>
@@ -116,10 +164,15 @@ const TableNode = ({ data }) => {
                     const isHovered = hoveredAttrId === ta.attributeId;
                     const leftVisible = showFDs && (isHovered || leftAttrIds.has(ta.attributeId) || isConnecting);
                     const rightVisible = showFDs && (isHovered || rightAttrIds.has(ta.attributeId) || isConnecting);
+                    const isRowSelected =
+                        selectedTableAttribute?.tableId === table.id &&
+                        selectedTableAttribute?.tableAttributeId === ta.id;
                     return (
                         <div
                             key={ta.id}
-                            className={`table-node__row${ta.is_PK ? ' table-node__row--pk' : ''}`}
+                            className={`table-node__row${ta.is_PK ? ' table-node__row--pk' : ''}${isRowSelected ? ' table-node__row--selected' : ''}`}
+                            onClick={(e) => handleRowClick(e, ta.id)}
+                            onContextMenu={(e) => handleRowContextMenu(e, ta.id)}
                             onMouseEnter={() => setHoveredAttrId(ta.attributeId)}
                             onMouseLeave={() => setHoveredAttrId(null)}
                         >
@@ -156,6 +209,24 @@ const TableNode = ({ data }) => {
                     y={contextMenu.y}
                     onDelete={handleDelete}
                     onClose={() => setContextMenu(null)}
+                />
+            )}
+            {attrContextMenu && (
+                <AttributeRowContextMenu
+                    x={attrContextMenu.x}
+                    y={attrContextMenu.y}
+                    onRemove={() => removeTableAttribute(currentStageIndex, table.id, attrContextMenu.tableAttributeId)}
+                    onClose={() => setAttrContextMenu(null)}
+                />
+            )}
+            {deleteConfirmFDs && (
+                <DeleteTableModal
+                    tableName={table.name}
+                    fds={deleteConfirmFDs}
+                    attrMap={attrMap}
+                    onSave={handleSaveDelete}
+                    onDeleteAll={handleDeleteAll}
+                    onCancel={() => setDeleteConfirmFDs(null)}
                 />
             )}
         </div>

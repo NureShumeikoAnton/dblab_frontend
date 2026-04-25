@@ -80,6 +80,7 @@ const useEditorStore = create(
             activeModal: null,    // null | { type: string, payload: any }
             selectedFDId: null,   // null | string — FD currently selected for editing
             selectedTableId: null, // null | string — table node currently selected for inline editing
+            selectedTableAttribute: null, // null | { tableId, tableAttributeId }
         },
 
         // ─── Actions ─────────────────────────────────────────────────────────────
@@ -112,6 +113,9 @@ const useEditorStore = create(
         setCurrentStageIndex(index) {
             set((state) => {
                 state.currentStageIndex = index;
+                state.ui.selectedTableId = null;
+                state.ui.selectedFDId = null;
+                state.ui.selectedTableAttribute = null;
             });
         },
 
@@ -188,24 +192,22 @@ const useEditorStore = create(
                 const table = state.stages[stageIndex].tables.find((t) => t.id === tableId);
                 if (!table) return;
 
-                const attrIds = new Set(table.tableAttributes.map((ta) => ta.attributeId));
-
-                // Cascade: remove FDs that reference any attribute in this table
-                state.stages[stageIndex].fds = state.stages[stageIndex].fds.filter((fd) =>
-                    !fd.starts.some((s) => attrIds.has(s.attributeId)) &&
-                    !fd.ends.some((e) => attrIds.has(e.attributeId))
-                );
-
                 // Cascade: remove relationships that involve this table
                 state.stages[stageIndex].relationships = state.stages[stageIndex].relationships.filter(
                     (r) => r.table1Id !== tableId && r.table2Id !== tableId
                 );
+
+                // FDs are NOT cascaded — they become orphaned and are silently hidden
+                // from the canvas until the student explicitly deletes them via FD toolbar.
 
                 state.stages[stageIndex].tables = state.stages[stageIndex].tables.filter(
                     (t) => t.id !== tableId
                 );
                 if (state.ui.selectedTableId === tableId) {
                     state.ui.selectedTableId = null;
+                }
+                if (state.ui.selectedTableAttribute?.tableId === tableId) {
+                    state.ui.selectedTableAttribute = null;
                 }
                 state.ui.hasUnsavedChanges = true;
             });
@@ -236,6 +238,24 @@ const useEditorStore = create(
             });
         },
 
+        reorderTableAttribute(stageIndex, tableId, tableAttributeId, direction) {
+            set((state) => {
+                const table = state.stages[stageIndex].tables.find((t) => t.id === tableId);
+                if (!table) return;
+                const sorted = [...table.tableAttributes].sort((a, b) => a.order - b.order);
+                const idx = sorted.findIndex((a) => a.id === tableAttributeId);
+                if (idx === -1) return;
+                const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+                if (swapIdx < 0 || swapIdx >= sorted.length) return;
+                const taA = table.tableAttributes.find((a) => a.id === sorted[idx].id);
+                const taB = table.tableAttributes.find((a) => a.id === sorted[swapIdx].id);
+                const tmp = taA.order;
+                taA.order = taB.order;
+                taB.order = tmp;
+                state.ui.hasUnsavedChanges = true;
+            });
+        },
+
         removeTableAttribute(stageIndex, tableId, tableAttributeId) {
             set((state) => {
                 const table = state.stages[stageIndex].tables.find((t) => t.id === tableId);
@@ -243,6 +263,12 @@ const useEditorStore = create(
                     table.tableAttributes = table.tableAttributes.filter(
                         (a) => a.id !== tableAttributeId
                     );
+                    if (
+                        state.ui.selectedTableAttribute?.tableId === tableId &&
+                        state.ui.selectedTableAttribute?.tableAttributeId === tableAttributeId
+                    ) {
+                        state.ui.selectedTableAttribute = null;
+                    }
                     state.ui.hasUnsavedChanges = true;
                 }
             });
@@ -340,7 +366,11 @@ const useEditorStore = create(
         },
 
         selectFD(fdId) {
-            set((state) => { state.ui.selectedFDId = fdId; });
+            set((state) => {
+                state.ui.selectedFDId = fdId;
+                state.ui.selectedTableId = null;
+                state.ui.selectedTableAttribute = null;
+            });
         },
 
         clearSelectedFD() {
@@ -350,7 +380,8 @@ const useEditorStore = create(
         selectTable(tableId) {
             set((state) => {
                 state.ui.selectedTableId = tableId;
-                state.ui.selectedFDId = null; // selecting a table deselects any active FD
+                state.ui.selectedFDId = null;
+                state.ui.selectedTableAttribute = null;
             });
         },
 
@@ -358,11 +389,26 @@ const useEditorStore = create(
             set((state) => { state.ui.selectedTableId = null; });
         },
 
+        selectTableAttribute(tableId, tableAttributeId) {
+            set((state) => {
+                state.ui.selectedTableAttribute = { tableId, tableAttributeId };
+                state.ui.selectedTableId = null;
+                state.ui.selectedFDId = null;
+            });
+        },
+
+        clearSelectedTableAttribute() {
+            set((state) => { state.ui.selectedTableAttribute = null; });
+        },
+
         deleteFD(stageIndex, fdId) {
             set((state) => {
                 state.stages[stageIndex].fds = state.stages[stageIndex].fds.filter(
                     (f) => f.id !== fdId
                 );
+                if (state.ui.selectedFDId === fdId) {
+                    state.ui.selectedFDId = null;
+                }
                 state.ui.hasUnsavedChanges = true;
             });
         },

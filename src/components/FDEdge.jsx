@@ -1,6 +1,7 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useInternalNode } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
+import FDContextMenu from './FDContextMenu.jsx';
 
 const LANE_WIDTH = 18; // px per bracket lane
 const ARROW_SIZE = 5;  // arrowhead half-height
@@ -21,12 +22,23 @@ const ARROW_SIZE = 5;  // arrowhead half-height
 const FDEdge = ({ source, data }) => {
     const node = useInternalNode(source);
     const selectFD = useEditorStore((s) => s.selectFD);
+    const deleteFD = useEditorStore((s) => s.deleteFD);
+    const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const selectedFDId = useEditorStore((s) => s.ui.selectedFDId);
     const fdId = data?.fd?.id ?? null;
+
+    const [ctxMenu, setCtxMenu] = useState(null); // { x, y } | null
 
     const handleClick = useCallback((e) => {
         e.stopPropagation();
         if (fdId) selectFD(fdId);
+    }, [fdId, selectFD]);
+
+    const handleContextMenu = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (fdId) selectFD(fdId);
+        setCtxMenu({ x: e.clientX, y: e.clientY });
     }, [fdId, selectFD]);
 
     if (!node || !data?.fd) return null;
@@ -68,37 +80,48 @@ const FDEdge = ({ source, data }) => {
 
     const isSelected = selectedFDId === fd.id;
     const lp = { stroke: fd.color, strokeWidth: isSelected ? 2.5 : 1.5, opacity: 0.55 };
-    // Wide transparent stroke used as a click hit area — thin lines are hard to click
+    // Wide transparent stroke used as a click/right-click hit area — thin lines are hard to interact with
     const hitProps = {
         stroke: 'transparent',
         strokeWidth: 12,
         style: { cursor: 'pointer', pointerEvents: 'stroke' },
         onClick: handleClick,
+        onContextMenu: handleContextMenu,
     };
 
     return (
-        <g>
-            {/* Vertical spine */}
-            <line x1={laneX} y1={topY} x2={laneX} y2={bottomY} {...lp} />
-            <line x1={laneX} y1={topY} x2={laneX} y2={bottomY} {...hitProps} />
+        <>
+            <g>
+                {/* Vertical spine */}
+                <line x1={laneX} y1={topY} x2={laneX} y2={bottomY} {...lp} />
+                <line x1={laneX} y1={topY} x2={laneX} y2={bottomY} {...hitProps} />
 
-            {/* Start stubs — plain lines (determinant side) */}
-            {startYs.map((y, i) => (
-                <g key={`s-${i}`}>
-                    <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
-                    <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...hitProps} />
-                </g>
-            ))}
+                {/* Start stubs — plain lines (determinant side) */}
+                {startYs.map((y, i) => (
+                    <g key={`s-${i}`}>
+                        <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
+                        <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...hitProps} />
+                    </g>
+                ))}
 
-            {/* End stubs — line + solid arrowhead (dependent side) */}
-            {endYs.map((y, i) => (
-                <g key={`e-${i}`}>
-                    <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
-                    <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...hitProps} />
-                    <path d={arrowPath(y)} fill={fd.color} />
-                </g>
-            ))}
-        </g>
+                {/* End stubs — line + solid arrowhead (dependent side) */}
+                {endYs.map((y, i) => (
+                    <g key={`e-${i}`}>
+                        <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
+                        <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...hitProps} />
+                        <path d={arrowPath(y)} fill={fd.color} />
+                    </g>
+                ))}
+            </g>
+            {ctxMenu && (
+                <FDContextMenu
+                    x={ctxMenu.x}
+                    y={ctxMenu.y}
+                    onDelete={() => deleteFD(currentStageIndex, fdId)}
+                    onClose={() => setCtxMenu(null)}
+                />
+            )}
+        </>
     );
 };
 

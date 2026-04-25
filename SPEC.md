@@ -165,11 +165,28 @@ Each attribute in the side panel has a kebab/context menu with:
 - **Hide starting from this stage** → sets `retired_at_stage_Id` = current stage. The attribute disappears from canvas placement in this and later stages; shown greyed-out in the panel.
 
 ### Attribute Rows Within a Table
-Double-clicking an attribute row in a table opens an edit modal:
-- Alias (optional display name override)
-- Is Primary Key (checkbox) — renders row in **bold** with `*` suffix
-- Is Foreign Key (checkbox)
-- Data type override is not supported at the TableAttribute level (inherits from Attribute)
+**Clicking** an attribute row **selects** it (sets `ui.selectedTableAttribute`). The top toolbar is replaced by the **Attribute Row Toolbar**:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  Alias: [ alias input ]  [ ☐ PK ]  [ ☐ FK ]  ✕          │
+└──────────────────────────────────────────────────────────┘
+```
+
+- **Alias input**: optional display name override; placeholder shows original attribute name. Debounced 300 ms; blank value commits `null` (reverts to original name).
+- **PK toggle**: marks the row as Primary Key (bold + PK badge); updates immediately.
+- **FK toggle**: marks the row as Foreign Key (FK badge); updates immediately.
+- **✕ button** or clicking the canvas background deselects the row and restores the default toolbar.
+
+Selecting an attribute row clears any active table or FD selection (mutually exclusive).
+
+Right-clicking an attribute row opens a context menu:
+```
+┌─────────────────────────────┐
+│ 🗑  Remove from table        │
+└─────────────────────────────┘
+```
+"Remove from table" deletes the `TableAttribute` record immediately; the attribute returns to the panel's unused pool. If the removed row was selected, the toolbar reverts to default.
 
 ---
 
@@ -180,7 +197,7 @@ Double-clicking an attribute row in a table opens an edit modal:
 - Alternatively: double-click empty canvas → "New Table" modal, then add attributes.
 
 ### Editing a Table
-Clicking a table node **selects** it. The top toolbar is replaced by the **Table Toolbar**:
+Clicking the **table header** (the colored top bar with the table name) **selects** the table. The top toolbar is replaced by the **Table Toolbar**:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -191,6 +208,7 @@ Clicking a table node **selects** it. The top toolbar is replaced by the **Table
 - **Name input**: updates the table header live on each keystroke (blank values are not committed).
 - **Color palette**: 10 fixed colors; clicking a swatch updates the table's border color immediately.
 - **✕ button** or clicking the canvas background deselects the table and restores the default toolbar.
+- Clicking an attribute row within the table clears table selection and selects the row instead.
 
 `selectedTableId` is stored in `ui` (not persisted). It is cleared on stage switch and when the table is deleted.
 
@@ -391,7 +409,8 @@ EditorStore (single store, immer middleware)
       isSaving: boolean,
       activeModal: null | ModalDescriptor,
       selectedTableId: null | string,
-      selectedFDId: null | string
+      selectedFDId: null | string,
+      selectedTableAttribute: null | { tableId: string, tableAttributeId: string }
     }
 ```
 
@@ -412,6 +431,12 @@ EditorPage
 │     │     ├── ProjectNameInput
 │     │     ├── SaveButton
 │     │     └── ShowFDsToggle
+│     ├── [attribute row selected — ui.selectedTableAttribute is set]  ← highest priority
+│     │     └── AttributeRowToolbar
+│     │           ├── AliasInput (debounced; blank commits null)
+│     │           ├── PKToggle (checkbox; updates is_PK immediately)
+│     │           ├── FKToggle (checkbox; updates is_FK immediately)
+│     │           └── CloseButton (clears selectedTableAttribute)
 │     ├── [table selected — ui.selectedTableId is set]
 │     │     └── TableToolbar
 │     │           ├── NameInput (live updates table name)
@@ -440,7 +465,6 @@ EditorPage
 └── Modals (rendered via portal)
       ├── TableEditModal
       ├── AttributeEditModal
-      ├── TableAttributeEditModal
       ├── RelationshipEditModal
       ├── NewAttributeModal
       ├── NewProjectModal
@@ -455,7 +479,7 @@ EditorPage
 | Scenario | Behavior |
 |---|---|
 | Drag attribute already in a table to another table | Creates a second `TableAttribute` record (same attribute can exist in multiple tables across stages) |
-| Delete table with attributes that have FDs | FDs are deleted cascadingly (frontend handles cleanup in Zustand before save) |
+| Delete table with attributes that have FDs | FDs become orphaned — not rendered on canvas (no table hosts their attributes), but remain in the store. Student can delete them via the FD toolbar. |
 | Relationship between a table and itself (self-referential) | Allowed; React Flow renders a looped edge |
 | Student switches stage mid-drag | Drag is cancelled; unsaved changes autosave fires |
 | Two attributes with the same name in the pool | Allowed (DB permits it); displayed with name + data_type to distinguish |
