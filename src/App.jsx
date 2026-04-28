@@ -50,6 +50,10 @@ import ReportsPage from './pages/adminPages/ReportsPage.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import StudentWorkDetails from './pages/StudentWorkDetails';
 import WorkPage from './pages/WorkPage';
+import ExpertisePage from './pages/ExpertisePage.jsx';
+import ExpertiseUploadPage from './pages/ExpertiseUploadPage.jsx';
+import ExpertiseProjectPage from './pages/ExpertiseProjectPage.jsx';
+import ExpertiseThreadPage from './pages/ExpertiseThreadPage.jsx';
 
 const App = () => {
 
@@ -76,6 +80,10 @@ const App = () => {
                     <Route path={"/dashboard"} element={<Dashboard/>}/>
                     <Route path="/work/:id" element={<RequireAuth fallbackPath="/"><StudentWorkDetails/></RequireAuth>} />
                     <Route path="/workpage/:id" element={<WorkPage/>} />
+                    <Route path="/expertise" element={<ExpertisePage/>} />
+                    <Route path="/expertise/upload" element={<ExpertiseUploadPage/>} />
+                    <Route path="/expertise/:projectId" element={<ExpertiseProjectPage/>} />
+                    <Route path="/expertise/:projectId/comment/:commentId" element={<ExpertiseThreadPage/>} />
                 </Route>
                 <Route path={'/apanel'} Component={AdminLayout}>
                     <Route path={"teachers"} element={<Teachers/>}></Route>
