@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, User, Calendar, ChevronRight, ArrowUpDown } from 'lucide-react';
+import { Plus, User, Calendar, ChevronRight, ArrowUpDown, X } from 'lucide-react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import dayjs from 'dayjs';
-import { MOCK_PROJECTS } from '../mocks/expertiseMockData.js';
+import { MOCK_PROJECTS, MOCK_EXPERT_REQUESTS } from '../mocks/expertiseMockData.js';
 import './styles/ClientPages.css';
 import './styles/ExpertisePage.css';
 
@@ -60,6 +60,13 @@ const ExpertisePage = () => {
     const [projects] = useState(MOCK_PROJECTS);
     const [statusFilter, setStatusFilter] = useState('');
     const [sortDir, setSortDir] = useState('desc');
+    const [requestModalOpen, setRequestModalOpen] = useState(false);
+
+    const isStudent = authUser && authUser.role === 'student';
+    const hasActiveRequest = isStudent && MOCK_EXPERT_REQUESTS.some(
+        r => r.user_Id === authUser.user_Id && r.status === 'pending'
+    );
+    const isAlreadyExpert = authUser && (authUser.role === 'expert' || authUser.role === 'admin');
 
     const displayed = useMemo(() => {
         let result = statusFilter
@@ -74,17 +81,36 @@ const ExpertisePage = () => {
 
     return (
         <div className="client-page">
+            {requestModalOpen && (
+                <ExpertRequestModal
+                    authUser={authUser}
+                    onClose={() => setRequestModalOpen(false)}
+                />
+            )}
             <div className="expertise-page-header">
                 <h1 className="page-title">Експертиза проєктів</h1>
-                {authUser && (
-                    <button
-                        className="action-btn"
-                        onClick={() => navigate('/expertise/upload')}
-                    >
-                        <Plus size={18} />
-                        Завантажити проєкт
-                    </button>
-                )}
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    {isStudent && !hasActiveRequest && (
+                        <button
+                            className="action-btn-outline"
+                            onClick={() => setRequestModalOpen(true)}
+                        >
+                            Стати експертом
+                        </button>
+                    )}
+                    {isStudent && hasActiveRequest && (
+                        <span className="expert-request-pending-badge">Запит надіслано</span>
+                    )}
+                    {authUser && (
+                        <button
+                            className="action-btn"
+                            onClick={() => navigate('/expertise/upload')}
+                        >
+                            <Plus size={18} />
+                            Завантажити проєкт
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="expertise-controls">
@@ -127,3 +153,59 @@ const ExpertisePage = () => {
 };
 
 export default ExpertisePage;
+
+function ExpertRequestModal({ authUser, onClose }) {
+    const [message, setMessage] = useState('');
+    const [submitted, setSubmitted] = useState(false);
+
+    const handleSubmit = () => {
+        const newRequest = {
+            request_Id: Date.now(),
+            user_Id: authUser.user_Id,
+            username: authUser.username,
+            message: message.trim() || null,
+            status: 'pending',
+            created_date: new Date().toISOString(),
+        };
+        MOCK_EXPERT_REQUESTS.push(newRequest);
+        setSubmitted(true);
+    };
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-card" onClick={e => e.stopPropagation()}>
+                <div className="modal-card__header">
+                    <h2 className="modal-card__title">Запит на роль експерта</h2>
+                    <button className="modal-card__close" onClick={onClose} aria-label="Закрити">
+                        <X size={18} />
+                    </button>
+                </div>
+                {submitted ? (
+                    <div className="modal-card__body">
+                        <p style={{ color: 'var(--text-color)', marginBottom: '1rem' }}>
+                            Ваш запит надіслано! Адміністратор розгляне його найближчасом.
+                        </p>
+                        <button className="action-btn" onClick={onClose}>Закрити</button>
+                    </div>
+                ) : (
+                    <div className="modal-card__body">
+                        <p className="modal-card__hint">
+                            Напишіть повідомлення для адміністратора (необов’язково).
+                        </p>
+                        <textarea
+                            className="upload-form__textarea"
+                            rows={4}
+                            placeholder="Наприклад: чому ви хочете стати експертом…"
+                            value={message}
+                            onChange={e => setMessage(e.target.value)}
+                        />
+                        <div className="modal-card__actions">
+                            <button className="cancel-btn-text" onClick={onClose}>Скасувати</button>
+                            <button className="action-btn" onClick={handleSubmit}>Надіслати запит</button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}

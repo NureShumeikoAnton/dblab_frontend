@@ -54,6 +54,7 @@ import ExpertisePage from './pages/ExpertisePage.jsx';
 import ExpertiseUploadPage from './pages/ExpertiseUploadPage.jsx';
 import ExpertiseProjectPage from './pages/ExpertiseProjectPage.jsx';
 import ExpertiseThreadPage from './pages/ExpertiseThreadPage.jsx';
+import ExpertManagementPage from './pages/adminPages/ExpertManagementPage.jsx';
 
 const App = () => {
 
@@ -112,6 +113,7 @@ const App = () => {
                     <Route path={"statistics/magazines"} element={<MagazineStatistics/>}></Route>
                     <Route path={"statistics/period"} element={<PeriodStatistics/>}></Route>
                     <Route path={"reports"} element={<ReportsPage/>}></Route>
+                    <Route path={"experts"} element={<ExpertManagementPage/>}></Route>
                 </Route>
             </Routes>
         </div>

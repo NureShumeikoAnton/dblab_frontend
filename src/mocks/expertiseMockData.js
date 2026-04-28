@@ -1,6 +1,50 @@
 // DATA_MODEL_TYPES mirrors the material types used in EventModalComponent
 export const DATA_MODEL_TYPES = ['db_model', 'erd', 'sql_script'];
 
+// Mutable users list — role can be 'student' | 'expert' | 'admin'
+export const MOCK_USERS = [
+    { user_Id: 1,  username: 'admin',         role: 'admin',   full_name: 'Адміністратор',        email: 'admin@nure.ua',           group: null        },
+    { user_Id: 2,  username: 'oleksiy_dev',   role: 'student', full_name: 'Олексій Коваль',       email: 'o.koval@nure.ua',         group: 'ПЗПІ-22-4' },
+    { user_Id: 3,  username: 'maria_sql',      role: 'student', full_name: 'Марія Сидоренко',      email: 'm.sydorenko@nure.ua',     group: 'ПЗПІ-22-4' },
+    { user_Id: 4,  username: 'yana_db',        role: 'student', full_name: 'Яна Бондаренко',       email: 'y.bondarenko@nure.ua',    group: 'ПЗПІ-22-3' },
+    { user_Id: 5,  username: 'pavlo_be',       role: 'student', full_name: 'Павло Безус',          email: 'p.bezus@nure.ua',         group: 'ПЗПІ-22-4' },
+    { user_Id: 6,  username: 'ivan_student',   role: 'student', full_name: 'Іван Гриценко',        email: 'i.hrytsenko@nure.ua',     group: 'ПЗПІ-22-2' },
+    { user_Id: 7,  username: 'tetyana_db',     role: 'student', full_name: 'Тетяна Вовк',          email: 't.vovk@nure.ua',          group: 'ПЗПІ-22-4' },
+    { user_Id: 8,  username: 'serhiy_arch',    role: 'student', full_name: 'Сергій Архипенко',     email: 's.arkhypenko@nure.ua',    group: 'ПЗПІ-22-1' },
+    { user_Id: 9,  username: 'nazar_perf',     role: 'student', full_name: 'Назар Перебийнос',     email: 'n.perebynos@nure.ua',     group: 'ПЗПІ-22-3' },
+    { user_Id: 10, username: 'prof_kovalenko', role: 'expert',  full_name: 'Коваленко Володимир',  email: 'v.kovalenko@nure.ua',     group: null        },
+    { user_Id: 11, username: 'dr_petrenko',    role: 'expert',  full_name: 'Петренко Олександр',   email: 'o.petrenko@nure.ua',      group: null        },
+    { user_Id: 12, username: 'expert_melnyk',  role: 'expert',  full_name: 'Мельник Ірина',        email: 'i.melnyk@nure.ua',        group: null        },
+];
+
+// Mutable expert role requests — status: 'pending' | 'approved' | 'rejected'
+export const MOCK_EXPERT_REQUESTS = [
+    {
+        request_Id: 1,
+        user_Id: 6,
+        username: 'ivan_student',
+        message: 'Я пройшов 5 курсів з баз даних та хотів би допомагати у перевірці проєктів однокурсників.',
+        status: 'pending',
+        created_date: '2026-04-15T10:00:00.000Z',
+    },
+    {
+        request_Id: 2,
+        user_Id: 8,
+        username: 'serhiy_arch',
+        message: 'Маю досвід у проєктуванні БД та розподілених системах. Хочу ділитись знаннями.',
+        status: 'approved',
+        created_date: '2026-04-10T09:30:00.000Z',
+    },
+    {
+        request_Id: 3,
+        user_Id: 7,
+        username: 'tetyana_db',
+        message: null,
+        status: 'pending',
+        created_date: '2026-04-18T14:00:00.000Z',
+    },
+];
+
 export const MOCK_PROJECTS = [
     {
         project_Id: 1,

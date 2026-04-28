@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './styles/AdminHeader.css';
-import {DatabaseIcon, LogOut} from "lucide-react";
+import {DatabaseIcon, LogOut, Users} from "lucide-react";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
@@ -24,6 +25,12 @@ const AdminHeaderComponent = ({upToDate}) => {
                         <h2 className="not-up-to-date-text">Дані не кешовані</h2>
                     )}
                 </div>
+                <nav className="admin-header-nav">
+                    <Link to="/apanel/experts" className="admin-header-nav__link">
+                        <Users size={15} />
+                        Управління експертами
+                    </Link>
+                </nav>
                 <div className="admin-user-info">
                     <p>{username}</p>
                     <button className="logout-button" onClick={handleLogout}>
