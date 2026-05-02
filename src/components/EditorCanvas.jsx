@@ -107,11 +107,13 @@ const EditorCanvasFlow = () => {
 
         // One self-loop edge per FD — FDEdge draws the bracket using handle bounds
         const fdEdges = fds.flatMap((fd) => {
-            const table = tables.find((t) =>
-                t.tableAttributes.some((ta) =>
-                    fd.starts.some((s) => s.attributeId === ta.attributeId)
-                )
-            );
+            const table = fd.tableId
+                ? tables.find((t) => t.id === fd.tableId)
+                : tables.find((t) =>
+                    t.tableAttributes.some((ta) =>
+                        fd.starts.some((s) => s.attributeId === ta.attributeId)
+                    )
+                );
             if (!table) return [];
             return [{
                 id: `fd-${fd.id}`,
@@ -157,10 +159,12 @@ const EditorCanvasFlow = () => {
 
         const isRight = src.isRight;
 
-        // FDs on this side that belong to this table
+        // FDs on this side that belong to this table — matched by tableId when available,
+        // falling back to attribute membership check for legacy FDs without tableId.
         const sideFDs = fds.filter((fd) => {
             if ((fd.level < 0) !== isRight) return false;
-            return fd.starts.some((s) =>
+            if (fd.tableId) return fd.tableId === tableNode.id;
+            return fd.starts.every((s) =>
                 tableNode.tableAttributes.some((ta) => ta.attributeId === s.attributeId)
             );
         });
@@ -186,11 +190,13 @@ const EditorCanvasFlow = () => {
             return;
         }
 
-        // No matchingFD on this side — check the opposite side.
-        const srcOppFDs = fds.filter((fd) =>
-            (fd.level < 0) !== isRight &&
-            fd.starts.some((s) => s.attributeId === src.attrId)
-        );
+        // No matchingFD on this side — check the opposite side (same table ownership constraint).
+        const srcOppFDs = fds.filter((fd) => {
+            if ((fd.level < 0) === isRight) return false;
+            if (!fd.starts.some((s) => s.attributeId === src.attrId)) return false;
+            if (fd.tableId) return fd.tableId === tableNode.id;
+            return fd.starts.every((s) => tableNode.tableAttributes.some((ta) => ta.attributeId === s.attributeId));
+        });
 
         if (srcOppFDs.length > 0) {
             // Flip all of srcAttr's opposite-side FDs to this side, then extend the last one.
@@ -214,6 +220,7 @@ const EditorCanvasFlow = () => {
         const nextLevel = (usedLevels.length ? Math.max(...usedLevels) : 0) + 1;
         addFD(currentStageIndex, {
             id: `fd-${crypto.randomUUID()}`,
+            tableId: tableNode.id,
             color: pickColor(sideFDs),
             level: isRight ? -nextLevel : nextLevel,
             type: 'full',

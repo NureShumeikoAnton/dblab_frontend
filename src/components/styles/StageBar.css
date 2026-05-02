@@ -15,14 +15,22 @@
     gap: 8px;
 }
 
+.stage-bar__check-wrap {
+    position: relative;
+}
+
 .stage-bar__check-btn {
     padding: 8px 18px;
-    border: 2px solid #e8edf4;
+    border: 2px solid var(--primary-color);
     border-radius: var(--border-radius);
     background: transparent;
-    color: #bcc5cf;
+    color: var(--primary-color);
     font-size: 14px;
     font-weight: 600;
-    cursor: not-allowed;
+    cursor: pointer;
     transition: var(--transition);
+}
+
+.stage-bar__check-btn:hover {
+    background: #f0f8fc;
 }

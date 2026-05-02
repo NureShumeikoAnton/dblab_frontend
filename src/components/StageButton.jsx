@@ -1,14 +1,13 @@
 import React from 'react';
 import './styles/StageButton.css';
 
-const StageButton = ({ label, isActive, onClick }) => {
+const StageButton = ({ label, isActive, isComplete, onClick }) => {
     return (
         <button
-            className={`stage-button${isActive ? ' stage-button--active' : ''}`}
+            className={`stage-button${isActive ? ' stage-button--active' : ''}${isComplete ? ' stage-button--complete' : ''}`}
             onClick={onClick}
         >
             {label}
-            {/* Completion dot — hidden until Phase 12/15 wires it up */}
             <span className="stage-button__dot" aria-hidden="true" />
         </button>
     );

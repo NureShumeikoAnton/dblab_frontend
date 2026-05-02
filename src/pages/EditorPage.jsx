@@ -5,6 +5,7 @@ import EditorToolbar from '../components/EditorToolbar.jsx';
 import EditorCanvas from '../components/EditorCanvas.jsx';
 import AttributePanel from '../components/AttributePanel.jsx';
 import StageBar from '../components/StageBar.jsx';
+import { NFAnalysisProvider } from '../hooks/useNFAnalysis.jsx';
 import './styles/EditorPage.css';
 
 const EditorPage = () => {
@@ -21,15 +22,17 @@ const EditorPage = () => {
 
     return (
         <div className="editor-page">
-            <EditorToolbar projectName={projectName} />
-            <div className="editor-page__main">
-                <EditorCanvas />
-                <AttributePanel />
-            </div>
-            <StageBar
-                currentStageIndex={currentStageIndex}
-                onStageChange={setCurrentStageIndex}
-            />
+            <NFAnalysisProvider stageIndex={currentStageIndex}>
+                <EditorToolbar projectName={projectName} />
+                <div className="editor-page__main">
+                    <EditorCanvas />
+                    <AttributePanel />
+                </div>
+                <StageBar
+                    currentStageIndex={currentStageIndex}
+                    onStageChange={setCurrentStageIndex}
+                />
+            </NFAnalysisProvider>
         </div>
     );
 };

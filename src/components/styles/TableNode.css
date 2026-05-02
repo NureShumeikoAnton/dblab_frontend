@@ -172,6 +172,35 @@
     box-shadow: 0 0 0 1px var(--primary-light);
 }
 
+/* NF violation inline indicator badges */
+.table-node__issue {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    margin-left: 4px;
+    cursor: help;
+}
+
+.table-node__issue--error {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+}
+
+.table-node__issue--warning {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fcd34d;
+}
+
 .table-node--drop-target {
     border-color: #2563eb;
     box-shadow: 0 0 0 2px #2563eb40;

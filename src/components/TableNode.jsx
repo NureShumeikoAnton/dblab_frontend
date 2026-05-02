@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Handle, Position, useStore } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
+import { useNFAnalysis } from '../hooks/useNFAnalysis.jsx';
 import TableContextMenu from './TableContextMenu.jsx';
 import AttributeRowContextMenu from './AttributeRowContextMenu.jsx';
 import DeleteTableModal from './DeleteTableModal.jsx';
@@ -19,6 +20,8 @@ const TableNode = ({ data }) => {
     const selectTableAttribute = useEditorStore((s) => s.selectTableAttribute);
     const removeTableAttribute = useEditorStore((s) => s.removeTableAttribute);
     const selectedTableAttribute = useEditorStore((s) => s.ui.selectedTableAttribute);
+
+    const analysis = useNFAnalysis();
 
     const [contextMenu, setContextMenu] = useState(null); // { x, y } | null
     const [attrContextMenu, setAttrContextMenu] = useState(null); // { x, y, tableAttributeId } | null
@@ -154,6 +157,15 @@ const TableNode = ({ data }) => {
                 onContextMenu={handleContextMenu}
             >
                 <span className="table-node__name">{table.name}</span>
+                {(analysis?.tableHeaderIssues?.get(table.id) ?? []).map((issue, i) => (
+                    <span
+                        key={i}
+                        className={`table-node__issue table-node__issue--${issue.type}`}
+                        title={issue.message}
+                    >
+                        {issue.type === 'error' ? '✕' : '!'}
+                    </span>
+                ))}
             </div>
 
             <div className="table-node__body">
@@ -198,6 +210,16 @@ const TableNode = ({ data }) => {
                             </div>
                             <span className="table-node__attr-name">{displayName}</span>
                             <span className="table-node__attr-type">{attr.data_type}</span>
+                            {(() => {
+                                const issues = analysis?.attrRowIssues?.get(ta.attributeId) ?? [];
+                                if (!issues.length) return null;
+                                return (
+                                    <span
+                                        className="table-node__issue table-node__issue--warning"
+                                        title={issues.map((iss) => iss.message).join('\n')}
+                                    >!</span>
+                                );
+                            })()}
                         </div>
                     );
                 })}

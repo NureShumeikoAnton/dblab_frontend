@@ -45,7 +45,7 @@ const STAGE_0NF = {
     ],
     relationships: [],
     fds: [],
-    violationChecks: [false, false, false],
+    violationChecks: [false, false],
 };
 
 // 1NF stage: two tables, one relationship, one FD
@@ -93,6 +93,7 @@ const STAGE_1NF = {
     fds: [
         {
             id: 'fd-1-1',
+            tableId: 'tbl-1-2',
             color: '#E74C3C',
             level: -1,           // integer bracket lane (1 = nearest left)
             type: 'full',       // FD_Stage.type
@@ -106,6 +107,7 @@ const STAGE_1NF = {
             // NOTE: demo-only — not a real normalization FD, added to test
             // multiple brackets at different levels on the same table
             id: 'fd-1-2',
+            tableId: 'tbl-1-2',
             color: '#2980B9',
             level: 2,           // outer lane, renders further left than fd-1-1
             type: 'partial',
@@ -116,7 +118,7 @@ const STAGE_1NF = {
             ],
         },
     ],
-    violationChecks: [false, false, false, false],
+    violationChecks: [false],
 };
 
 // 2NF stage: three tables, two relationships, two FDs
@@ -183,6 +185,7 @@ const STAGE_2NF = {
     fds: [
         {
             id: 'fd-2-1',
+            tableId: 'tbl-2-2',
             color: '#E74C3C',
             level: 1,
             type: 'full',
@@ -194,6 +197,7 @@ const STAGE_2NF = {
         },
         {
             id: 'fd-2-2',
+            tableId: 'tbl-2-1',
             color: '#F39C12',
             level: -1,
             type: 'full',
@@ -204,7 +208,7 @@ const STAGE_2NF = {
             ],
         },
     ],
-    violationChecks: [false, false, false, false],
+    violationChecks: [false],
 };
 
 // 3NF stage: empty (not yet initialized by student)
@@ -215,7 +219,7 @@ const STAGE_3NF = {
     tables: [],
     relationships: [],
     fds: [],
-    violationChecks: [false, false, false, false],
+    violationChecks: [false],
 };
 
 export const MOCK_STAGES = [STAGE_0NF, STAGE_1NF, STAGE_2NF, STAGE_3NF];

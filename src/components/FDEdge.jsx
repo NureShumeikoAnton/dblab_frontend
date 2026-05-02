@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useInternalNode } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
+import { useNFAnalysis } from '../hooks/useNFAnalysis.jsx';
 import FDContextMenu from './FDContextMenu.jsx';
 
 const LANE_WIDTH = 18; // px per bracket lane
@@ -27,6 +28,8 @@ const FDEdge = ({ source, data }) => {
     const selectedFDId = useEditorStore((s) => s.ui.selectedFDId);
     const fdId = data?.fd?.id ?? null;
 
+    const analysis = useNFAnalysis();
+
     const [ctxMenu, setCtxMenu] = useState(null); // { x, y } | null
 
     const handleClick = useCallback((e) => {
@@ -44,6 +47,7 @@ const FDEdge = ({ source, data }) => {
     if (!node || !data?.fd) return null;
 
     const { fd } = data;
+    const fdIssueList = analysis?.fdIssues?.get(fd.id) ?? [];
     const handleBounds = node?.internals?.handleBounds;
     // Source-type handles live in handleBounds.source
     const allHandles = [...(handleBounds?.source ?? [])];
@@ -95,6 +99,15 @@ const FDEdge = ({ source, data }) => {
                 {/* Vertical spine */}
                 <line x1={laneX} y1={topY} x2={laneX} y2={bottomY} {...lp} />
                 <line x1={laneX} y1={topY} x2={laneX} y2={bottomY} {...hitProps} />
+
+                {/* Violation indicator — shown above the spine when 2NF/3NF error exists */}
+                {fdIssueList.length > 0 && (
+                    <g style={{ pointerEvents: 'none' }}>
+                        <title>{fdIssueList.map((iss) => iss.message).join('\n')}</title>
+                        <circle cx={laneX} cy={topY - 11} r={7} fill="#dc2626" stroke="#fca5a5" strokeWidth="1" />
+                        <text x={laneX} y={topY - 7} textAnchor="middle" fontSize="9" fontWeight="700" fill="white" style={{ userSelect: 'none' }}>✕</text>
+                    </g>
+                )}
 
                 {/* Start stubs — plain lines (determinant side) */}
                 {startYs.map((y, i) => (

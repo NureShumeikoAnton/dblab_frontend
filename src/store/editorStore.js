@@ -35,7 +35,7 @@ const useEditorStore = create(
                 tables: [],       // Table[]
                 relationships: [], // Relationship[]
                 fds: [],           // FunctionalDependency[]
-                violationChecks: [false, false, false], // 0NF has 3 rules
+                violationChecks: [false, false], // 0NF: 2 manual rules
             },
             {
                 stageId: null,
@@ -44,7 +44,7 @@ const useEditorStore = create(
                 tables: [],
                 relationships: [],
                 fds: [],
-                violationChecks: [false, false, false, false], // 1NF has 4 rules
+                violationChecks: [false], // 1NF: 1 manual rule
             },
             {
                 stageId: null,
@@ -53,7 +53,7 @@ const useEditorStore = create(
                 tables: [],
                 relationships: [],
                 fds: [],
-                violationChecks: [false, false, false, false], // 2NF has 4 rules
+                violationChecks: [false], // 2NF: 1 manual rule
             },
             {
                 stageId: null,
@@ -62,7 +62,7 @@ const useEditorStore = create(
                 tables: [],
                 relationships: [],
                 fds: [],
-                violationChecks: [false, false, false, false], // 3NF has 4 rules
+                violationChecks: [false], // 3NF: 1 manual rule
             },
         ],
 
