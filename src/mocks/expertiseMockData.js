@@ -1,5 +1,13 @@
-// DATA_MODEL_TYPES mirrors the material types used in EventModalComponent
-export const DATA_MODEL_TYPES = ['db_model', 'erd', 'sql_script'];
+// Data model types and their labels
+export const DATA_MODEL_TYPES = ['conceptual_model', 'er_model', 'logical_model', 'physical_model', 'other'];
+
+export const TYPE_LABEL = {
+    'conceptual_model': 'Концептуальна модель (UML)',
+    'er_model':        'ЕR-модель',
+    'logical_model':   'Логічна модель',
+    'physical_model':  'Фізична модель',
+    'other':           'Інше',
+};
 
 // Mutable users list — role can be 'student' | 'expert' | 'admin'
 export const MOCK_USERS = [
@@ -104,42 +112,42 @@ export const MOCK_DATA_MODELS = [
     {
         data_model_Id: 1,
         file: 'https://drive.google.com/file/d/1_library_erd',
-        type: 'erd',
+        type: 'er_model',
         upload_date: '2026-03-10T14:05:00.000Z',
         project_Id: 1,
     },
     {
         data_model_Id: 2,
         file: 'https://drive.google.com/file/d/1_library_sql',
-        type: 'sql_script',
+        type: 'physical_model',
         upload_date: '2026-03-10T14:10:00.000Z',
         project_Id: 1,
     },
     {
         data_model_Id: 3,
         file: 'https://drive.google.com/file/d/2_shop_db_model',
-        type: 'db_model',
+        type: 'logical_model',
         upload_date: '2026-03-22T09:35:00.000Z',
         project_Id: 2,
     },
     {
         data_model_Id: 4,
         file: 'https://drive.google.com/file/d/3_med_erd',
-        type: 'erd',
+        type: 'er_model',
         upload_date: '2026-04-01T11:20:00.000Z',
         project_Id: 3,
     },
     {
         data_model_Id: 5,
         file: 'https://drive.google.com/file/d/4_social_db_model',
-        type: 'db_model',
+        type: 'logical_model',
         upload_date: '2026-04-10T08:50:00.000Z',
         project_Id: 4,
     },
     {
         data_model_Id: 6,
         file: 'https://drive.google.com/file/d/4_social_sql',
-        type: 'sql_script',
+        type: 'physical_model',
         upload_date: '2026-04-10T08:55:00.000Z',
         project_Id: 4,
     },

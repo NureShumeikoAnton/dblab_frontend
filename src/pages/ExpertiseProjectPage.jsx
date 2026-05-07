@@ -8,6 +8,7 @@ import {
     MOCK_DATA_MODELS,
     MOCK_EXPERTISES,
     MOCK_PROJECT_COMMENTS,
+    TYPE_LABEL,
 } from '../mocks/expertiseMockData.js';
 import { CommentInput, CommentThread, pushComment } from '../components/ProjectComments.jsx';
 import './styles/ClientPages.css';
@@ -19,16 +20,15 @@ const STATUS_LABEL = {
     'reviewed':  'Перевірено',
 };
 
-const TYPE_LABEL = {
-    'db_model':   'DB Model',
-    'erd':        'ERD',
-    'sql_script': 'SQL Script',
-};
-
 function ModelIcon({ type }) {
-    if (type === 'db_model') return <FileSpreadsheet size={16} />;
-    if (type === 'sql_script') return <FileCode size={16} />;
-    return <FileText size={16} />;
+    const typeIconMap = {
+        'conceptual_model': <FileText size={16} />,
+        'er_model':         <FileSpreadsheet size={16} />,
+        'logical_model':    <FileSpreadsheet size={16} />,
+        'physical_model':   <FileCode size={16} />,
+        'other':            <FileText size={16} />,
+    };
+    return typeIconMap[type] || <FileText size={16} />;
 }
 
 const ExpertiseProjectPage = () => {

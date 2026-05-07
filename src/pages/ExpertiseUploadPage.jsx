@@ -3,15 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, ArrowLeft } from 'lucide-react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import { useToast } from '../context/ToastContext.jsx';
-import { MOCK_PROJECTS, MOCK_DATA_MODELS, DATA_MODEL_TYPES } from '../mocks/expertiseMockData.js';
+import { MOCK_PROJECTS, MOCK_DATA_MODELS, DATA_MODEL_TYPES, TYPE_LABEL } from '../mocks/expertiseMockData.js';
 import './styles/ClientPages.css';
 import './styles/ExpertiseUploadPage.css';
-
-const TYPE_LABEL = {
-    'db_model':   'DB Model',
-    'erd':        'ERD',
-    'sql_script': 'SQL Script',
-};
 
 const ExpertiseUploadPage = () => {
     const navigate = useNavigate();
@@ -24,7 +18,7 @@ const ExpertiseUploadPage = () => {
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [dataModels, setDataModels] = useState([{ link: '', type: 'erd' }]);
+    const [dataModels, setDataModels] = useState([{ link: '', type: 'er_model' }]);
     const [errors, setErrors] = useState({});
 
     const handleModelChange = (index, field, value) => {
@@ -32,7 +26,7 @@ const ExpertiseUploadPage = () => {
     };
 
     const handleAddModel = () => {
-        setDataModels(prev => [...prev, { link: '', type: 'erd' }]);
+        setDataModels(prev => [...prev, { link: '', type: 'er_model' }]);
     };
 
     const handleRemoveModel = (index) => {
