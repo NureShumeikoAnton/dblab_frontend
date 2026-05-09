@@ -208,3 +208,23 @@
 .table-node--drop-target .table-node__header {
     background: #dbeafe;
 }
+
+/* Pick-mode: source table (the one that started the relationship) */
+.table-node--rel-source {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px #7c3aed40;
+}
+
+/* Pick-mode: candidate target tables glow green on hover */
+.table-node--rel-target {
+    cursor: crosshair;
+}
+
+.table-node--rel-target .table-node__header {
+    cursor: crosshair;
+}
+
+.table-node--rel-target:hover {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 2px #16a34a40;
+}

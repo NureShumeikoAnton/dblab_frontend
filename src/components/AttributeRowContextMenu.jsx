@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import './styles/AttributeRowContextMenu.css';
 
-const AttributeRowContextMenu = ({ x, y, onRemove, onClose }) => {
+const AttributeRowContextMenu = ({ x, y, attrName, onCreateTableWithPK, onRemove, onClose }) => {
     const menuRef = useRef(null);
 
     useEffect(() => {
@@ -24,6 +24,14 @@ const AttributeRowContextMenu = ({ x, y, onRemove, onClose }) => {
 
     return createPortal(
         <ul ref={menuRef} className="attr-row-ctx-menu" style={{ top: y, left: x }}>
+            {onCreateTableWithPK && (
+                <li
+                    className="attr-row-ctx-menu__item"
+                    onClick={() => { onCreateTableWithPK(); onClose(); }}
+                >
+                    🆕&nbsp; Create new table with {attrName} as PK
+                </li>
+            )}
             <li
                 className="attr-row-ctx-menu__item attr-row-ctx-menu__item--danger"
                 onClick={() => { onRemove(); onClose(); }}

@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import './styles/TableContextMenu.css';
+import './styles/RelationshipContextMenu.css';
 
-const TableContextMenu = ({ x, y, hasPK, onAddRelationship, onDelete, onClose }) => {
+const RelationshipContextMenu = ({ x, y, onDelete, onClose }) => {
     const menuRef = useRef(null);
 
     useEffect(() => {
@@ -23,22 +23,16 @@ const TableContextMenu = ({ x, y, hasPK, onAddRelationship, onDelete, onClose })
     }, [onClose]);
 
     return createPortal(
-        <ul ref={menuRef} className="table-ctx-menu" style={{ top: y, left: x }}>
+        <ul ref={menuRef} className="rel-ctx-menu" style={{ top: y, left: x }}>
             <li
-                className={`table-ctx-menu__item${hasPK ? '' : ' table-ctx-menu__item--disabled'}`}
-                onClick={hasPK ? () => { onAddRelationship(); onClose(); } : undefined}
-            >
-                🔗&nbsp; Add relationship to...
-            </li>
-            <li
-                className="table-ctx-menu__item table-ctx-menu__item--danger"
+                className="rel-ctx-menu__item rel-ctx-menu__item--danger"
                 onClick={() => { onDelete(); onClose(); }}
             >
-                🗑&nbsp; Delete table
+                🗑&nbsp; Delete relationship
             </li>
         </ul>,
         document.body
     );
 };
 
-export default TableContextMenu;
+export default RelationshipContextMenu;

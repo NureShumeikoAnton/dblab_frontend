@@ -1,10 +1,12 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Handle, Position, useStore } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
+import { TABLE_COLORS } from './TableToolbar.jsx';
 import { useNFAnalysis } from '../hooks/useNFAnalysis.jsx';
 import TableContextMenu from './TableContextMenu.jsx';
 import AttributeRowContextMenu from './AttributeRowContextMenu.jsx';
 import DeleteTableModal from './DeleteTableModal.jsx';
+import CreateTableFromAttrModal from './CreateTableFromAttrModal.jsx';
 import './styles/TableNode.css';
 
 const TableNode = ({ data }) => {
@@ -15,10 +17,17 @@ const TableNode = ({ data }) => {
     const showFDs = useEditorStore((s) => s.ui.showFDs);
     const deleteTable = useEditorStore((s) => s.deleteTable);
     const deleteFD = useEditorStore((s) => s.deleteFD);
+    const addTable = useEditorStore((s) => s.addTable);
     const addTableAttribute = useEditorStore((s) => s.addTableAttribute);
+    const updateTableAttribute = useEditorStore((s) => s.updateTableAttribute);
+    const addRelationship = useEditorStore((s) => s.addRelationship);
     const selectTable = useEditorStore((s) => s.selectTable);
     const selectTableAttribute = useEditorStore((s) => s.selectTableAttribute);
     const removeTableAttribute = useEditorStore((s) => s.removeTableAttribute);
+    const startRelationshipCreation = useEditorStore((s) => s.startRelationshipCreation);
+    const confirmRelationshipTarget = useEditorStore((s) => s.confirmRelationshipTarget);
+    const cancelRelationshipCreation = useEditorStore((s) => s.cancelRelationshipCreation);
+    const pendingRelationshipSourceTableId = useEditorStore((s) => s.ui.pendingRelationshipSourceTableId);
     const selectedTableAttribute = useEditorStore((s) => s.ui.selectedTableAttribute);
 
     const analysis = useNFAnalysis();
@@ -26,8 +35,14 @@ const TableNode = ({ data }) => {
     const [contextMenu, setContextMenu] = useState(null); // { x, y } | null
     const [attrContextMenu, setAttrContextMenu] = useState(null); // { x, y, tableAttributeId } | null
     const [deleteConfirmFDs, setDeleteConfirmFDs] = useState(null); // FD[] | null
+    const [createTableFromAttrInfo, setCreateTableFromAttrInfo] = useState(null); // { taId, attrId, attrName, newTableId } | null
     const [hoveredAttrId, setHoveredAttrId] = useState(null);
     const [isDragOver, setIsDragOver] = useState(false);
+
+    const hasPK = useMemo(
+        () => table.tableAttributes.some((ta) => ta.is_PK),
+        [table.tableAttributes]
+    );
 
     const attrMap = useMemo(
         () => new Map(attributePool.map((a) => [a.id, a])),
@@ -49,8 +64,16 @@ const TableNode = ({ data }) => {
 
     const handleHeaderClick = useCallback((e) => {
         e.stopPropagation();
+        if (pendingRelationshipSourceTableId) {
+            if (table.id === pendingRelationshipSourceTableId) {
+                cancelRelationshipCreation();
+            } else {
+                confirmRelationshipTarget(table.id);
+            }
+            return;
+        }
         selectTable(table.id);
-    }, [selectTable, table.id]);
+    }, [pendingRelationshipSourceTableId, table.id, selectTable, cancelRelationshipCreation, confirmRelationshipTarget]);
 
     const handleContextMenu = useCallback((e) => {
         e.preventDefault();
@@ -61,8 +84,16 @@ const TableNode = ({ data }) => {
 
     const handleRowClick = useCallback((e, tableAttributeId) => {
         e.stopPropagation();
+        if (pendingRelationshipSourceTableId) {
+            if (table.id === pendingRelationshipSourceTableId) {
+                cancelRelationshipCreation();
+            } else {
+                confirmRelationshipTarget(table.id);
+            }
+            return;
+        }
         selectTableAttribute(table.id, tableAttributeId);
-    }, [selectTableAttribute, table.id]);
+    }, [pendingRelationshipSourceTableId, table.id, selectTableAttribute, cancelRelationshipCreation, confirmRelationshipTarget]);
 
     const handleRowContextMenu = useCallback((e, tableAttributeId) => {
         e.preventDefault();
@@ -94,6 +125,52 @@ const TableNode = ({ data }) => {
         deleteTable(currentStageIndex, table.id);
         setDeleteConfirmFDs(null);
     }, [currentStageIndex, table.id, deleteConfirmFDs, deleteFD, deleteTable]);
+
+    const handleCreateTableWithPK = useCallback((tableAttributeId) => {
+        const ta = table.tableAttributes.find((a) => a.id === tableAttributeId);
+        if (!ta) return;
+        const attr = attrMap.get(ta.attributeId);
+        if (!attr) return;
+
+        const newTableId = crypto.randomUUID();
+        const color = TABLE_COLORS[Math.floor(Math.random() * TABLE_COLORS.length)];
+        const position = { x: table.position.x + 280, y: table.position.y };
+
+        addTable(currentStageIndex, {
+            id: newTableId,
+            name: attr.name + '_Table',
+            color,
+            position,
+            tableAttributes: [{
+                id: crypto.randomUUID(),
+                attributeId: ta.attributeId,
+                is_PK: true,
+                is_FK: false,
+                alias: null,
+                order: 0,
+            }],
+        });
+
+        setCreateTableFromAttrInfo({ taId: ta.id, attrId: ta.attributeId, attrName: attr.name, newTableId });
+    }, [table, attrMap, currentStageIndex, addTable]);
+
+    const handleCreateTableFromAttrConfirm = useCallback((markAsFK) => {
+        if (!createTableFromAttrInfo) return;
+        const { taId, newTableId } = createTableFromAttrInfo;
+        if (markAsFK) {
+            updateTableAttribute(currentStageIndex, table.id, taId, { is_FK: true });
+            addRelationship(currentStageIndex, {
+                id: crypto.randomUUID(),
+                type: 'non-identifying',
+                color: '#64748b',
+                cardinality_t1: '1',
+                cardinality_t2: '0..*',
+                table1Id: newTableId,
+                table2Id: table.id,
+            });
+        }
+        setCreateTableFromAttrInfo(null);
+    }, [createTableFromAttrInfo, currentStageIndex, table.id, updateTableAttribute, addRelationship]);
 
     const handleDragEnter = useCallback((e) => {
         if (!e.dataTransfer.types.includes('application/dblab-attribute')) return;
@@ -136,9 +213,12 @@ const TableNode = ({ data }) => {
 
     const sorted = [...table.tableAttributes].sort((a, b) => a.order - b.order);
 
+    const isRelSourceNode = pendingRelationshipSourceTableId === table.id;
+    const isPickMode = Boolean(pendingRelationshipSourceTableId);
+
     return (
         <div
-            className={`table-node${isDragOver ? ' table-node--drop-target' : ''}`}
+            className={`table-node${isDragOver ? ' table-node--drop-target' : ''}${isRelSourceNode ? ' table-node--rel-source' : ''}${isPickMode && !isRelSourceNode ? ' table-node--rel-target' : ''}`}
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -229,18 +309,26 @@ const TableNode = ({ data }) => {
                 <TableContextMenu
                     x={contextMenu.x}
                     y={contextMenu.y}
+                    hasPK={hasPK}
+                    onAddRelationship={() => startRelationshipCreation(table.id)}
                     onDelete={handleDelete}
                     onClose={() => setContextMenu(null)}
                 />
             )}
-            {attrContextMenu && (
-                <AttributeRowContextMenu
-                    x={attrContextMenu.x}
-                    y={attrContextMenu.y}
-                    onRemove={() => removeTableAttribute(currentStageIndex, table.id, attrContextMenu.tableAttributeId)}
-                    onClose={() => setAttrContextMenu(null)}
-                />
-            )}
+            {attrContextMenu && (() => {
+                const ta = table.tableAttributes.find((a) => a.id === attrContextMenu.tableAttributeId);
+                const attr = ta ? attrMap.get(ta.attributeId) : null;
+                return (
+                    <AttributeRowContextMenu
+                        x={attrContextMenu.x}
+                        y={attrContextMenu.y}
+                        attrName={attr?.name ?? ''}
+                        onCreateTableWithPK={() => handleCreateTableWithPK(attrContextMenu.tableAttributeId)}
+                        onRemove={() => removeTableAttribute(currentStageIndex, table.id, attrContextMenu.tableAttributeId)}
+                        onClose={() => setAttrContextMenu(null)}
+                    />
+                );
+            })()}
             {deleteConfirmFDs && (
                 <DeleteTableModal
                     tableName={table.name}
@@ -249,6 +337,14 @@ const TableNode = ({ data }) => {
                     onSave={handleSaveDelete}
                     onDeleteAll={handleDeleteAll}
                     onCancel={() => setDeleteConfirmFDs(null)}
+                />
+            )}
+            {createTableFromAttrInfo && (
+                <CreateTableFromAttrModal
+                    attrName={createTableFromAttrInfo.attrName}
+                    sourceTableName={table.name}
+                    onConfirm={handleCreateTableFromAttrConfirm}
+                    onClose={() => setCreateTableFromAttrInfo(null)}
                 />
             )}
         </div>

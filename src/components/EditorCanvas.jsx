@@ -9,6 +9,7 @@ import { TABLE_COLORS } from './TableToolbar.jsx';
 import TableNode from './TableNode.jsx';
 import RelationshipEdge from './RelationshipEdge.jsx';
 import FDEdge from './FDEdge.jsx';
+import AddRelationshipModal from './AddRelationshipModal.jsx';
 import './styles/EditorCanvas.css';
 
 // nodeTypes / edgeTypes must be defined at module level — defining inside the
@@ -52,6 +53,12 @@ const EditorCanvasFlow = () => {
     const clearSelectedFD = useEditorStore((s) => s.clearSelectedFD);
     const clearSelectedTable = useEditorStore((s) => s.clearSelectedTable);
     const clearSelectedTableAttribute = useEditorStore((s) => s.clearSelectedTableAttribute);
+    const clearSelectedRelationship = useEditorStore((s) => s.clearSelectedRelationship);
+    const pendingRelationshipSourceTableId = useEditorStore((s) => s.ui.pendingRelationshipSourceTableId);
+    const pendingRelationshipSetup = useEditorStore((s) => s.ui.pendingRelationshipSetup);
+    const cancelRelationshipCreation = useEditorStore((s) => s.cancelRelationshipCreation);
+    const clearRelationshipSetup = useEditorStore((s) => s.clearRelationshipSetup);
+    const attributePool = useEditorStore((s) => s.attributePool);
 
     // activeNodeId tracks which node was last clicked or grabbed — keeps it on top via zIndex.
     const [activeNodeId, setActiveNodeId] = useState(null);
@@ -139,7 +146,9 @@ const EditorCanvasFlow = () => {
         clearSelectedFD();
         clearSelectedTable();
         clearSelectedTableAttribute();
-    }, [clearSelectedFD, clearSelectedTable, clearSelectedTableAttribute]);
+        clearSelectedRelationship();
+        cancelRelationshipCreation();
+    }, [clearSelectedFD, clearSelectedTable, clearSelectedTableAttribute, clearSelectedRelationship, cancelRelationshipCreation]);
 
     // Only allow FD connections within the same table node, via fd-left-* or fd-right-* handles
     const isValidConnection = useCallback((connection) => (
@@ -283,36 +292,66 @@ const EditorCanvasFlow = () => {
         });
     }, [screenToFlowPosition, currentStageIndex, tables, addTable]);
 
+    const sourceTable = pendingRelationshipSetup
+        ? tables.find((t) => t.id === pendingRelationshipSetup.sourceTableId)
+        : null;
+    const targetTable = pendingRelationshipSetup
+        ? tables.find((t) => t.id === pendingRelationshipSetup.targetTableId)
+        : null;
+
     return (
-        <ReactFlow
-            nodes={localNodes}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            onNodesChange={onNodesChange}
-            onNodeDragStart={handleNodeActivate}
-            onNodeDragStop={handleNodeDragStop}
-            connectionMode="loose"
-            onConnect={handleConnect}
-            isValidConnection={isValidConnection}
-            connectionLineType={ConnectionLineType.Step}
-            connectionLineStyle={{ stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '5 3' }}
-            onPaneClick={handlePaneClick}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            fitView
-            fitViewOptions={{ padding: 0.2 }}
-            minZoom={0.2}
-            maxZoom={2}
-            panOnScroll={false}
-            zoomOnScroll={true}
-            panOnDrag={true}
-            deleteKeyCode={null}
-            selectionKeyCode={null}
-        >
-            <Background variant="dots" gap={20} size={1} color="#d1d9e0" />
-            <Controls showInteractive={false} />
-        </ReactFlow>
+        <>
+            <ReactFlow
+                nodes={localNodes}
+                edges={edges}
+                nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
+                onNodesChange={onNodesChange}
+                onNodeDragStart={handleNodeActivate}
+                onNodeDragStop={handleNodeDragStop}
+                connectionMode="loose"
+                onConnect={handleConnect}
+                isValidConnection={isValidConnection}
+                connectionLineType={ConnectionLineType.Step}
+                connectionLineStyle={{ stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '5 3' }}
+                onPaneClick={handlePaneClick}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                fitView
+                fitViewOptions={{ padding: 0.2 }}
+                minZoom={0.2}
+                maxZoom={2}
+                panOnScroll={false}
+                zoomOnScroll={true}
+                panOnDrag={true}
+                deleteKeyCode={null}
+                selectionKeyCode={null}
+            >
+                <Background variant="dots" gap={20} size={1} color="#d1d9e0" />
+                <Controls showInteractive={false} />
+            </ReactFlow>
+            {pendingRelationshipSourceTableId && (
+                <div className="editor-canvas__rel-banner">
+                    <span>⬤ Click on the target table to connect</span>
+                    <button
+                        type="button"
+                        className="editor-canvas__rel-banner-cancel"
+                        onClick={cancelRelationshipCreation}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            )}
+            {pendingRelationshipSetup && sourceTable && targetTable && (
+                <AddRelationshipModal
+                    sourceTable={sourceTable}
+                    targetTable={targetTable}
+                    attributePool={attributePool}
+                    stageIndex={currentStageIndex}
+                    onClose={clearRelationshipSetup}
+                />
+            )}
+        </>
     );
 };
 

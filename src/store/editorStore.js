@@ -81,6 +81,9 @@ const useEditorStore = create(
             selectedFDId: null,   // null | string — FD currently selected for editing
             selectedTableId: null, // null | string — table node currently selected for inline editing
             selectedTableAttribute: null, // null | { tableId, tableAttributeId }
+            selectedRelationshipId: null, // null | string
+            pendingRelationshipSourceTableId: null, // null | string — canvas pick mode
+            pendingRelationshipSetup: null, // null | { sourceTableId, targetTableId } — awaiting modal confirmation
         },
 
         // ─── Actions ─────────────────────────────────────────────────────────────
@@ -116,6 +119,9 @@ const useEditorStore = create(
                 state.ui.selectedTableId = null;
                 state.ui.selectedFDId = null;
                 state.ui.selectedTableAttribute = null;
+                state.ui.selectedRelationshipId = null;
+                state.ui.pendingRelationshipSourceTableId = null;
+                state.ui.pendingRelationshipSetup = null;
             });
         },
 
@@ -192,6 +198,16 @@ const useEditorStore = create(
                 const table = state.stages[stageIndex].tables.find((t) => t.id === tableId);
                 if (!table) return;
 
+                // Clear selected relationship if it involved this table
+                if (state.ui.selectedRelationshipId) {
+                    const selRel = state.stages[stageIndex].relationships.find(
+                        (r) => r.id === state.ui.selectedRelationshipId
+                    );
+                    if (selRel && (selRel.table1Id === tableId || selRel.table2Id === tableId)) {
+                        state.ui.selectedRelationshipId = null;
+                    }
+                }
+
                 // Cascade: remove relationships that involve this table
                 state.stages[stageIndex].relationships = state.stages[stageIndex].relationships.filter(
                     (r) => r.table1Id !== tableId && r.table2Id !== tableId
@@ -259,18 +275,40 @@ const useEditorStore = create(
         removeTableAttribute(stageIndex, tableId, tableAttributeId) {
             set((state) => {
                 const table = state.stages[stageIndex].tables.find((t) => t.id === tableId);
-                if (table) {
-                    table.tableAttributes = table.tableAttributes.filter(
-                        (a) => a.id !== tableAttributeId
-                    );
-                    if (
-                        state.ui.selectedTableAttribute?.tableId === tableId &&
-                        state.ui.selectedTableAttribute?.tableAttributeId === tableAttributeId
-                    ) {
-                        state.ui.selectedTableAttribute = null;
-                    }
-                    state.ui.hasUnsavedChanges = true;
+                if (!table) return;
+
+                const removedTA = table.tableAttributes.find((a) => a.id === tableAttributeId);
+
+                // Cascade: if the removed attribute is a FK, delete any relationship where
+                // this table is the FK side (table2Id) and the source table's PK matches
+                // the removed attribute's attributeId.
+                if (removedTA?.is_FK) {
+                    const removedAttrId = removedTA.attributeId;
+                    state.stages[stageIndex].relationships = state.stages[stageIndex].relationships.filter((rel) => {
+                        if (rel.table2Id !== tableId) return true;
+                        const sourceTable = state.stages[stageIndex].tables.find((t) => t.id === rel.table1Id);
+                        if (!sourceTable) return false;
+                        const sourcePKIds = new Set(
+                            sourceTable.tableAttributes.filter((ta) => ta.is_PK).map((ta) => ta.attributeId)
+                        );
+                        const shouldDelete = sourcePKIds.has(removedAttrId);
+                        if (shouldDelete && state.ui.selectedRelationshipId === rel.id) {
+                            state.ui.selectedRelationshipId = null;
+                        }
+                        return !shouldDelete;
+                    });
                 }
+
+                table.tableAttributes = table.tableAttributes.filter(
+                    (a) => a.id !== tableAttributeId
+                );
+                if (
+                    state.ui.selectedTableAttribute?.tableId === tableId &&
+                    state.ui.selectedTableAttribute?.tableAttributeId === tableAttributeId
+                ) {
+                    state.ui.selectedTableAttribute = null;
+                }
+                state.ui.hasUnsavedChanges = true;
             });
         },
 
@@ -342,6 +380,9 @@ const useEditorStore = create(
                 state.stages[stageIndex].relationships = state.stages[stageIndex].relationships.filter(
                     (r) => r.id !== relationshipId
                 );
+                if (state.ui.selectedRelationshipId === relationshipId) {
+                    state.ui.selectedRelationshipId = null;
+                }
                 state.ui.hasUnsavedChanges = true;
             });
         },
@@ -370,6 +411,7 @@ const useEditorStore = create(
                 state.ui.selectedFDId = fdId;
                 state.ui.selectedTableId = null;
                 state.ui.selectedTableAttribute = null;
+                state.ui.selectedRelationshipId = null;
             });
         },
 
@@ -382,6 +424,7 @@ const useEditorStore = create(
                 state.ui.selectedTableId = tableId;
                 state.ui.selectedFDId = null;
                 state.ui.selectedTableAttribute = null;
+                state.ui.selectedRelationshipId = null;
             });
         },
 
@@ -394,11 +437,56 @@ const useEditorStore = create(
                 state.ui.selectedTableAttribute = { tableId, tableAttributeId };
                 state.ui.selectedTableId = null;
                 state.ui.selectedFDId = null;
+                state.ui.selectedRelationshipId = null;
             });
         },
 
         clearSelectedTableAttribute() {
             set((state) => { state.ui.selectedTableAttribute = null; });
+        },
+
+        selectRelationship(relId) {
+            set((state) => {
+                state.ui.selectedRelationshipId = relId;
+                state.ui.selectedTableId = null;
+                state.ui.selectedFDId = null;
+                state.ui.selectedTableAttribute = null;
+                state.ui.pendingRelationshipSourceTableId = null;
+            });
+        },
+
+        clearSelectedRelationship() {
+            set((state) => { state.ui.selectedRelationshipId = null; });
+        },
+
+        startRelationshipCreation(sourceTableId) {
+            set((state) => {
+                state.ui.pendingRelationshipSourceTableId = sourceTableId;
+                state.ui.selectedTableId = null;
+                state.ui.selectedFDId = null;
+                state.ui.selectedTableAttribute = null;
+                state.ui.selectedRelationshipId = null;
+            });
+        },
+
+        cancelRelationshipCreation() {
+            set((state) => { state.ui.pendingRelationshipSourceTableId = null; });
+        },
+
+        confirmRelationshipTarget(targetTableId) {
+            set((state) => {
+                const sourceTableId = state.ui.pendingRelationshipSourceTableId;
+                if (!sourceTableId || sourceTableId === targetTableId) {
+                    state.ui.pendingRelationshipSourceTableId = null;
+                    return;
+                }
+                state.ui.pendingRelationshipSetup = { sourceTableId, targetTableId };
+                state.ui.pendingRelationshipSourceTableId = null;
+            });
+        },
+
+        clearRelationshipSetup() {
+            set((state) => { state.ui.pendingRelationshipSetup = null; });
         },
 
         deleteFD(stageIndex, fdId) {

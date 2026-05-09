@@ -1,5 +1,8 @@
+import { useCallback, useState } from 'react';
 import { getSmoothStepPath, Position, useInternalNode } from '@xyflow/react';
+import useEditorStore from '../store/editorStore.js';
 import { computeRelationshipHandles } from '../utils/edgeHandles.js';
+import RelationshipContextMenu from './RelationshipContextMenu.jsx';
 
 // Geometry constants (pixels from the handle connection point)
 const NEAR     = 8;   // optionality symbol offset
@@ -61,13 +64,34 @@ const CrowsFoot = ({ cx, cy, facing, cardinality, color }) => {
 const RelationshipEdge = ({ id, source, target, data }) => {
     const sourceNode = useInternalNode(source);
     const targetNode = useInternalNode(target);
+    const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
+    const selectedRelationshipId = useEditorStore((s) => s.ui.selectedRelationshipId);
+    const selectRelationship = useEditorStore((s) => s.selectRelationship);
+    const deleteRelationship = useEditorStore((s) => s.deleteRelationship);
+    const clearSelectedRelationship = useEditorStore((s) => s.clearSelectedRelationship);
 
-    if (!sourceNode || !targetNode) return null;
+    const [ctxMenu, setCtxMenu] = useState(null); // { x, y } | null
 
     const { relationship } = data ?? {};
-    const color = relationship?.color ?? '#64748b';
-    const c1    = relationship?.cardinality_t1 ?? '1';
-    const c2    = relationship?.cardinality_t2 ?? '1';
+    const relId   = relationship?.id ?? null;
+    const color   = relationship?.color ?? '#64748b';
+    const c1      = relationship?.cardinality_t1 ?? '1';
+    const c2      = relationship?.cardinality_t2 ?? '1';
+    const isSelected = selectedRelationshipId === relId;
+
+    const handleClick = useCallback((e) => {
+        e.stopPropagation();
+        if (relId) selectRelationship(relId);
+    }, [relId, selectRelationship]);
+
+    const handleContextMenu = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (relId) selectRelationship(relId);
+        setCtxMenu({ x: e.clientX, y: e.clientY });
+    }, [relId, selectRelationship]);
+
+    if (!sourceNode || !targetNode) return null;
 
     const { srcX, srcY, srcPos, tgtX, tgtY, tgtPos } =
         computeRelationshipHandles(sourceNode, targetNode, 2 * EDGE_OFFSET);
@@ -79,15 +103,44 @@ const RelationshipEdge = ({ id, source, target, data }) => {
         offset: EDGE_OFFSET,
     });
 
+    const strokeWidth = isSelected ? 2.5 : 1.5;
+    const strokeColor = isSelected ? '#3b82f6' : color;
+
     return (
         <g>
-            {/* Wide transparent hit area — makes the edge easier to click (Phase 13) */}
-            <path id={id} d={edgePath} fill="none" stroke="transparent" strokeWidth={12} />
+            {/* Wide transparent hit area */}
+            <path
+                id={id}
+                d={edgePath}
+                fill="none"
+                stroke="transparent"
+                strokeWidth={12}
+                onClick={handleClick}
+                onContextMenu={handleContextMenu}
+                style={{ cursor: 'pointer' }}
+            />
             {/* Visible colored line */}
-            <path d={edgePath} fill="none" stroke={color} strokeWidth={1.5} />
+            <path
+                d={edgePath}
+                fill="none"
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                pointerEvents="none"
+            />
             {/* Crow's foot markers */}
-            <CrowsFoot cx={srcX} cy={srcY} facing={srcPos} cardinality={c1} color={color} />
-            <CrowsFoot cx={tgtX} cy={tgtY} facing={tgtPos} cardinality={c2} color={color} />
+            <CrowsFoot cx={srcX} cy={srcY} facing={srcPos} cardinality={c1} color={strokeColor} />
+            <CrowsFoot cx={tgtX} cy={tgtY} facing={tgtPos} cardinality={c2} color={strokeColor} />
+            {ctxMenu && (
+                <RelationshipContextMenu
+                    x={ctxMenu.x}
+                    y={ctxMenu.y}
+                    onDelete={() => {
+                        deleteRelationship(currentStageIndex, relId);
+                        clearSelectedRelationship();
+                    }}
+                    onClose={() => setCtxMenu(null)}
+                />
+            )}
         </g>
     );
 };
