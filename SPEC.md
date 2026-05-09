@@ -499,4 +499,66 @@ EditorPage
 - Linking projects to lessons/courses
 - Admin-created reference schema templates
 - Minimap
+
+---
+
+## 19. Open Design Question — FD Table Ownership in the DB Schema
+
+### Problem
+
+In the current backend schema (`SCHEMA.md`), a `FunctionalDependency` is a project-level entity linked to stages via `FD_Stage`. Its determinant attributes are stored in `FD_Start`, which references the project-level `Attribute` pool. The same attribute (e.g. `member_id`) can appear in multiple tables within the same stage — this is intentional, as foreign-key attributes are reused across tables.
+
+Because `FD_Stage` has no reference to a `Table`, the backend cannot determine which specific table an FD "belongs to" when start attributes are shared across tables. For example, if `member_id` exists in both `Members` and `Loans`, an FD `{member_id} → {member_name}` is ambiguous: it could belong to either table.
+
+In the frontend this was resolved by adding a `tableId` field to the FD store object (frontend-only for now). Without it, the FD rendering and normalization checks broke: FDs from one table were incorrectly matched to another table that shared the same attribute.
+
+### Proposed Fix
+
+Add `table_Id` as a foreign key to `FD_Stage`:
+
+```
+FD_Stage
+  fd_stage_Id  PK
+  type         'partial' | 'full' | 'transitive'
+  fd_Id        FK → FunctionalDependency
+  stage_Id     FK → Stage
+  table_Id     FK → Table   ← proposed addition
+```
+
+`FD_Stage` is the right place (not `FunctionalDependency`) because table ownership is per-stage: the same underlying FD could theoretically be reused across stages, and the owning table may differ per stage.
+
+### Question for the Teacher
+
+Is the proposed `table_Id` on `FD_Stage` the correct normalization decision, or should FD table ownership be derived at query time by joining through `FD_Start → Attribute → Table_Attribute → Table`? The join-based approach avoids the extra column but requires that start attributes uniquely identify one table per stage (which is not guaranteed when the same attribute is an FK in multiple tables).
+
+---
+
+### Те саме питання українською
+
+**Проблема**
+
+У поточній схемі БД (`SCHEMA.md`) `FunctionalDependency` є сутністю на рівні проєкту та зв'язується зі стадіями через `FD_Stage`. Атрибути-детермінанти зберігаються в `FD_Start`, що посилається на загальний пул атрибутів проєкту. Один і той самий атрибут (наприклад, `member_id`) може входити до кількох таблиць у межах однієї стадії — це є навмисним, оскільки атрибути зовнішніх ключів повторно використовуються в різних таблицях.
+
+Оскільки `FD_Stage` не містить посилання на `Table`, бекенд не може визначити, якій саме таблиці належить ФЗ, якщо атрибути-детермінанти присутні в кількох таблицях. Наприклад, якщо `member_id` існує і в `Members`, і в `Loans`, то ФЗ `{member_id} → {member_name}` є неоднозначною: вона може належати будь-якій із цих таблиць.
+
+На фронтенді це вирішено додаванням поля `tableId` до об'єкта ФЗ у стані (поки що лише на рівні клієнта). Без цього поля рендеринг ФЗ і алгоритми перевірки нормальних форм працювали некоректно: ФЗ однієї таблиці помилково зіставлялися з іншою таблицею, що мала спільний атрибут.
+
+**Пропоноване рішення**
+
+Додати `table_Id` як зовнішній ключ до `FD_Stage`:
+
+```
+FD_Stage
+  fd_stage_Id  PK
+  type         'partial' | 'full' | 'transitive'
+  fd_Id        FK → FunctionalDependency
+  stage_Id     FK → Stage
+  table_Id     FK → Table   ← пропоноване поле
+```
+
+`FD_Stage` є правильним місцем (а не `FunctionalDependency`), оскільки належність до таблиці є контекстом конкретної стадії: одна й та сама ФЗ теоретично може бути перевикористана на різних стадіях, і таблиця-власник може змінюватись.
+
+**Питання до викладача**
+
+Чи є пропонований `table_Id` в `FD_Stage` правильним рішенням з точки зору нормалізації, чи належність ФЗ до таблиці має визначатися на рівні запиту через ланцюжок `FD_Start → Attribute → Table_Attribute → Table`? Підхід із JOIN-запитом дозволяє уникнути додаткового стовпця, але вимагає, щоб атрибути-детермінанти однозначно ідентифікували одну таблицю в межах стадії — що не гарантується, коли один і той самий атрибут є зовнішнім ключем у кількох таблицях.
 - Keyboard shortcuts beyond standard browser shortcuts

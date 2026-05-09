@@ -31,8 +31,6 @@
 }
 
 .table-node__body {
-    max-height: 220px;
-    overflow-y: auto;
     padding: 4px 0;
 }
 

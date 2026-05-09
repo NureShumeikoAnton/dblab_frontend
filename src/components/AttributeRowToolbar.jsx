@@ -91,11 +91,11 @@ const AttributeRowToolbar = () => {
                 placeholder={attr?.name ?? ''}
             />
             <label className="attr-row-toolbar__check-label">
-                <input type="checkbox" checked={ta.is_PK} onChange={handlePKChange} disabled={ta.is_FK} />
+                <input type="checkbox" checked={ta.is_PK} onChange={handlePKChange} />
                 PK
             </label>
             <label className="attr-row-toolbar__check-label">
-                <input type="checkbox" checked={ta.is_FK} onChange={handleFKChange} disabled={ta.is_PK} />
+                <input type="checkbox" checked={ta.is_FK} onChange={handleFKChange} />
                 FK
             </label>
             <div className="attr-row-toolbar__order-btns">

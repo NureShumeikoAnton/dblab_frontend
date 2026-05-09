@@ -215,6 +215,18 @@ const EditorCanvasFlow = () => {
             return;
         }
 
+        // tgt is already a start in some sideFD — add src as a co-determinant (composite key).
+        const coStartFD = sideFDs.findLast((fd) =>
+            fd.starts.some((s) => s.attributeId === tgt.attrId) &&
+            !fd.starts.some((s) => s.attributeId === src.attrId)
+        );
+        if (coStartFD) {
+            updateFD(currentStageIndex, coStartFD.id, {
+                starts: [...coStartFD.starts, { id: `fds-${crypto.randomUUID()}`, attributeId: src.attrId }],
+            });
+            return;
+        }
+
         // srcAttr has no FDs on either side — create a new one.
         const usedLevels = sideFDs.map((fd) => Math.abs(fd.level));
         const nextLevel = (usedLevels.length ? Math.max(...usedLevels) : 0) + 1;
