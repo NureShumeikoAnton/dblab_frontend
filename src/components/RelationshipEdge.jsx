@@ -1,41 +1,26 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { getSmoothStepPath, Position, useInternalNode } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
 import { computeRelationshipHandles } from '../utils/edgeHandles.js';
-import RelationshipContextMenu from './RelationshipContextMenu.jsx';
 
 // Geometry constants (pixels from the handle connection point)
-const NEAR     = 8;   // optionality symbol offset
-const FAR      = 16;  // cardinality symbol offset
-const LEG      = 8;   // crow's foot leg length past the pivot
-const TICK_H   = 8;   // half-height of a tick mark
-const SPREAD   = 9;   // crow's foot vertical spread (±px)
-const CIRCLE_R = 4;   // optional-zero circle radius
-
-// Minimum straight segment near each handle so crow's foot symbols fit
-// before the first orthogonal bend.
+const NEAR     = 8;
+const FAR      = 16;
+const LEG      = 8;
+const TICK_H   = 8;
+const SPREAD   = 9;
+const CIRCLE_R = 4;
 const EDGE_OFFSET = FAR + LEG + 6;
 
 /**
  * Draws IE crow's foot notation symbols at one end of an edge.
- *
- * `facing` is the Position of the handle (Left or Right).
- * Symbols extend away from the table into the edge space.
- *
- * Cardinality → symbols (reading from table outward):
- *   '1'    → mandatory tick  + one tick
- *   '0..1' → optional circle + one tick
- *   '1..*' → mandatory tick  + crow's foot
- *   '0..*' → optional circle + crow's foot
+ * facing is the Position of the handle (Left or Right).
  */
 const CrowsFoot = ({ cx, cy, facing, cardinality, color }) => {
-    // d: +1 = symbols extend right (Right handle), −1 = extend left (Left handle)
     const d = facing === Position.Right ? 1 : -1;
-
     const nearX = cx + d * NEAR;
     const farX  = cx + d * FAR;
     const legX  = cx + d * (FAR + LEG);
-
     const lp = { stroke: color, strokeWidth: 1.5, fill: 'none' };
 
     const nearEl = (cardinality === '0..*' || cardinality === '0..1')
@@ -56,21 +41,33 @@ const CrowsFoot = ({ cx, cy, facing, cardinality, color }) => {
 };
 
 /**
+ * Look up the absolute Y-center of a handle on an internal node.
+ * Returns null if the handle cannot be found.
+ */
+const getHandleAbsY = (node, handleId) => {
+    const allHandles = [
+        ...(node?.internals?.handleBounds?.source ?? []),
+        ...(node?.internals?.handleBounds?.target ?? []),
+    ];
+    const h = allHandles.find((h) => h.id === handleId);
+    if (!h) return null;
+    return node.internals.positionAbsolute.y + h.y + h.height / 2;
+};
+
+/**
  * Custom React Flow edge — orthogonal step routing with IE crow's foot markers.
- *
- * Handle sides are post-calculated from node positions using computeRelationshipHandles
- * so edges always route sensibly regardless of table layout.
+ * Attaches at the PK attribute row of the source table and the FK attribute row
+ * of the target table when those attributes can be identified; falls back to
+ * node-centre Y when they cannot.
  */
 const RelationshipEdge = ({ id, source, target, data }) => {
     const sourceNode = useInternalNode(source);
     const targetNode = useInternalNode(target);
+
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
+    const tables = useEditorStore((s) => s.stages[currentStageIndex]?.tables ?? []);
     const selectedRelationshipId = useEditorStore((s) => s.ui.selectedRelationshipId);
     const selectRelationship = useEditorStore((s) => s.selectRelationship);
-    const deleteRelationship = useEditorStore((s) => s.deleteRelationship);
-    const clearSelectedRelationship = useEditorStore((s) => s.clearSelectedRelationship);
-
-    const [ctxMenu, setCtxMenu] = useState(null); // { x, y } | null
 
     const { relationship } = data ?? {};
     const relId   = relationship?.id ?? null;
@@ -84,17 +81,37 @@ const RelationshipEdge = ({ id, source, target, data }) => {
         if (relId) selectRelationship(relId);
     }, [relId, selectRelationship]);
 
-    const handleContextMenu = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (relId) selectRelationship(relId);
-        setCtxMenu({ x: e.clientX, y: e.clientY });
-    }, [relId, selectRelationship]);
+    if (!sourceNode || !targetNode || !relationship) return null;
 
-    if (!sourceNode || !targetNode) return null;
-
-    const { srcX, srcY, srcPos, tgtX, tgtY, tgtPos } =
+    // Compute which node sides to use for routing
+    const { srcX, srcY: srcYCenter, srcPos, tgtX, tgtY: tgtYCenter, tgtPos } =
         computeRelationshipHandles(sourceNode, targetNode, 2 * EDGE_OFFSET);
+
+    // Find the attribute-level Y positions for PK (source) and FK (target)
+    const sourceTable = tables.find((t) => t.id === relationship.table1Id);
+    const targetTable = tables.find((t) => t.id === relationship.table2Id);
+
+    // Use the first PK attribute from the source table
+    const pkTA = sourceTable?.tableAttributes.find((ta) => ta.is_PK);
+    const pkAttrId = pkTA?.attributeId ?? null;
+
+    // Find the FK attribute in target that references the same attribute
+    const fkTA = pkAttrId
+        ? targetTable?.tableAttributes.find((ta) => ta.is_FK && ta.attributeId === pkAttrId)
+        : null;
+    const fkAttrId = fkTA?.attributeId ?? null;
+
+    // Look up handle Y using the side determined by computeRelationshipHandles
+    const srcHandlePrefix = srcPos === Position.Right ? 'fd-right-' : 'fd-left-';
+    const tgtHandlePrefix = tgtPos === Position.Right ? 'fd-right-' : 'fd-left-';
+
+    const srcY = (pkAttrId
+        ? getHandleAbsY(sourceNode, `${srcHandlePrefix}${pkAttrId}`)
+        : null) ?? srcYCenter;
+
+    const tgtY = (fkAttrId
+        ? getHandleAbsY(targetNode, `${tgtHandlePrefix}${fkAttrId}`)
+        : null) ?? tgtYCenter;
 
     const [edgePath] = getSmoothStepPath({
         sourceX: srcX, sourceY: srcY, sourcePosition: srcPos,
@@ -116,7 +133,6 @@ const RelationshipEdge = ({ id, source, target, data }) => {
                 stroke="transparent"
                 strokeWidth={12}
                 onClick={handleClick}
-                onContextMenu={handleContextMenu}
                 style={{ cursor: 'pointer' }}
             />
             {/* Visible colored line */}
@@ -127,20 +143,8 @@ const RelationshipEdge = ({ id, source, target, data }) => {
                 strokeWidth={strokeWidth}
                 pointerEvents="none"
             />
-            {/* Crow's foot markers */}
             <CrowsFoot cx={srcX} cy={srcY} facing={srcPos} cardinality={c1} color={strokeColor} />
             <CrowsFoot cx={tgtX} cy={tgtY} facing={tgtPos} cardinality={c2} color={strokeColor} />
-            {ctxMenu && (
-                <RelationshipContextMenu
-                    x={ctxMenu.x}
-                    y={ctxMenu.y}
-                    onDelete={() => {
-                        deleteRelationship(currentStageIndex, relId);
-                        clearSelectedRelationship();
-                    }}
-                    onClose={() => setCtxMenu(null)}
-                />
-            )}
         </g>
     );
 };

@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import useEditorStore from '../store/editorStore.js';
 import './styles/AddRelationshipModal.css';
+
+const LS_KEY = 'dblab_skip_fk_confirm';
 
 const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIndex, onClose }) => {
     const addTableAttribute = useEditorStore((s) => s.addTableAttribute);
@@ -13,7 +15,6 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
         [attributePool]
     );
 
-    // Source PKs with pool attribute info
     const sourcePKs = useMemo(
         () => sourceTable.tableAttributes
             .filter((ta) => ta.is_PK)
@@ -25,8 +26,8 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
     const [selectedPKAttrId, setSelectedPKAttrId] = useState(
         () => sourcePKs[0]?.ta.attributeId ?? null
     );
+    const [skipNext, setSkipNext] = useState(false);
 
-    // Check if target already has the selected PK attr marked as FK
     const targetAlreadyHasFK = useMemo(() => {
         if (!selectedPKAttrId) return false;
         return targetTable.tableAttributes.some(
@@ -36,11 +37,10 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
 
     const selectedAttrName = attrMap.get(selectedPKAttrId)?.name ?? '';
 
-    const handleConfirm = () => {
+    const handleConfirm = useCallback(() => {
         if (!selectedPKAttrId) return;
 
         if (!targetAlreadyHasFK) {
-            // Check if target already has the attribute (just not FK)
             const existingTA = targetTable.tableAttributes.find(
                 (ta) => ta.attributeId === selectedPKAttrId
             );
@@ -61,6 +61,10 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
             }
         }
 
+        if (skipNext) {
+            localStorage.setItem(LS_KEY, 'true');
+        }
+
         addRelationship(stageIndex, {
             id: crypto.randomUUID(),
             type: 'non-identifying',
@@ -72,9 +76,20 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
         });
 
         onClose();
-    };
+    }, [selectedPKAttrId, targetAlreadyHasFK, skipNext, stageIndex, sourceTable.id, targetTable, addTableAttribute, updateTableAttribute, addRelationship, onClose]);
+
+    // When FK already exists and the user opted out of seeing this modal, auto-confirm.
+    useEffect(() => {
+        if (targetAlreadyHasFK && localStorage.getItem(LS_KEY) === 'true') {
+            handleConfirm();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // intentionally runs only on mount
 
     if (sourcePKs.length === 0) return null;
+
+    // If we'll auto-confirm, render nothing (handleConfirm fires on mount above)
+    if (targetAlreadyHasFK && localStorage.getItem(LS_KEY) === 'true') return null;
 
     return createPortal(
         <div className="modal-overlay" onClick={onClose}>
@@ -106,10 +121,20 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
                 )}
 
                 {targetAlreadyHasFK ? (
-                    <p className="add-rel-modal__info add-rel-modal__info--ok">
-                        ✓ <strong>{targetTable.name}</strong> already has <strong>{selectedAttrName}</strong> as FK.
-                        A relationship will be created.
-                    </p>
+                    <>
+                        <p className="add-rel-modal__info add-rel-modal__info--ok">
+                            ✓ <strong>{targetTable.name}</strong> already has <strong>{selectedAttrName}</strong> as FK.
+                            A relationship will be created.
+                        </p>
+                        <label className="add-rel-modal__skip-label">
+                            <input
+                                type="checkbox"
+                                checked={skipNext}
+                                onChange={(e) => setSkipNext(e.target.checked)}
+                            />
+                            Do not show again when FK already exists
+                        </label>
+                    </>
                 ) : (
                     <p className="add-rel-modal__info">
                         <strong>{targetTable.name}</strong> has no FK linking to <strong>{sourceTable.name}</strong>.
