@@ -34,3 +34,4 @@ yarn.lock
 .env.local
 .env.*.local
 
+design/*

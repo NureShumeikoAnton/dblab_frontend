@@ -339,6 +339,17 @@ const useEditorStore = create(
             });
         },
 
+        updateAttribute(attributeId, { name, data_type }) {
+            set((state) => {
+                const attr = state.attributePool.find((a) => a.id === attributeId);
+                if (attr) {
+                    attr.name = name;
+                    attr.data_type = data_type;
+                    state.ui.hasUnsavedChanges = true;
+                }
+            });
+        },
+
         retireAttribute(attributeId, stageId) {
             set((state) => {
                 const attr = state.attributePool.find((a) => a.id === attributeId);

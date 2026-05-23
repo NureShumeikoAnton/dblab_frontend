@@ -3,18 +3,22 @@ import './styles/NewAttributeModal.css';
 
 const DATA_TYPES = ['INT', 'VARCHAR', 'TEXT', 'DATE', 'BOOLEAN', 'DECIMAL', 'TIMESTAMP', 'UUID'];
 
-const NewAttributeModal = ({ isOpen, mode, onClose, onSubmit }) => {
+const NewAttributeModal = ({ isOpen, mode, onClose, onSubmit, initialName = '', initialDataType = 'VARCHAR' }) => {
     const [name, setName] = useState('');
     const [dataType, setDataType] = useState('VARCHAR');
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen) {
+            setName(initialName);
+            setDataType(initialDataType);
+            setError('');
+        } else {
             setName('');
             setDataType('VARCHAR');
             setError('');
         }
-    }, [isOpen]);
+    }, [isOpen, initialName, initialDataType]);
 
     if (!isOpen) return null;
 
@@ -28,8 +32,10 @@ const NewAttributeModal = ({ isOpen, mode, onClose, onSubmit }) => {
         onSubmit({ name: trimmed, data_type: dataType });
     };
 
-    const subtitle =
-        mode === 'global'
+    const isEdit = mode === 'edit';
+    const subtitle = isEdit
+        ? 'Changes apply across all stages'
+        : mode === 'global'
             ? 'Available from: 1NF (all stages)'
             : 'Available from: this stage';
 
@@ -38,7 +44,7 @@ const NewAttributeModal = ({ isOpen, mode, onClose, onSubmit }) => {
             <div className="modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal__header">
                     <div>
-                        <h2 className="modal__title">Add attribute</h2>
+                        <h2 className="modal__title">{isEdit ? 'Edit attribute' : 'Add attribute'}</h2>
                         <p className="modal__subtitle">{subtitle}</p>
                     </div>
                     <button className="modal__close" onClick={onClose}>×</button>
@@ -77,7 +83,7 @@ const NewAttributeModal = ({ isOpen, mode, onClose, onSubmit }) => {
                             Cancel
                         </button>
                         <button type="submit" className="modal__btn modal__btn--primary">
-                            Add
+                            {isEdit ? 'Save' : 'Add'}
                         </button>
                     </div>
                 </form>

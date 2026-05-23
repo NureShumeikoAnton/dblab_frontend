@@ -9,12 +9,14 @@ const AttributePanel = () => {
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const stages = useEditorStore((s) => s.stages);
     const addAttribute = useEditorStore((s) => s.addAttribute);
+    const updateAttribute = useEditorStore((s) => s.updateAttribute);
     const retireAttribute = useEditorStore((s) => s.retireAttribute);
     const unretireAttribute = useEditorStore((s) => s.unretireAttribute);
     const deleteAttribute = useEditorStore((s) => s.deleteAttribute);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('global');
+    const [editingAttribute, setEditingAttribute] = useState(null);
 
     const currentOrder = STAGE_ORDER.indexOf(stages[currentStageIndex]?.stageId);
 
@@ -85,27 +87,40 @@ const AttributePanel = () => {
 
     const openGlobalModal = () => {
         setModalMode('global');
+        setEditingAttribute(null);
         setModalOpen(true);
     };
 
     const openStageModal = () => {
         setModalMode('stage');
+        setEditingAttribute(null);
+        setModalOpen(true);
+    };
+
+    const openEditModal = (attr) => {
+        setModalMode('edit');
+        setEditingAttribute(attr);
         setModalOpen(true);
     };
 
     const handleAddAttribute = ({ name, data_type }) => {
-        const stageId =
-            modalMode === 'global'
-                ? stages[0].stageId
-                : stages[currentStageIndex].stageId;
-        addAttribute({
-            id: crypto.randomUUID(),
-            name,
-            data_type,
-            introduced_at_stage_Id: stageId,
-            retired_at_stage_Id: null,
-        });
+        if (modalMode === 'edit') {
+            updateAttribute(editingAttribute.id, { name, data_type });
+        } else {
+            const stageId =
+                modalMode === 'global'
+                    ? stages[0].stageId
+                    : stages[currentStageIndex].stageId;
+            addAttribute({
+                id: crypto.randomUUID(),
+                name,
+                data_type,
+                introduced_at_stage_Id: stageId,
+                retired_at_stage_Id: null,
+            });
+        }
         setModalOpen(false);
+        setEditingAttribute(null);
     };
 
     return (
@@ -137,6 +152,7 @@ const AttributePanel = () => {
                                     : retireAttribute(attr.id, stages[currentStageIndex].stageId)
                             }
                             onDelete={() => deleteAttribute(attr.id)}
+                            onEdit={() => openEditModal(attr)}
                         />
                     ))
                 )}
@@ -144,8 +160,10 @@ const AttributePanel = () => {
             <NewAttributeModal
                 isOpen={modalOpen}
                 mode={modalMode}
-                onClose={() => setModalOpen(false)}
+                onClose={() => { setModalOpen(false); setEditingAttribute(null); }}
                 onSubmit={handleAddAttribute}
+                initialName={editingAttribute?.name ?? ''}
+                initialDataType={editingAttribute?.data_type ?? 'VARCHAR'}
             />
         </div>
     );

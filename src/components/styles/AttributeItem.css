@@ -89,7 +89,7 @@
 }
 
 .attribute-item:hover .attribute-item__actions {
-    max-width: 64px;
+    max-width: 80px;
     opacity: 1;
 }
 
