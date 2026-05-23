@@ -30,7 +30,7 @@ const NewAttributeModal = ({ isOpen, mode, onClose, onSubmit }) => {
 
     const subtitle =
         mode === 'global'
-            ? 'Available from: 0NF (all stages)'
+            ? 'Available from: 1NF (all stages)'
             : 'Available from: this stage';
 
     return (

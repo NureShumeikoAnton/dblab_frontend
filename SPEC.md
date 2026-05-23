@@ -136,7 +136,7 @@ When a student navigates to a stage that has no tables yet (empty canvas), a dia
 └─────────────────────────────────────────────────┘
 ```
 
-"Copy from previous stage" duplicates the tables, their attribute assignments, and layout positions from the immediately preceding stage. FDs and relationships are **not** copied (student must re-draw them for the new stage).
+"Copy from previous stage" duplicates the tables, their attribute assignments, layout positions, FDs, and relationships from the immediately preceding stage. All IDs are suffixed with `-copy-{stageIndex}` and FD/relationship table references are remapped to the new table IDs.
 
 ### Attribute Visibility Per Stage
 An attribute appears in the side panel for stage `S` if:
@@ -487,6 +487,7 @@ EditorPage
 | FD whose start/end attribute is removed from a table | FD becomes "orphaned" — not rendered on the canvas. Stays in the store and re-appears if the attribute is re-added to a table. Student can delete it via the FD edit modal. |
 | Copying stage with relationships pointing to deleted tables | Only relationships where both table IDs still exist are copied |
 | Autosave fails | Non-blocking toast; unsaved dot remains; no data loss (Zustand still holds state) |
+| `initialized` flag not in DB schema | `Stage.initialized` is frontend-only. At API load time (Phase 18), derive it as `tables.length > 0`. Within a session, `initializeStageEmpty` sets it to `true` in memory so the init dialog does not reappear after "Start empty" is chosen — even though no tables are saved. |
 
 ---
 

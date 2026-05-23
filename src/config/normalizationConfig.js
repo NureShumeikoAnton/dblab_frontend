@@ -17,16 +17,15 @@ export const NF_CONFIG = {
 // manual rules map to violationChecks[] by checkIndex.
 // auto rules derive their status from the algorithm via autoKey.
 export const STAGE_RULES = {
-    '0NF': [
-        { text: 'All data for the domain is captured (no missing entities)', type: 'manual', checkIndex: 0 },
-        { text: 'Primary key is identified', type: 'auto', autoKey: 'missingPK' },
-        { text: 'Repeating groups and multi-valued fields are visible and documented', type: 'manual', checkIndex: 1 },
-    ],
     '1NF': [
         { text: 'All attribute values are atomic (no multi-valued or composite attributes)', type: 'auto', autoKey: '1nf_atomic' },
         { text: 'No repeating groups / arrays', type: 'auto', autoKey: '1nf_plural' },
         { text: 'Every row is uniquely identified by a primary key', type: 'auto', autoKey: 'missingPK' },
         { text: 'Attribute names are unambiguous within each table', type: 'manual', checkIndex: 0 },
+    ],
+    'FDs': [
+        { text: 'At least one functional dependency is defined on each table', type: 'auto', autoKey: 'fds_present' },
+        { text: 'All functional dependencies have been identified and documented', type: 'manual', checkIndex: 0 },
     ],
     '2NF': [
         { text: 'Every non-key attribute is fully functionally dependent on the entire primary key', type: 'auto', autoKey: '2nf' },

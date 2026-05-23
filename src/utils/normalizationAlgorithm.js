@@ -36,6 +36,7 @@ export function runNFChecks(tables, fds, attributePool) {
         '1nf_atomic': 'pass',
         '2nf': 'pass',
         '3nf': 'pass',
+        fds_present: fds.length > 0 ? 'pass' : 'warning',
         '2nf_violations': [],
         '3nf_violations': [],
         missingPK_tables: [],

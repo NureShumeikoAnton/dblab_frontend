@@ -5,24 +5,39 @@ import EditorToolbar from '../components/EditorToolbar.jsx';
 import EditorCanvas from '../components/EditorCanvas.jsx';
 import AttributePanel from '../components/AttributePanel.jsx';
 import StageBar from '../components/StageBar.jsx';
+import StageInitDialog from '../components/StageInitDialog.jsx';
 import { NFAnalysisProvider } from '../hooks/useNFAnalysis.jsx';
 import './styles/EditorPage.css';
+
+const STAGE_LABELS = ['1NF', 'FDs', '2NF', '3NF'];
 
 const EditorPage = () => {
     const { projectId } = useParams();
 
     const loadMockData = useEditorStore((s) => s.loadMockData);
+    const loadEmptyMockData = useEditorStore((s) => s.loadEmptyMockData);
     const projectName = useEditorStore((s) => s.project.name);
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const setCurrentStageIndex = useEditorStore((s) => s.setCurrentStageIndex);
+    const stages = useEditorStore((s) => s.stages);
+    const initializeStageEmpty = useEditorStore((s) => s.initializeStageEmpty);
+    const initializeStageCopyFromPrevious = useEditorStore((s) => s.initializeStageCopyFromPrevious);
 
     useEffect(() => {
-        loadMockData();
+        if (projectId === '2') {
+            loadEmptyMockData();
+        } else {
+            loadMockData();
+        }
     }, [projectId]);
+
+    const isUninitialized = !stages[currentStageIndex].initialized;
+    const stageLabel = STAGE_LABELS[currentStageIndex];
+    const prevStageLabel = currentStageIndex > 0 ? STAGE_LABELS[currentStageIndex - 1] : null;
 
     return (
         <div className="editor-page">
-            <NFAnalysisProvider stageIndex={currentStageIndex}>
+            <NFAnalysisProvider key={currentStageIndex} stageIndex={currentStageIndex}>
                 <EditorToolbar projectName={projectName} />
                 <div className="editor-page__main">
                     <EditorCanvas />
@@ -32,6 +47,14 @@ const EditorPage = () => {
                     currentStageIndex={currentStageIndex}
                     onStageChange={setCurrentStageIndex}
                 />
+                {isUninitialized && (
+                    <StageInitDialog
+                        stageLabel={stageLabel}
+                        prevStageLabel={prevStageLabel}
+                        onStartEmpty={() => initializeStageEmpty(currentStageIndex)}
+                        onCopyFromPrevious={() => initializeStageCopyFromPrevious(currentStageIndex)}
+                    />
+                )}
             </NFAnalysisProvider>
         </div>
     );

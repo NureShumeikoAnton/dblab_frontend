@@ -2,10 +2,10 @@ import { useState, useRef } from 'react';
 import StageButton from './StageButton.jsx';
 import NFViolationChecklistModal from './NFViolationChecklistModal.jsx';
 import useEditorStore from '../store/editorStore.js';
-import { useNFAnalysis } from '../hooks/useNFAnalysis.jsx';
+import { useNFAnalysis, useNFAnalysisTrigger } from '../hooks/useNFAnalysis.jsx';
 import './styles/StageBar.css';
 
-const STAGES = ['0NF', '1NF', '2NF', '3NF'];
+const STAGES = ['1NF', 'FDs', '2NF', '3NF'];
 
 const StageBar = ({ currentStageIndex, onStageChange }) => {
     const [showChecklist, setShowChecklist] = useState(false);
@@ -15,6 +15,7 @@ const StageBar = ({ currentStageIndex, onStageChange }) => {
     const isStageComplete = useEditorStore((s) => s.isStageComplete);
     const toggleViolationCheck = useEditorStore((s) => s.toggleViolationCheck);
     const analysis = useNFAnalysis();
+    const triggerCheck = useNFAnalysisTrigger();
 
     return (
         <div className="stage-bar">
@@ -33,7 +34,10 @@ const StageBar = ({ currentStageIndex, onStageChange }) => {
                 <button
                     ref={btnRef}
                     className="stage-bar__check-btn"
-                    onClick={() => setShowChecklist((v) => !v)}
+                    onClick={() => {
+                        if (!showChecklist) triggerCheck?.();
+                        setShowChecklist((v) => !v);
+                    }}
                 >
                     ✓ Check NF Rules
                 </button>

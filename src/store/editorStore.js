@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { MOCK_PROJECT, MOCK_ATTRIBUTES, MOCK_STAGES } from './mockData.js';
+import { MOCK_PROJECT, MOCK_ATTRIBUTES, MOCK_STAGES, MOCK_EMPTY_PROJECT, MOCK_EMPTY_ATTRIBUTES, MOCK_EMPTY_STAGES } from './mockData.js';
 
-export const STAGE_ORDER = ['stage-0nf', 'stage-1nf', 'stage-2nf', 'stage-3nf'];
+export const STAGE_ORDER = ['stage-1nf', 'stage-fds', 'stage-2nf', 'stage-3nf'];
 
 /**
  * EditorStore — single Zustand store with immer middleware.
@@ -17,7 +17,7 @@ const useEditorStore = create(
             description: '',
         },
 
-        currentStageIndex: 0, // 0=0NF, 1=1NF, 2=2NF, 3=3NF
+        currentStageIndex: 0, // 0=1NF, 1=FDs, 2=2NF, 3=3NF
 
         /**
          * stages: StageState[4]
@@ -30,21 +30,21 @@ const useEditorStore = create(
         stages: [
             {
                 stageId: null,
-                form: '0NF',
+                form: '1NF',
                 initialized: false,
                 tables: [],       // Table[]
                 relationships: [], // Relationship[]
                 fds: [],           // FunctionalDependency[]
-                violationChecks: [false, false], // 0NF: 2 manual rules
+                violationChecks: [false], // 1NF: 1 manual rule
             },
             {
                 stageId: null,
-                form: '1NF',
+                form: 'FDs',
                 initialized: false,
                 tables: [],
                 relationships: [],
                 fds: [],
-                violationChecks: [false], // 1NF: 1 manual rule
+                violationChecks: [false], // FDs: 1 manual rule
             },
             {
                 stageId: null,
@@ -106,6 +106,24 @@ const useEditorStore = create(
                             starts: fd.starts.map((s) => ({ ...s })),
                             ends: fd.ends.map((e) => ({ ...e })),
                         })),
+                        violationChecks: [...stage.violationChecks],
+                    };
+                });
+            });
+        },
+
+        /** Load empty project mock — used to test StageInitDialog (projectId '2'). */
+        loadEmptyMockData() {
+            set((state) => {
+                state.project = { ...MOCK_EMPTY_PROJECT };
+                state.attributePool = [...MOCK_EMPTY_ATTRIBUTES];
+                state.currentStageIndex = 0;
+                MOCK_EMPTY_STAGES.forEach((stage, i) => {
+                    state.stages[i] = {
+                        ...stage,
+                        tables: [],
+                        relationships: [],
+                        fds: [],
                         violationChecks: [...stage.violationChecks],
                     };
                 });
@@ -515,16 +533,37 @@ const useEditorStore = create(
                 if (stageIndex === 0) return;
                 const prev = state.stages[stageIndex - 1];
                 const next = state.stages[stageIndex];
+
+                // Build old→new table ID map so FDs and relationships can be relinked.
+                const tableIdMap = {};
+                prev.tables.forEach((t) => {
+                    tableIdMap[t.id] = `${t.id}-copy-${stageIndex}`;
+                });
+
                 next.tables = prev.tables.map((t) => ({
                     ...t,
-                    id: `${t.id}-copy-${stageIndex}`,
+                    id: tableIdMap[t.id],
                     tableAttributes: t.tableAttributes.map((ta) => ({
                         ...ta,
                         id: `${ta.id}-copy-${stageIndex}`,
                     })),
                 }));
-                next.relationships = [];
-                next.fds = [];
+
+                next.fds = prev.fds.map((fd) => ({
+                    ...fd,
+                    id: `${fd.id}-copy-${stageIndex}`,
+                    tableId: tableIdMap[fd.tableId] ?? fd.tableId,
+                    starts: fd.starts.map((s) => ({ ...s, id: `${s.id}-copy-${stageIndex}` })),
+                    ends:   fd.ends.map((e) => ({ ...e, id: `${e.id}-copy-${stageIndex}` })),
+                }));
+
+                next.relationships = prev.relationships.map((r) => ({
+                    ...r,
+                    id: `${r.id}-copy-${stageIndex}`,
+                    table1Id: tableIdMap[r.table1Id] ?? r.table1Id,
+                    table2Id: tableIdMap[r.table2Id] ?? r.table2Id,
+                }));
+
                 next.initialized = true;
                 state.ui.hasUnsavedChanges = true;
             });

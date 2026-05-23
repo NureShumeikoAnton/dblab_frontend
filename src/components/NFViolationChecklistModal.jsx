@@ -67,6 +67,11 @@ function RuleDetail({ autoKey, analysis }) {
         );
     }
 
+    if (autoKey === 'fds_present') {
+        if (summary.fds_present !== 'warning') return null;
+        return <p className="nf-rule__detail-note">No functional dependencies drawn yet — use the FD bracket tool to annotate dependencies on each table.</p>;
+    }
+
     if (autoKey === '2nf') {
         const st = summary['2nf'];
         if (st === 'warning') {

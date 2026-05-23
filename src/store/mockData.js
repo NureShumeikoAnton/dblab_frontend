@@ -1,9 +1,12 @@
 /**
  * Mock fixtures for demo / development.
  * Domain: Library Management System — members, books, loans.
- * Covers all four normalization stages with realistic FDs so every checker
- * (pre-flight, 1NF heuristics, 2NF partial dep, 3NF transitive dep) has
- * something to show.
+ *
+ * Stage order: 1NF → FDs → 2NF → 3NF
+ *   1NF  — atomic tables, no repeating groups; no FDs drawn yet
+ *   FDs  — same tables with all functional dependencies documented
+ *   2NF  — partial deps resolved: Books extracted from LoanRecords
+ *   3NF  — transitive deps flagged: author_id→book_author, genre_id→genre_name
  *
  * Bracket level conventions (FDEdge):
  *   level > 0  →  LEFT bracket  (1 = nearest, 2 = next out, …)
@@ -18,59 +21,24 @@ export const MOCK_PROJECT = {
 
 // ── Project-level attribute pool ────────────────────────────────────────────
 export const MOCK_ATTRIBUTES = [
-    { id: 'attr-1',  name: 'member_id',    data_type: 'INT',       introduced_at_stage_Id: 'stage-0nf', retired_at_stage_Id: null },
-    { id: 'attr-2',  name: 'member_name',  data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-0nf', retired_at_stage_Id: null },
-    { id: 'attr-3',  name: 'member_email', data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-0nf', retired_at_stage_Id: null },
-    { id: 'attr-4',  name: 'book_id',      data_type: 'INT',       introduced_at_stage_Id: 'stage-0nf', retired_at_stage_Id: null },
-    { id: 'attr-5',  name: 'book_title',   data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-0nf', retired_at_stage_Id: null },
-    { id: 'attr-6',  name: 'book_author',  data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-0nf', retired_at_stage_Id: null },
-    { id: 'attr-7',  name: 'loan_date',    data_type: 'DATE',      introduced_at_stage_Id: 'stage-0nf', retired_at_stage_Id: null },
+    { id: 'attr-1',  name: 'member_id',    data_type: 'INT',       introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
+    { id: 'attr-2',  name: 'member_name',  data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
+    { id: 'attr-3',  name: 'member_email', data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
+    { id: 'attr-4',  name: 'book_id',      data_type: 'INT',       introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
+    { id: 'attr-5',  name: 'book_title',   data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
+    { id: 'attr-6',  name: 'book_author',  data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
+    { id: 'attr-7',  name: 'loan_date',    data_type: 'DATE',      introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
     { id: 'attr-8',  name: 'return_date',  data_type: 'DATE',      introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
-    { id: 'attr-9',  name: 'member_phone', data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-0nf', retired_at_stage_Id: null },
+    { id: 'attr-9',  name: 'member_phone', data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
     { id: 'attr-10', name: 'author_id',    data_type: 'INT',       introduced_at_stage_Id: 'stage-2nf', retired_at_stage_Id: null },
     { id: 'attr-11', name: 'genre_id',     data_type: 'INT',       introduced_at_stage_Id: 'stage-2nf', retired_at_stage_Id: null },
-    { id: 'attr-12', name: 'genre_name',   data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-0nf', retired_at_stage_Id: null },
+    { id: 'attr-12', name: 'genre_name',   data_type: 'VARCHAR',   introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
     { id: 'attr-13', name: 'due_date',     data_type: 'DATE',      introduced_at_stage_Id: 'stage-1nf', retired_at_stage_Id: null },
 ];
 
-// ── 0NF — everything in one unnormalized table ───────────────────────────────
-// Checker: missingPK passes (member_id marked), manual checks prompt the student
-// to document repeating groups.
-const STAGE_0NF = {
-    stageId: 'stage-0nf',
-    form: '0NF',
-    initialized: true,
-    tables: [
-        {
-            id: 'tbl-0-1',
-            name: 'Library',
-            color: '#4A90D9',
-            position: { x: 100, y: 80 },
-            tableAttributes: [
-                { id: 'ta-0-1',  attributeId: 'attr-1',  is_PK: true,  is_FK: false, alias: null, order: 0 },
-                { id: 'ta-0-2',  attributeId: 'attr-2',  is_PK: false, is_FK: false, alias: null, order: 1 },
-                { id: 'ta-0-3',  attributeId: 'attr-3',  is_PK: false, is_FK: false, alias: null, order: 2 },
-                { id: 'ta-0-4',  attributeId: 'attr-9',  is_PK: false, is_FK: false, alias: null, order: 3 },
-                { id: 'ta-0-5',  attributeId: 'attr-4',  is_PK: false, is_FK: false, alias: null, order: 4 },
-                { id: 'ta-0-6',  attributeId: 'attr-5',  is_PK: false, is_FK: false, alias: null, order: 5 },
-                { id: 'ta-0-7',  attributeId: 'attr-6',  is_PK: false, is_FK: false, alias: null, order: 6 },
-                { id: 'ta-0-8',  attributeId: 'attr-12', is_PK: false, is_FK: false, alias: null, order: 7 },
-                { id: 'ta-0-9',  attributeId: 'attr-7',  is_PK: false, is_FK: false, alias: null, order: 8 },
-                { id: 'ta-0-10', attributeId: 'attr-8',  is_PK: false, is_FK: false, alias: null, order: 9 },
-                { id: 'ta-0-11', attributeId: 'attr-13', is_PK: false, is_FK: false, alias: null, order: 10 },
-            ],
-        },
-    ],
-    relationships: [],
-    fds: [],
-    violationChecks: [false, false],
-};
-
-// ── 1NF — Members + LoanRecords ─────────────────────────────────────────────
-// The student split off member data but kept book info in the loan table.
-// fd-1-1 shows book_id → {book_title, book_author, genre_name} — a partial
-// dependency on only PART of the composite PK (member_id + book_id).
-// The 2NF checker flags it with ❌ on the bracket even here in the 1NF canvas.
+// ── 1NF — Members + LoanRecords, no FDs yet ─────────────────────────────────
+// The student has already split the domain into atomic tables with no repeating
+// groups. FDs are intentionally absent — they are documented in the FDs stage.
 const STAGE_1NF = {
     stageId: 'stage-1nf',
     form: '1NF',
@@ -116,39 +84,94 @@ const STAGE_1NF = {
             cardinality_t2: '0..*',
         },
     ],
+    fds: [],
+    violationChecks: [false], // 1NF: 1 manual rule (naming clarity)
+};
+
+// ── FDs — same 1NF tables with all functional dependencies documented ────────
+// fd-fds-1: book_id → {book_title, book_author, genre_name} — partial dep on
+//           LoanRecords' composite PK (member_id + book_id). This will be
+//           flagged by the 2NF checker.
+// fd-fds-2: member_id → {member_name, member_email, member_phone} — full dep
+//           on Members' single PK.
+const STAGE_FDS = {
+    stageId: 'stage-fds',
+    form: 'FDs',
+    initialized: true,
+    tables: [
+        {
+            id: 'tbl-f-1',
+            name: 'Members',
+            color: '#27AE60',
+            position: { x: 60, y: 80 },
+            tableAttributes: [
+                { id: 'ta-f-1', attributeId: 'attr-1', is_PK: true,  is_FK: false, alias: null, order: 0 },
+                { id: 'ta-f-2', attributeId: 'attr-2', is_PK: false, is_FK: false, alias: null, order: 1 },
+                { id: 'ta-f-3', attributeId: 'attr-3', is_PK: false, is_FK: false, alias: null, order: 2 },
+                { id: 'ta-f-4', attributeId: 'attr-9', is_PK: false, is_FK: false, alias: null, order: 3 },
+            ],
+        },
+        {
+            id: 'tbl-f-2',
+            name: 'LoanRecords',
+            color: '#E67E22',
+            position: { x: 400, y: 60 },
+            tableAttributes: [
+                { id: 'ta-f-5',  attributeId: 'attr-1',  is_PK: true,  is_FK: true,  alias: 'member_id', order: 0 },
+                { id: 'ta-f-6',  attributeId: 'attr-4',  is_PK: true,  is_FK: false, alias: null,        order: 1 },
+                { id: 'ta-f-7',  attributeId: 'attr-5',  is_PK: false, is_FK: false, alias: null,        order: 2 },
+                { id: 'ta-f-8',  attributeId: 'attr-6',  is_PK: false, is_FK: false, alias: null,        order: 3 },
+                { id: 'ta-f-9',  attributeId: 'attr-12', is_PK: false, is_FK: false, alias: null,        order: 4 },
+                { id: 'ta-f-10', attributeId: 'attr-7',  is_PK: false, is_FK: false, alias: null,        order: 5 },
+                { id: 'ta-f-11', attributeId: 'attr-8',  is_PK: false, is_FK: false, alias: null,        order: 6 },
+                { id: 'ta-f-12', attributeId: 'attr-13', is_PK: false, is_FK: false, alias: null,        order: 7 },
+            ],
+        },
+    ],
+    relationships: [
+        {
+            id: 'rel-f-1',
+            table1Id: 'tbl-f-1',
+            table2Id: 'tbl-f-2',
+            type: 'identifying',
+            color: '#9B59B6',
+            cardinality_t1: '1',
+            cardinality_t2: '0..*',
+        },
+    ],
     fds: [
         {
-            // Partial dependency (2NF violation): book_id alone → book attrs
-            // Spans rows 1–4 on the LEFT of LoanRecords.
-            id: 'fd-1-1',
-            tableId: 'tbl-1-2',
+            // Partial dependency (2NF violation): book_id alone → book attrs.
+            // LEFT bracket on LoanRecords.
+            id: 'fd-f-1',
+            tableId: 'tbl-f-2',
             color: '#E74C3C',
             level: 1,
             type: 'partial',
-            starts: [{ id: 'fds-1-1', attributeId: 'attr-4' }],
+            starts: [{ id: 'fds-f-1', attributeId: 'attr-4' }],
             ends: [
-                { id: 'fde-1-1', attributeId: 'attr-5' },
-                { id: 'fde-1-2', attributeId: 'attr-6' },
-                { id: 'fde-1-3', attributeId: 'attr-12' },
+                { id: 'fde-f-1', attributeId: 'attr-5' },
+                { id: 'fde-f-2', attributeId: 'attr-6' },
+                { id: 'fde-f-3', attributeId: 'attr-12' },
             ],
         },
         {
             // Full dependency: member_id → all member attrs (single PK, fine).
             // RIGHT bracket on Members.
-            id: 'fd-1-2',
-            tableId: 'tbl-1-1',
+            id: 'fd-f-2',
+            tableId: 'tbl-f-1',
             color: '#2980B9',
             level: -1,
             type: 'full',
-            starts: [{ id: 'fds-1-2', attributeId: 'attr-1' }],
+            starts: [{ id: 'fds-f-2', attributeId: 'attr-1' }],
             ends: [
-                { id: 'fde-1-4', attributeId: 'attr-2' },
-                { id: 'fde-1-5', attributeId: 'attr-3' },
-                { id: 'fde-1-6', attributeId: 'attr-9' },
+                { id: 'fde-f-4', attributeId: 'attr-2' },
+                { id: 'fde-f-5', attributeId: 'attr-3' },
+                { id: 'fde-f-6', attributeId: 'attr-9' },
             ],
         },
     ],
-    violationChecks: [false],
+    violationChecks: [false], // FDs: 1 manual rule (all FDs identified)
 };
 
 // ── 2NF — Members + Books + Loans ───────────────────────────────────────────
@@ -423,4 +446,33 @@ const STAGE_3NF = {
     violationChecks: [false],
 };
 
-export const MOCK_STAGES = [STAGE_0NF, STAGE_1NF, STAGE_2NF, STAGE_3NF];
+export const MOCK_STAGES = [STAGE_1NF, STAGE_FDS, STAGE_2NF, STAGE_3NF];
+
+// ── Empty project — used to test StageInitDialog ─────────────────────────────
+// All stages are uninitialized; no attributes, tables, FDs, or relationships.
+// Load via projectId '2' in the editor (loadEmptyMockData action).
+
+export const MOCK_EMPTY_PROJECT = {
+    id: 'proj-2',
+    name: 'New Empty Project',
+    description: '',
+};
+
+export const MOCK_EMPTY_ATTRIBUTES = [];
+
+const makeEmptyStage = (stageId, form, checksCount) => ({
+    stageId,
+    form,
+    initialized: false,
+    tables: [],
+    relationships: [],
+    fds: [],
+    violationChecks: Array(checksCount).fill(false),
+});
+
+export const MOCK_EMPTY_STAGES = [
+    makeEmptyStage('stage-1nf', '1NF', 1),
+    makeEmptyStage('stage-fds', 'FDs', 1),
+    makeEmptyStage('stage-2nf', '2NF', 1),
+    makeEmptyStage('stage-3nf', '3NF', 1),
+];

@@ -107,6 +107,7 @@ Relations: one-to-many with **Table_Attribute**, **FD_Start**, **FD_End**
 | fd_Id | PK | |
 | color | | Hex string |
 | level | integer | Bracket lane: positive = left side, negative = right side. Absolute value = stacking distance (1 = nearest, 2 = next out, …) |
+| table_Id | FK → Table | The table this FD bracket is scoped to for canvas rendering |
 
 Relations: one-to-many with **FD_Stage**, **FD_Start**, **FD_End**
 
@@ -170,6 +171,7 @@ FD_End                      →  store.stages[i].fds[k].ends[]
 ```js
 {
     id,           // fd_Id (FunctionalDependency)
+    tableId,      // FD.table_Id — which table this FD bracket renders on
     color,        // FD.color
     level,        // FD.level — integer (positive=left bracket, negative=right)
     type,         // FD_Stage.type — 'partial' | 'full' | 'transitive'
