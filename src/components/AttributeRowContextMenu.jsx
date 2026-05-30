@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import './styles/AttributeRowContextMenu.css';
 
-const AttributeRowContextMenu = ({ x, y, attrName, onCreateTableWithPK, onRemove, onClose }) => {
+const AttributeRowContextMenu = ({ x, y, attrName, stagedCount = 1, onCreateTableWithPK, onRemove, onClose }) => {
     const menuRef = useRef(null);
 
     useEffect(() => {
@@ -29,7 +29,10 @@ const AttributeRowContextMenu = ({ x, y, attrName, onCreateTableWithPK, onRemove
                     className="attr-row-ctx-menu__item"
                     onClick={() => { onCreateTableWithPK(); onClose(); }}
                 >
-                    🆕&nbsp; Create new table with {attrName} as PK
+                    🆕&nbsp; {stagedCount >= 2
+                        ? `Create new table with ${stagedCount} selected attributes as PK`
+                        : `Create new table with ${attrName} as PK`
+                    }
                 </li>
             )}
             <li

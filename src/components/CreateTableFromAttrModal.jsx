@@ -1,7 +1,11 @@
 import { createPortal } from 'react-dom';
 import './styles/CreateTableFromAttrModal.css';
 
-const CreateTableFromAttrModal = ({ attrName, sourceTableName, onConfirm, onClose }) => {
+const CreateTableFromAttrModal = ({ attrNames, sourceTableName, onConfirm, onClose }) => {
+    const namesLabel = attrNames.length === 1
+        ? <strong>{attrNames[0]}</strong>
+        : <><strong>{attrNames.slice(0, -1).join(', ')}</strong> and <strong>{attrNames[attrNames.length - 1]}</strong></>;
+
     return createPortal(
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal create-table-attr-modal" onClick={(e) => e.stopPropagation()}>
@@ -9,7 +13,7 @@ const CreateTableFromAttrModal = ({ attrName, sourceTableName, onConfirm, onClos
                     <div>
                         <p className="modal__title">New table created</p>
                         <p className="modal__subtitle">
-                            Save <strong>{attrName}</strong> as FK in <strong>{sourceTableName}</strong>?
+                            Save {namesLabel} as FK in <strong>{sourceTableName}</strong>?
                             This will also create a relationship between the two tables.
                         </p>
                     </div>

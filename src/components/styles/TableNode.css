@@ -51,6 +51,12 @@
     background: #eff6ff;
 }
 
+.table-node__row--staged {
+    background: #f0fdf4;
+    outline: 1px solid #86efac;
+    outline-offset: -1px;
+}
+
 .table-node__row:last-child {
     border-bottom: none;
 }

@@ -35,9 +35,10 @@ const TableNode = ({ data }) => {
     const [contextMenu, setContextMenu] = useState(null); // { x, y } | null
     const [attrContextMenu, setAttrContextMenu] = useState(null); // { x, y, tableAttributeId } | null
     const [deleteConfirmFDs, setDeleteConfirmFDs] = useState(null); // FD[] | null
-    const [createTableFromAttrInfo, setCreateTableFromAttrInfo] = useState(null); // { taId, attrId, attrName, newTableId } | null
+    const [createTableFromAttrInfo, setCreateTableFromAttrInfo] = useState(null); // { taIds, attrNames, newTableId } | null
     const [hoveredAttrId, setHoveredAttrId] = useState(null);
     const [isDragOver, setIsDragOver] = useState(false);
+    const [stagedAttrIds, setStagedAttrIds] = useState(new Set()); // tableAttributeIds staged for composite-PK extraction
 
     const hasPK = useMemo(
         () => table.tableAttributes.some((ta) => ta.is_PK),
@@ -92,6 +93,19 @@ const TableNode = ({ data }) => {
             }
             return;
         }
+        if (e.ctrlKey || e.metaKey) {
+            setStagedAttrIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(tableAttributeId)) {
+                    next.delete(tableAttributeId);
+                } else {
+                    next.add(tableAttributeId);
+                }
+                return next;
+            });
+            return;
+        }
+        setStagedAttrIds(new Set());
         selectTableAttribute(table.id, tableAttributeId);
     }, [pendingRelationshipSourceTableId, table.id, selectTableAttribute, cancelRelationshipCreation, confirmRelationshipTarget]);
 
@@ -99,8 +113,14 @@ const TableNode = ({ data }) => {
         e.preventDefault();
         e.stopPropagation();
         setContextMenu(null);
-        setAttrContextMenu({ x: e.clientX, y: e.clientY, tableAttributeId });
-    }, []);
+        const useStaged = stagedAttrIds.size >= 2;
+        setAttrContextMenu({
+            x: e.clientX,
+            y: e.clientY,
+            tableAttributeId,
+            createIds: useStaged ? [...stagedAttrIds] : [tableAttributeId],
+        });
+    }, [stagedAttrIds]);
 
     const handleDelete = useCallback(() => {
         const tableAttrIds = new Set(table.tableAttributes.map((ta) => ta.attributeId));
@@ -126,39 +146,47 @@ const TableNode = ({ data }) => {
         setDeleteConfirmFDs(null);
     }, [currentStageIndex, table.id, deleteConfirmFDs, deleteFD, deleteTable]);
 
-    const handleCreateTableWithPK = useCallback((tableAttributeId) => {
-        const ta = table.tableAttributes.find((a) => a.id === tableAttributeId);
-        if (!ta) return;
-        const attr = attrMap.get(ta.attributeId);
-        if (!attr) return;
+    const handleCreateTableWithPK = useCallback((tableAttributeIds) => {
+        const tas = tableAttributeIds
+            .map((id) => table.tableAttributes.find((a) => a.id === id))
+            .filter(Boolean);
+        if (!tas.length) return;
+        const attrs = tas.map((ta) => attrMap.get(ta.attributeId)).filter(Boolean);
+        if (attrs.length !== tas.length) return;
 
         const newTableId = crypto.randomUUID();
         const color = TABLE_COLORS[Math.floor(Math.random() * TABLE_COLORS.length)];
         const position = { x: table.position.x + 280, y: table.position.y };
+        const baseName = attrs.length === 1 ? attrs[0].name + '_Table' : attrs.map((a) => a.name).join('_') + '_Table';
 
         addTable(currentStageIndex, {
             id: newTableId,
-            name: attr.name + '_Table',
+            name: baseName,
             color,
             position,
-            tableAttributes: [{
+            tableAttributes: tas.map((ta, i) => ({
                 id: crypto.randomUUID(),
                 attributeId: ta.attributeId,
                 is_PK: true,
                 is_FK: false,
                 alias: null,
-                order: 0,
-            }],
+                order: i,
+            })),
         });
 
-        setCreateTableFromAttrInfo({ taId: ta.id, attrId: ta.attributeId, attrName: attr.name, newTableId });
+        setCreateTableFromAttrInfo({
+            taIds: tas.map((ta) => ta.id),
+            attrNames: attrs.map((a) => a.name),
+            newTableId,
+        });
+        setStagedAttrIds(new Set());
     }, [table, attrMap, currentStageIndex, addTable]);
 
     const handleCreateTableFromAttrConfirm = useCallback((markAsFK) => {
         if (!createTableFromAttrInfo) return;
-        const { taId, newTableId } = createTableFromAttrInfo;
+        const { taIds, newTableId } = createTableFromAttrInfo;
         if (markAsFK) {
-            updateTableAttribute(currentStageIndex, table.id, taId, { is_FK: true });
+            taIds.forEach((taId) => updateTableAttribute(currentStageIndex, table.id, taId, { is_FK: true }));
             addRelationship(currentStageIndex, {
                 id: crypto.randomUUID(),
                 type: 'non-identifying',
@@ -259,10 +287,11 @@ const TableNode = ({ data }) => {
                     const isRowSelected =
                         selectedTableAttribute?.tableId === table.id &&
                         selectedTableAttribute?.tableAttributeId === ta.id;
+                    const isStaged = stagedAttrIds.has(ta.id);
                     return (
                         <div
                             key={ta.id}
-                            className={`table-node__row${ta.is_PK ? ' table-node__row--pk' : ''}${isRowSelected ? ' table-node__row--selected' : ''}`}
+                            className={`table-node__row${ta.is_PK ? ' table-node__row--pk' : ''}${isRowSelected ? ' table-node__row--selected' : ''}${isStaged ? ' table-node__row--staged' : ''}`}
                             onClick={(e) => handleRowClick(e, ta.id)}
                             onContextMenu={(e) => handleRowContextMenu(e, ta.id)}
                             onMouseEnter={() => setHoveredAttrId(ta.attributeId)}
@@ -318,12 +347,14 @@ const TableNode = ({ data }) => {
             {attrContextMenu && (() => {
                 const ta = table.tableAttributes.find((a) => a.id === attrContextMenu.tableAttributeId);
                 const attr = ta ? attrMap.get(ta.attributeId) : null;
+                const { createIds } = attrContextMenu;
                 return (
                     <AttributeRowContextMenu
                         x={attrContextMenu.x}
                         y={attrContextMenu.y}
                         attrName={attr?.name ?? ''}
-                        onCreateTableWithPK={() => handleCreateTableWithPK(attrContextMenu.tableAttributeId)}
+                        stagedCount={createIds.length}
+                        onCreateTableWithPK={() => handleCreateTableWithPK(createIds)}
                         onRemove={() => removeTableAttribute(currentStageIndex, table.id, attrContextMenu.tableAttributeId)}
                         onClose={() => setAttrContextMenu(null)}
                     />
@@ -341,7 +372,7 @@ const TableNode = ({ data }) => {
             )}
             {createTableFromAttrInfo && (
                 <CreateTableFromAttrModal
-                    attrName={createTableFromAttrInfo.attrName}
+                    attrNames={createTableFromAttrInfo.attrNames}
                     sourceTableName={table.name}
                     onConfirm={handleCreateTableFromAttrConfirm}
                     onClose={() => setCreateTableFromAttrInfo(null)}
