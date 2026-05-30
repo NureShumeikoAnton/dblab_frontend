@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import StageButton from './StageButton.jsx';
 import NFViolationChecklistModal from './NFViolationChecklistModal.jsx';
 import ConfirmResetModal from './ConfirmResetModal.jsx';
+import UnusedAttrsWarningModal from './UnusedAttrsWarningModal.jsx';
 import useEditorStore from '../store/editorStore.js';
 import { useNFAnalysis, useNFAnalysisTrigger } from '../hooks/useNFAnalysis.jsx';
 import './styles/StageBar.css';
@@ -11,14 +12,35 @@ const STAGES = ['1NF', 'FDs', '2NF', '3NF'];
 const StageBar = ({ currentStageIndex, onStageChange }) => {
     const [showChecklist, setShowChecklist] = useState(false);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [showUnusedWarning, setShowUnusedWarning] = useState(false);
     const btnRef = useRef(null);
 
     const stages = useEditorStore((s) => s.stages);
+    const attributePool = useEditorStore((s) => s.attributePool);
     const isStageComplete = useEditorStore((s) => s.isStageComplete);
     const toggleViolationCheck = useEditorStore((s) => s.toggleViolationCheck);
     const resetStage = useEditorStore((s) => s.resetStage);
     const analysis = useNFAnalysis();
     const triggerCheck = useNFAnalysisTrigger();
+
+    const unusedActiveCount = useMemo(() => {
+        const placedInStage = new Set(
+            stages[currentStageIndex]?.tables.flatMap((t) =>
+                t.tableAttributes.map((ta) => ta.attributeId)
+            ) ?? []
+        );
+        return attributePool.filter(
+            (attr) => attr.retired_at_stage_Id === null && !placedInStage.has(attr.id)
+        ).length;
+    }, [attributePool, stages, currentStageIndex]);
+
+    const handleStageChange = (index) => {
+        if (index > currentStageIndex && unusedActiveCount > 0) {
+            setShowUnusedWarning(true);
+            return;
+        }
+        onStageChange(index);
+    };
 
     return (
         <div className="stage-bar">
@@ -29,7 +51,7 @@ const StageBar = ({ currentStageIndex, onStageChange }) => {
                         label={label}
                         isActive={currentStageIndex === index}
                         isComplete={isStageComplete(index)}
-                        onClick={() => onStageChange(index)}
+                        onClick={() => handleStageChange(index)}
                     />
                 ))}
             </div>
@@ -73,6 +95,12 @@ const StageBar = ({ currentStageIndex, onStageChange }) => {
                 )}
                 </div>
             </div>
+            {showUnusedWarning && (
+                <UnusedAttrsWarningModal
+                    count={unusedActiveCount}
+                    onClose={() => setShowUnusedWarning(false)}
+                />
+            )}
         </div>
     );
 };

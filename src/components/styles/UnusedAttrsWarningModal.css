@@ -1,0 +1,10 @@
+.unused-attrs-modal {
+    width: 420px;
+}
+
+.unused-attrs-modal .modal__header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}

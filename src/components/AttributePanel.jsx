@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import useEditorStore, { STAGE_ORDER } from '../store/editorStore.js';
+import useEditorStore from '../store/editorStore.js';
 import AttributeItem from './AttributeItem.jsx';
 import NewAttributeModal from './NewAttributeModal.jsx';
 import './styles/AttributePanel.css';
@@ -15,10 +15,8 @@ const AttributePanel = () => {
     const deleteAttribute = useEditorStore((s) => s.deleteAttribute);
 
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState('global');
+    const [modalMode, setModalMode] = useState('add');
     const [editingAttribute, setEditingAttribute] = useState(null);
-
-    const currentOrder = STAGE_ORDER.indexOf(stages[currentStageIndex]?.stageId);
 
     // Attributes placed in the current stage — hidden from the panel while they live on canvas.
     const usedInCurrentStageIds = useMemo(
@@ -33,16 +31,10 @@ const AttributePanel = () => {
     // Show retired attrs (greyed-out) but hide active attrs that are already on canvas.
     const attributes = useMemo(
         () => attributePool
-            .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
-            .map((attr) => {
-                const retireOrder = attr.retired_at_stage_Id !== null
-                    ? STAGE_ORDER.indexOf(attr.retired_at_stage_Id)
-                    : Infinity;
-                return { ...attr, isRetired: retireOrder <= currentOrder };
-            })
+            .map((attr) => ({ ...attr, isRetired: attr.retired_at_stage_Id !== null }))
             .filter((attr) => attr.isRetired || !usedInCurrentStageIds.has(attr.id))
             .sort((a, b) => (a.isRetired ? 1 : 0) - (b.isRetired ? 1 : 0)),
-        [attributePool, currentOrder, usedInCurrentStageIds]
+        [attributePool, usedInCurrentStageIds]
     );
 
     // Delete removes from attributePool entirely — must check ALL stages, not just current.
@@ -60,11 +52,10 @@ const AttributePanel = () => {
     const unusedIds = useMemo(
         () => new Set(
             attributePool
-                .filter((attr) => STAGE_ORDER.indexOf(attr.introduced_at_stage_Id) <= currentOrder)
                 .filter((attr) => !globallyUsedIds.has(attr.id))
                 .map((attr) => attr.id)
         ),
-        [attributePool, currentOrder, globallyUsedIds]
+        [attributePool, globallyUsedIds]
     );
 
     // Retire is blocked when the attribute is placed in any table at the current
@@ -85,14 +76,8 @@ const AttributePanel = () => {
         [attributePool, stages, currentStageIndex]
     );
 
-    const openGlobalModal = () => {
-        setModalMode('global');
-        setEditingAttribute(null);
-        setModalOpen(true);
-    };
-
-    const openStageModal = () => {
-        setModalMode('stage');
+    const openAddModal = () => {
+        setModalMode('add');
         setEditingAttribute(null);
         setModalOpen(true);
     };
@@ -107,15 +92,11 @@ const AttributePanel = () => {
         if (modalMode === 'edit') {
             updateAttribute(editingAttribute.id, { name, data_type });
         } else {
-            const stageId =
-                modalMode === 'global'
-                    ? stages[0].stageId
-                    : stages[currentStageIndex].stageId;
             addAttribute({
                 id: crypto.randomUUID(),
                 name,
                 data_type,
-                introduced_at_stage_Id: stageId,
+                introduced_at_stage_Id: stages[0].stageId,
                 retired_at_stage_Id: null,
             });
         }
@@ -129,11 +110,8 @@ const AttributePanel = () => {
                 <span className="attribute-panel__title">Attributes</span>
             </div>
             <div className="attribute-panel__actions">
-                <button className="attribute-panel__btn" onClick={openGlobalModal}>
-                    + Add global
-                </button>
-                <button className="attribute-panel__btn" onClick={openStageModal}>
-                    + Add to this stage
+                <button className="attribute-panel__btn" onClick={openAddModal}>
+                    + Add attribute
                 </button>
             </div>
             <div className="attribute-panel__list">
