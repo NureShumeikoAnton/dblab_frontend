@@ -10,6 +10,7 @@ import TableNode from './TableNode.jsx';
 import RelationshipEdge from './RelationshipEdge.jsx';
 import FDEdge from './FDEdge.jsx';
 import AddRelationshipModal from './AddRelationshipModal.jsx';
+import { isFDHandle, connectFD } from '../utils/fdConnection.js';
 import './styles/EditorCanvas.css';
 
 // nodeTypes / edgeTypes must be defined at module level — defining inside the
@@ -21,20 +22,6 @@ const nodeTypes = {
 const edgeTypes = {
     relationshipEdge: RelationshipEdge,
     fdEdge: FDEdge,
-};
-
-const FD_COLORS = ['#E74C3C', '#F39C12', '#27AE60', '#2980B9', '#9B59B6', '#16A085'];
-
-const isFDHandle = (h) => h?.startsWith('fd-left-') || h?.startsWith('fd-right-');
-const parseFDHandle = (h) => {
-    if (h?.startsWith('fd-left-'))  return { attrId: h.slice('fd-left-'.length),  isRight: false };
-    if (h?.startsWith('fd-right-')) return { attrId: h.slice('fd-right-'.length), isRight: true  };
-    return null;
-};
-
-const pickColor = (sideFDs) => {
-    const used = new Set(sideFDs.map((fd) => fd.color));
-    return FD_COLORS.find((c) => !used.has(c)) ?? FD_COLORS[0];
 };
 
 // Inner component — lives inside ReactFlowProvider so useReactFlow() works.
@@ -160,96 +147,7 @@ const EditorCanvasFlow = () => {
     ), [currentStageIndex]);
 
     const handleConnect = useCallback((connection) => {
-        if (connection.source !== connection.target) return;
-        const src = parseFDHandle(connection.sourceHandle);
-        const tgt = parseFDHandle(connection.targetHandle);
-        if (!src || !tgt || src.attrId === tgt.attrId) return;
-
-        const tableNode = tables.find((t) => t.id === connection.source);
-        if (!tableNode) return;
-
-        const isRight = src.isRight;
-
-        // FDs on this side that belong to this table — matched by tableId when available,
-        // falling back to attribute membership check for legacy FDs without tableId.
-        const sideFDs = fds.filter((fd) => {
-            if ((fd.level < 0) !== isRight) return false;
-            if (fd.tableId) return fd.tableId === tableNode.id;
-            return fd.starts.every((s) =>
-                tableNode.tableAttributes.some((ta) => ta.attributeId === s.attributeId)
-            );
-        });
-
-        // Most recent FD on this side where srcAttr is a start.
-        // findLast ensures we target the newest open dependency when the same
-        // attribute is a start in multiple FDs.
-        const matchingFD = sideFDs.findLast((fd) =>
-            fd.starts.some((s) => s.attributeId === src.attrId)
-        );
-
-        if (matchingFD) {
-            // Guard against within-FD conflicts: duplicate end or circular (tgt is already a start)
-            const alreadyInFD =
-                matchingFD.ends.some((e) => e.attributeId === tgt.attrId) ||
-                matchingFD.starts.some((s) => s.attributeId === tgt.attrId);
-            if (alreadyInFD) return;
-
-            // Extend — tgt may already be used in OTHER FDs; that's intentional
-            updateFD(currentStageIndex, matchingFD.id, {
-                ends: [...matchingFD.ends, { id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
-            });
-            return;
-        }
-
-        // No matchingFD on this side — check the opposite side (same table ownership constraint).
-        const srcOppFDs = fds.filter((fd) => {
-            if ((fd.level < 0) === isRight) return false;
-            if (!fd.starts.some((s) => s.attributeId === src.attrId)) return false;
-            if (fd.tableId) return fd.tableId === tableNode.id;
-            return fd.starts.every((s) => tableNode.tableAttributes.some((ta) => ta.attributeId === s.attributeId));
-        });
-
-        if (srcOppFDs.length > 0) {
-            // Flip all of srcAttr's opposite-side FDs to this side, then extend the last one.
-            srcOppFDs.forEach((fd) => {
-                updateFD(currentStageIndex, fd.id, { level: -fd.level });
-            });
-            const lastFlipped = srcOppFDs[srcOppFDs.length - 1];
-            const alreadyInFD =
-                lastFlipped.ends.some((e) => e.attributeId === tgt.attrId) ||
-                lastFlipped.starts.some((s) => s.attributeId === tgt.attrId);
-            if (!alreadyInFD) {
-                updateFD(currentStageIndex, lastFlipped.id, {
-                    ends: [...lastFlipped.ends, { id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
-                });
-            }
-            return;
-        }
-
-        // tgt is already a start in some sideFD — add src as a co-determinant (composite key).
-        const coStartFD = sideFDs.findLast((fd) =>
-            fd.starts.some((s) => s.attributeId === tgt.attrId) &&
-            !fd.starts.some((s) => s.attributeId === src.attrId)
-        );
-        if (coStartFD) {
-            updateFD(currentStageIndex, coStartFD.id, {
-                starts: [...coStartFD.starts, { id: `fds-${crypto.randomUUID()}`, attributeId: src.attrId }],
-            });
-            return;
-        }
-
-        // srcAttr has no FDs on either side — create a new one.
-        const usedLevels = sideFDs.map((fd) => Math.abs(fd.level));
-        const nextLevel = (usedLevels.length ? Math.max(...usedLevels) : 0) + 1;
-        addFD(currentStageIndex, {
-            id: `fd-${crypto.randomUUID()}`,
-            tableId: tableNode.id,
-            color: pickColor(sideFDs),
-            level: isRight ? -nextLevel : nextLevel,
-            type: 'full',
-            starts: [{ id: `fds-${crypto.randomUUID()}`, attributeId: src.attrId }],
-            ends:   [{ id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
-        });
+        connectFD(connection, { fds, tables, currentStageIndex, addFD, updateFD });
     }, [addFD, updateFD, currentStageIndex, tables, fds]);
 
     // ─── Attribute panel → canvas drop ──────────────────────────────────────────
