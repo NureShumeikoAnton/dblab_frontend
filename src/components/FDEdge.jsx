@@ -47,7 +47,12 @@ const FDEdge = ({ source, data }) => {
     if (!node || !data?.fd) return null;
 
     const { fd } = data;
-    const fdIssueList = analysis?.fdIssues?.get(fd.id) ?? [];
+    const allFdIssues = analysis?.fdIssues?.get(fd.id) ?? [];
+    const fdIssueList = allFdIssues.filter((iss) => {
+        if (iss.rule === '2NF') return currentStageIndex >= 2;
+        if (iss.rule === '3NF') return currentStageIndex >= 3;
+        return true;
+    });
     const handleBounds = node?.internals?.handleBounds;
     // Source-type handles live in handleBounds.source
     const allHandles = [...(handleBounds?.source ?? [])];

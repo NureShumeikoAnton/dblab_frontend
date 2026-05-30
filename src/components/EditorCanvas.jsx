@@ -150,12 +150,14 @@ const EditorCanvasFlow = () => {
         cancelRelationshipCreation();
     }, [clearSelectedFD, clearSelectedTable, clearSelectedTableAttribute, clearSelectedRelationship, cancelRelationshipCreation]);
 
-    // Only allow FD connections within the same table node, via fd-left-* or fd-right-* handles
+    // Only allow FD connections within the same table node, via fd-left-* or fd-right-* handles.
+    // FD drawing is disabled on stage 0 (1NF).
     const isValidConnection = useCallback((connection) => (
-        connection.source === connection.target
+        currentStageIndex > 0
+        && connection.source === connection.target
         && isFDHandle(connection.sourceHandle)
         && isFDHandle(connection.targetHandle)
-    ), []);
+    ), [currentStageIndex]);
 
     const handleConnect = useCallback((connection) => {
         if (connection.source !== connection.target) return;

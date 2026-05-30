@@ -273,7 +273,7 @@ const TableNode = ({ data }) => {
                                 position={Position.Left}
                                 id={`fd-left-${ta.attributeId}`}
                                 className={`table-node__fd-handle${leftVisible ? ' table-node__fd-handle--visible' : ''}`}
-                                isConnectable={showFDs}
+                                isConnectable={showFDs && currentStageIndex > 0}
                                 style={{ left: 0, top: '50%', transform: 'translateY(-50%)' }}
                             />
                             <Handle
@@ -281,7 +281,7 @@ const TableNode = ({ data }) => {
                                 position={Position.Right}
                                 id={`fd-right-${ta.attributeId}`}
                                 className={`table-node__fd-handle table-node__fd-handle--right${rightVisible ? ' table-node__fd-handle--visible' : ''}`}
-                                isConnectable={showFDs}
+                                isConnectable={showFDs && currentStageIndex > 0}
                                 style={{ right: 0, left: 'auto', top: '50%', transform: 'translateY(-50%)' }}
                             />
                             <div className="table-node__key-col">

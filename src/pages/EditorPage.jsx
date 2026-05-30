@@ -9,6 +9,7 @@ import StageInitDialog from '../components/StageInitDialog.jsx';
 import { NFAnalysisProvider } from '../hooks/useNFAnalysis.jsx';
 import './styles/EditorPage.css';
 
+const AUTOSAVE_INTERVAL_MS = 30_000;
 const STAGE_LABELS = ['1NF', 'FDs', '2NF', '3NF'];
 
 const EditorPage = () => {
@@ -16,6 +17,7 @@ const EditorPage = () => {
 
     const loadMockData = useEditorStore((s) => s.loadMockData);
     const loadEmptyMockData = useEditorStore((s) => s.loadEmptyMockData);
+    const loadLocalState = useEditorStore((s) => s.loadLocalState);
     const projectName = useEditorStore((s) => s.project.name);
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const setCurrentStageIndex = useEditorStore((s) => s.setCurrentStageIndex);
@@ -29,7 +31,22 @@ const EditorPage = () => {
         } else {
             loadMockData();
         }
+        // Restore positions + violationChecks from localStorage after mock data loads.
+        // loadLocalState reads project.id from the store — must be called after load.
+        loadLocalState();
     }, [projectId]);
+
+    // Autosave every 30s when there are unsaved changes
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const { ui, saveProject } = useEditorStore.getState();
+            if (ui.hasUnsavedChanges && !ui.isSaving) {
+                console.log('[editor] autosave…');
+                saveProject(null);
+            }
+        }, AUTOSAVE_INTERVAL_MS);
+        return () => clearInterval(interval);
+    }, []);
 
     const isUninitialized = !stages[currentStageIndex].initialized;
     const stageLabel = STAGE_LABELS[currentStageIndex];

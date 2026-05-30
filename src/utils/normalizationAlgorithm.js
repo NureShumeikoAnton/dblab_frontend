@@ -153,7 +153,7 @@ export function runNFChecks(tables, fds, attributePool) {
                     const endNames = endsNonKey.map((id) => attrMap.get(id)?.name ?? id).join(', ');
 
                     const prev = fdIssues.get(fd.id) ?? [];
-                    prev.push({ type: 'error', message: `Partial dependency: {${startNames}} → {${endNames}} — depends only on part of the primary key.` });
+                    prev.push({ type: 'error', rule: '2NF', message: `Partial dependency: {${startNames}} → {${endNames}} — depends only on part of the primary key.` });
                     fdIssues.set(fd.id, prev);
 
                     summary['2nf'] = 'error';
@@ -198,7 +198,7 @@ export function runNFChecks(tables, fds, attributePool) {
                     const endNames = endIds.filter((id) => nonKeySet.has(id)).map((id) => attrMap.get(id)?.name ?? id).join(', ');
 
                     const prev = fdIssues.get(fd.id) ?? [];
-                    prev.push({ type: 'error', message: `Transitive dependency: {${startNames}} → {${endNames}} — a non-key attribute determines another non-key attribute.` });
+                    prev.push({ type: 'error', rule: '3NF', message: `Transitive dependency: {${startNames}} → {${endNames}} — a non-key attribute determines another non-key attribute.` });
                     fdIssues.set(fd.id, prev);
 
                     summary['3nf'] = 'error';

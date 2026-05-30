@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { MOCK_PROJECT, MOCK_ATTRIBUTES, MOCK_STAGES, MOCK_EMPTY_PROJECT, MOCK_EMPTY_ATTRIBUTES, MOCK_EMPTY_STAGES } from './mockData.js';
+import { serializeProjectMeta, serializeForAPI, serializeToLocal, loadFromLocal } from '../utils/serializer.js';
+import API_CONFIG from '../config/api.js';
 
 export const STAGE_ORDER = ['stage-1nf', 'stage-fds', 'stage-2nf', 'stage-3nf'];
 
@@ -76,6 +78,8 @@ const useEditorStore = create(
         ui: {
             showFDs: true,
             hasUnsavedChanges: false,
+            isLocalSaved: false,
+            isServerSaved: false,
             isSaving: false,
             activeModal: null,    // null | { type: string, payload: any }
             selectedFDId: null,   // null | string — FD currently selected for editing
@@ -84,6 +88,7 @@ const useEditorStore = create(
             selectedRelationshipId: null, // null | string
             pendingRelationshipSourceTableId: null, // null | string — canvas pick mode
             pendingRelationshipSetup: null, // null | { sourceTableId, targetTableId } — awaiting modal confirmation
+            lastSaveError: null, // null | string — set on API save failure, cleared on next save attempt
         },
 
         // ─── Actions ─────────────────────────────────────────────────────────────
@@ -148,6 +153,8 @@ const useEditorStore = create(
             set((state) => {
                 Object.assign(state.project, fields);
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -188,6 +195,8 @@ const useEditorStore = create(
             set((state) => {
                 state.stages[stageIndex].tables.push(table);
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -197,6 +206,10 @@ const useEditorStore = create(
                 if (table) {
                     Object.assign(table, fields);
                     state.ui.hasUnsavedChanges = true;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -207,6 +220,10 @@ const useEditorStore = create(
                 if (table) {
                     table.position = position;
                     state.ui.hasUnsavedChanges = true;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -244,6 +261,8 @@ const useEditorStore = create(
                     state.ui.selectedTableAttribute = null;
                 }
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -255,6 +274,10 @@ const useEditorStore = create(
                 if (table) {
                     table.tableAttributes.push(tableAttribute);
                     state.ui.hasUnsavedChanges = true;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -267,6 +290,12 @@ const useEditorStore = create(
                     if (ta) {
                         Object.assign(ta, fields);
                         state.ui.hasUnsavedChanges = true;
+                        state.ui.isLocalSaved = false;
+                        state.ui.isServerSaved = false;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
                     }
                 }
             });
@@ -287,6 +316,8 @@ const useEditorStore = create(
                 taA.order = taB.order;
                 taB.order = tmp;
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -327,6 +358,8 @@ const useEditorStore = create(
                     state.ui.selectedTableAttribute = null;
                 }
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -336,6 +369,8 @@ const useEditorStore = create(
             set((state) => {
                 state.attributePool.push(attribute);
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -346,6 +381,10 @@ const useEditorStore = create(
                     attr.name = name;
                     attr.data_type = data_type;
                     state.ui.hasUnsavedChanges = true;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -356,6 +395,10 @@ const useEditorStore = create(
                 if (attr) {
                     attr.retired_at_stage_Id = stageId;
                     state.ui.hasUnsavedChanges = true;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -366,6 +409,10 @@ const useEditorStore = create(
                 if (attr) {
                     attr.retired_at_stage_Id = null;
                     state.ui.hasUnsavedChanges = true;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -380,6 +427,8 @@ const useEditorStore = create(
                 if (isUsed) return;
                 state.attributePool = state.attributePool.filter((a) => a.id !== attributeId);
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -389,6 +438,8 @@ const useEditorStore = create(
             set((state) => {
                 state.stages[stageIndex].relationships.push(relationship);
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -400,6 +451,10 @@ const useEditorStore = create(
                 if (rel) {
                     Object.assign(rel, fields);
                     state.ui.hasUnsavedChanges = true;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -413,6 +468,8 @@ const useEditorStore = create(
                     state.ui.selectedRelationshipId = null;
                 }
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -422,6 +479,8 @@ const useEditorStore = create(
             set((state) => {
                 state.stages[stageIndex].fds.push(fd);
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -431,6 +490,10 @@ const useEditorStore = create(
                 if (fd) {
                     Object.assign(fd, fields);
                     state.ui.hasUnsavedChanges = true;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -527,6 +590,8 @@ const useEditorStore = create(
                     state.ui.selectedFDId = null;
                 }
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -536,6 +601,8 @@ const useEditorStore = create(
             set((state) => {
                 state.stages[stageIndex].initialized = true;
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -577,6 +644,8 @@ const useEditorStore = create(
 
                 next.initialized = true;
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
         },
 
@@ -587,7 +656,124 @@ const useEditorStore = create(
                 const checks = state.stages[stageIndex].violationChecks;
                 checks[ruleIndex] = !checks[ruleIndex];
                 state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
             });
+        },
+
+        // ─── Save / local state ──────────────────────────────────────────────────
+
+        /**
+         * Persist positions + violationChecks to localStorage for the current project.
+         * Called on every explicit save and on autosave.
+         */
+        saveLocally() {
+            const state = get();
+            const projectId = state.project.id ?? 'mock';
+            serializeToLocal(projectId, state);
+            set((s) => { s.ui.isLocalSaved = true; });
+        },
+
+        /**
+         * Restore positions and violationChecks from localStorage into the store.
+         * Uses project.id from the store (set by loadMockData / API load), so call this
+         * AFTER the project data is loaded.
+         */
+        loadLocalState() {
+            const projectId = get().project.id ?? 'mock';
+            const local = loadFromLocal(projectId);
+            if (!local) return;
+            set((state) => {
+                const { positions, violationChecks } = local;
+                if (positions) {
+                    state.stages.forEach((stage, i) => {
+                        const stagePosMap = positions[i];
+                        if (!stagePosMap) return;
+                        stage.tables.forEach((table) => {
+                            if (stagePosMap[table.id]) {
+                                table.position = stagePosMap[table.id];
+                            }
+                        });
+                    });
+                }
+                if (violationChecks) {
+                    state.stages.forEach((stage, i) => {
+                        if (Array.isArray(violationChecks[i])) {
+                            stage.violationChecks = [...violationChecks[i]];
+                        }
+                    });
+                }
+                state.ui.isLocalSaved = true;
+            });
+        },
+
+        /**
+         * Saves the project to the API (two calls) and to localStorage.
+         *
+         *   PUT /projects/:id          → project name + description
+         *   PUT /projects/:id/content  → all stages, tables, attributes, FDs, relationships
+         *
+         * Pass the raw auth token (without "Bearer " prefix) for authenticated requests.
+         * When project.id is null (mock mode), skips both API calls and only saves locally.
+         *
+         * Returns true on success, false if either API call fails.
+         */
+        async saveProject(authToken = null) {
+            const state = get();
+            const { project } = state;
+
+            set((s) => {
+                s.ui.isSaving = true;
+                s.ui.lastSaveError = null;
+            });
+
+            // Always persist positions + violationChecks locally
+            get().saveLocally();
+
+            if (!project.id) {
+                // Mock data mode — no real API calls
+                console.log('[editor] saving... (mock mode)');
+                set((s) => {
+                    s.ui.isSaving = false;
+                    s.ui.hasUnsavedChanges = false;
+                });
+                return true;
+            }
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (authToken) headers['Authorization'] = authToken;
+            const base = `${API_CONFIG.BASE_URL}/projects/${project.id}`;
+
+            try {
+                // 1. Save project metadata (name, description)
+                const metaRes = await fetch(base, {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify(serializeProjectMeta(state)),
+                });
+                if (!metaRes.ok) throw new Error(`Meta save failed: HTTP ${metaRes.status}`);
+
+                // 2. Save full content snapshot (stages, tables, attributes, FDs, relationships)
+                const contentRes = await fetch(`${base}/content`, {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify(serializeForAPI(state)),
+                });
+                if (!contentRes.ok) throw new Error(`Content save failed: HTTP ${contentRes.status}`);
+
+                set((s) => {
+                    s.ui.isSaving = false;
+                    s.ui.hasUnsavedChanges = false;
+                    s.ui.isServerSaved = true;
+                });
+                return true;
+            } catch (err) {
+                set((s) => {
+                    s.ui.isSaving = false;
+                    s.ui.lastSaveError = err.message;
+                });
+                return false;
+            }
         },
 
         // ─── Selectors (derived state, called as functions) ──────────────────────

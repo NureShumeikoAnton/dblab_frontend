@@ -491,7 +491,25 @@ EditorPage
 
 ---
 
-## 18. Out of Scope (MVP)
+## 18. API Serialization — Fields Excluded from Save Payload
+
+The serializer (`src/utils/serializer.js`) strips the following fields before sending data to `PUT /projects/:id`:
+
+| Field | Location in store | Reason excluded |
+|---|---|---|
+| `table.position` | `stages[i].tables[j]` | Canvas coords — backend doesn't store these; saved to localStorage instead |
+| `tableAttribute.order` | `stages[i].tables[j].tableAttributes[k]` | Derived from array index at load time; `tableAttributes` are sent pre-sorted |
+| `stage.initialized` | `stages[i]` | Frontend-only flag; derived from `tables.length > 0` at API load time |
+| `stage.violationChecks` | `stages[i]` | Saved to localStorage only (no backend table for this data) |
+| `ui.*` | root | Session-only state; never persisted |
+
+**Local storage** (key: `dblab_editor_{projectId}`) stores `{ positions, violationChecks }` for per-project canvas layout and checklist state.
+
+**`fd.tableId` IS included** in the payload — backend team confirmed `table_Id` will be added to `FD_Stage` (see §19).
+
+---
+
+## 19. Out of Scope (MVP)
 
 - Automated NF violation detection (algorithmic)
 - Collaborative real-time editing

@@ -1,14 +1,22 @@
-import React from 'react';
 import useEditorStore from '../store/editorStore.js';
 import './styles/SaveStatus.css';
 
 const SaveStatus = () => {
-    const hasUnsavedChanges = useEditorStore((s) => s.ui.hasUnsavedChanges);
+    const isLocalSaved = useEditorStore((s) => s.ui.isLocalSaved);
+    const isServerSaved = useEditorStore((s) => s.ui.isServerSaved);
+    const projectId = useEditorStore((s) => s.project.id);
 
-    return hasUnsavedChanges ? (
-        <span className="save-status save-status--unsaved">● Unsaved</span>
-    ) : (
-        <span className="save-status save-status--saved">✓ Saved</span>
+    return (
+        <div className="save-status">
+            <span className={`save-status__badge ${isLocalSaved ? 'save-status__badge--saved' : 'save-status__badge--unsaved'}`}>
+                {isLocalSaved ? '✓' : '●'} Local
+            </span>
+            {projectId && (
+                <span className={`save-status__badge ${isServerSaved ? 'save-status__badge--saved' : 'save-status__badge--unsaved'}`}>
+                    {isServerSaved ? '✓' : '●'} Server
+                </span>
+            )}
+        </div>
     );
 };
 

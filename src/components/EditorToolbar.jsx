@@ -12,6 +12,7 @@ const EditorToolbar = ({ projectName }) => {
     const selectedTableAttribute = useEditorStore((s) => s.ui.selectedTableAttribute);
     const selectedFDId = useEditorStore((s) => s.ui.selectedFDId);
     const selectedRelationshipId = useEditorStore((s) => s.ui.selectedRelationshipId);
+    const lastSaveError = useEditorStore((s) => s.ui.lastSaveError);
 
     return (
         <div className="editor-toolbar">
@@ -21,6 +22,11 @@ const EditorToolbar = ({ projectName }) => {
             {!selectedTableAttribute && !selectedTableId && selectedFDId && <FDToolbar />}
             {!selectedTableAttribute && !selectedTableId && !selectedFDId && selectedRelationshipId && <RelationshipToolbar />}
             <div className="editor-toolbar__actions">
+                {lastSaveError && (
+                    <span className="editor-toolbar__save-error" title={lastSaveError}>
+                        Autosave failed — click Save to retry
+                    </span>
+                )}
                 <ShowFDsToggle />
                 <SaveButton />
             </div>
