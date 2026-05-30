@@ -15,8 +15,30 @@
     gap: 8px;
 }
 
+.stage-bar__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .stage-bar__check-wrap {
     position: relative;
+}
+
+.stage-bar__reset-btn {
+    padding: 8px 18px;
+    border: 2px solid #e74c3c;
+    border-radius: var(--border-radius);
+    background: transparent;
+    color: #e74c3c;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.stage-bar__reset-btn:hover {
+    background: #fdf0ef;
 }
 
 .stage-bar__check-btn {

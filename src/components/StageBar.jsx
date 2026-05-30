@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import StageButton from './StageButton.jsx';
 import NFViolationChecklistModal from './NFViolationChecklistModal.jsx';
+import ConfirmResetModal from './ConfirmResetModal.jsx';
 import useEditorStore from '../store/editorStore.js';
 import { useNFAnalysis, useNFAnalysisTrigger } from '../hooks/useNFAnalysis.jsx';
 import './styles/StageBar.css';
@@ -9,11 +10,13 @@ const STAGES = ['1NF', 'FDs', '2NF', '3NF'];
 
 const StageBar = ({ currentStageIndex, onStageChange }) => {
     const [showChecklist, setShowChecklist] = useState(false);
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
     const btnRef = useRef(null);
 
     const stages = useEditorStore((s) => s.stages);
     const isStageComplete = useEditorStore((s) => s.isStageComplete);
     const toggleViolationCheck = useEditorStore((s) => s.toggleViolationCheck);
+    const resetStage = useEditorStore((s) => s.resetStage);
     const analysis = useNFAnalysis();
     const triggerCheck = useNFAnalysisTrigger();
 
@@ -30,7 +33,24 @@ const StageBar = ({ currentStageIndex, onStageChange }) => {
                     />
                 ))}
             </div>
-            <div className="stage-bar__check-wrap">
+            <div className="stage-bar__actions">
+                <button
+                    className="stage-bar__reset-btn"
+                    onClick={() => setShowResetConfirm(true)}
+                >
+                    ↺ Reset Stage
+                </button>
+                {showResetConfirm && (
+                    <ConfirmResetModal
+                        stageLabel={STAGES[currentStageIndex]}
+                        onConfirm={() => {
+                            resetStage(currentStageIndex);
+                            setShowResetConfirm(false);
+                        }}
+                        onCancel={() => setShowResetConfirm(false)}
+                    />
+                )}
+                <div className="stage-bar__check-wrap">
                 <button
                     ref={btnRef}
                     className="stage-bar__check-btn"
@@ -51,6 +71,7 @@ const StageBar = ({ currentStageIndex, onStageChange }) => {
                         triggerRef={btnRef}
                     />
                 )}
+                </div>
             </div>
         </div>
     );

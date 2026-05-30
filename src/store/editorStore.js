@@ -649,6 +649,20 @@ const useEditorStore = create(
             });
         },
 
+        resetStage(stageIndex) {
+            set((state) => {
+                const stage = state.stages[stageIndex];
+                stage.initialized = false;
+                stage.tables = [];
+                stage.relationships = [];
+                stage.fds = [];
+                stage.violationChecks = stage.violationChecks.map(() => false);
+                state.ui.hasUnsavedChanges = true;
+                state.ui.isLocalSaved = false;
+                state.ui.isServerSaved = false;
+            });
+        },
+
         // ─── Violation checklist ─────────────────────────────────────────────────
 
         toggleViolationCheck(stageIndex, ruleIndex) {

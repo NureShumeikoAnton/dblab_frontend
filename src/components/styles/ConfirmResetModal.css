@@ -1,0 +1,10 @@
+.confirm-reset-modal {
+    width: 420px;
+}
+
+.confirm-reset-modal .modal__header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
