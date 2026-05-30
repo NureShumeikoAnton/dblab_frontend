@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Handle, Position, useStore } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
 import { TABLE_COLORS } from './TableToolbar.jsx';
@@ -39,6 +39,12 @@ const TableNode = ({ data }) => {
     const [hoveredAttrId, setHoveredAttrId] = useState(null);
     const [isDragOver, setIsDragOver] = useState(false);
     const [stagedAttrIds, setStagedAttrIds] = useState(new Set()); // tableAttributeIds staged for composite-PK extraction
+
+    useEffect(() => {
+        if (selectedTableAttribute?.tableId !== table.id) {
+            setStagedAttrIds(new Set());
+        }
+    }, [selectedTableAttribute?.tableId, table.id]);
 
     const hasPK = useMemo(
         () => table.tableAttributes.some((ta) => ta.is_PK),
@@ -113,14 +119,8 @@ const TableNode = ({ data }) => {
         e.preventDefault();
         e.stopPropagation();
         setContextMenu(null);
-        const useStaged = stagedAttrIds.size >= 2;
-        setAttrContextMenu({
-            x: e.clientX,
-            y: e.clientY,
-            tableAttributeId,
-            createIds: useStaged ? [...stagedAttrIds] : [tableAttributeId],
-        });
-    }, [stagedAttrIds]);
+        setAttrContextMenu({ x: e.clientX, y: e.clientY, tableAttributeId });
+    }, []);
 
     const handleDelete = useCallback(() => {
         const tableAttrIds = new Set(table.tableAttributes.map((ta) => ta.attributeId));
@@ -347,13 +347,18 @@ const TableNode = ({ data }) => {
             {attrContextMenu && (() => {
                 const ta = table.tableAttributes.find((a) => a.id === attrContextMenu.tableAttributeId);
                 const attr = ta ? attrMap.get(ta.attributeId) : null;
-                const { createIds } = attrContextMenu;
+                const merged = new Set(stagedAttrIds);
+                if (selectedTableAttribute?.tableId === table.id) {
+                    merged.add(selectedTableAttribute.tableAttributeId);
+                }
+                const useStaged = merged.size >= 2;
+                const createIds = useStaged ? [...merged] : [attrContextMenu.tableAttributeId];
                 return (
                     <AttributeRowContextMenu
                         x={attrContextMenu.x}
                         y={attrContextMenu.y}
                         attrName={attr?.name ?? ''}
-                        stagedCount={createIds.length}
+                        stagedCount={useStaged ? merged.size : 1}
                         onCreateTableWithPK={() => handleCreateTableWithPK(createIds)}
                         onRemove={() => removeTableAttribute(currentStageIndex, table.id, attrContextMenu.tableAttributeId)}
                         onClose={() => setAttrContextMenu(null)}
