@@ -17,10 +17,14 @@ export const pickColor = (sideFDs) => {
  * Handles a React Flow onConnect event for FD bracket edges.
  *
  * Cases (in priority order):
- *   1. srcAttr is already a start in a same-side FD → extend with tgtAttr as new end.
- *   2. srcAttr has FDs on the opposite side → flip them to this side, then extend the last one.
+ *   1. srcAttr is already a start in a same-side single-start FD → extend with tgtAttr as new end.
+ *   1b. srcAttr is a start in a same-side composite FD and tgtAttr is already covered → create a new
+ *       partial-dependency FD with srcAttr as the sole determinant.
+ *   2. srcAttr has single-start FDs on the opposite side → flip them to this side, then extend the last one.
+ *       (Composite opposite-side FDs are intentionally skipped — flipping a composite FD because one of its
+ *       starts is dragged from the other side would be wrong; fall through to create a new FD instead.)
  *   3. tgtAttr is already a start in a same-side FD → add srcAttr as a co-determinant.
- *   4. No FDs for srcAttr anywhere → create a new FD on the next available lane.
+ *   4. No matching FD → create a new FD on the next available lane.
  */
 export function connectFD(connection, { fds, tables, currentStageIndex, addFD, updateFD }) {
     if (connection.source !== connection.target) return;
@@ -49,7 +53,33 @@ export function connectFD(connection, { fds, tables, currentStageIndex, addFD, u
         const alreadyInFD =
             matchingFD.ends.some((e) => e.attributeId === tgt.attrId) ||
             matchingFD.starts.some((s) => s.attributeId === tgt.attrId);
-        if (alreadyInFD) return;
+
+        if (alreadyInFD) {
+            // srcAttr is part of a composite-key FD that already covers tgtAttr.
+            // Allow creating a new partial-dependency FD with srcAttr as the sole determinant.
+            if (matchingFD.starts.length > 1) {
+                const partialAlreadyExists = sideFDs.some(
+                    (fd) =>
+                        fd.starts.length === 1 &&
+                        fd.starts[0].attributeId === src.attrId &&
+                        fd.ends.some((e) => e.attributeId === tgt.attrId)
+                );
+                if (!partialAlreadyExists) {
+                    const usedLevels = sideFDs.map((fd) => Math.abs(fd.level));
+                    const nextLevel = (usedLevels.length ? Math.max(...usedLevels) : 0) + 1;
+                    addFD(currentStageIndex, {
+                        id: `fd-${crypto.randomUUID()}`,
+                        tableId: tableNode.id,
+                        color: pickColor(sideFDs),
+                        level: isRight ? -nextLevel : nextLevel,
+                        type: 'partial',
+                        starts: [{ id: `fds-${crypto.randomUUID()}`, attributeId: src.attrId }],
+                        ends:   [{ id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
+                    });
+                }
+            }
+            return;
+        }
 
         updateFD(currentStageIndex, matchingFD.id, {
             ends: [...matchingFD.ends, { id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
@@ -59,6 +89,7 @@ export function connectFD(connection, { fds, tables, currentStageIndex, addFD, u
 
     const srcOppFDs = fds.filter((fd) => {
         if ((fd.level < 0) === isRight) return false;
+        if (fd.starts.length !== 1) return false;
         if (!fd.starts.some((s) => s.attributeId === src.attrId)) return false;
         if (fd.tableId) return fd.tableId === tableNode.id;
         return fd.starts.every((s) => tableNode.tableAttributes.some((ta) => ta.attributeId === s.attributeId));
