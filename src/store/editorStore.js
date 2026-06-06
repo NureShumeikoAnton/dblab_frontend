@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { MOCK_PROJECT, MOCK_ATTRIBUTES, MOCK_STAGES, MOCK_EMPTY_PROJECT, MOCK_EMPTY_ATTRIBUTES, MOCK_EMPTY_STAGES } from './mockData.js';
-import { serializeProjectMeta, serializeForAPI, serializeToLocal, loadFromLocal } from '../utils/serializer.js';
+import { serializeProjectMeta, serializeForAPI, serializeToLocal, loadFromLocal, deserializeFromAPI } from '../utils/serializer.js';
 import API_CONFIG from '../config/api.js';
 
 export const STAGE_ORDER = ['stage-1nf', 'stage-fds', 'stage-2nf', 'stage-3nf'];
@@ -132,6 +132,34 @@ const useEditorStore = create(
                         violationChecks: [...stage.violationChecks],
                     };
                 });
+            });
+        },
+
+        /**
+         * Hydrates the store from a GET /project/:id API response.
+         * Applies localStorage positions and violationChecks on top when provided.
+         */
+        loadProject(apiData, localData = null) {
+            const { project, attributePool, stages } = deserializeFromAPI(apiData);
+            set((state) => {
+                state.project = project;
+                state.attributePool = attributePool;
+                state.currentStageIndex = 0;
+                stages.forEach((stage, i) => {
+                    Object.assign(state.stages[i], stage);
+                });
+                if (localData) {
+                    stages.forEach((_, i) => {
+                        const pos = localData.positions?.[i] ?? {};
+                        state.stages[i].tables.forEach((table) => {
+                            if (pos[table.id]) table.position = pos[table.id];
+                        });
+                        state.stages[i].violationChecks = localData.violationChecks?.[i] ?? [];
+                    });
+                }
+                state.ui.hasUnsavedChanges = false;
+                state.ui.isServerSaved = true;
+                state.ui.lastSaveError = null;
             });
         },
 
@@ -755,12 +783,13 @@ const useEditorStore = create(
             }
 
             const headers = { 'Content-Type': 'application/json' };
-            if (authToken) headers['Authorization'] = authToken;
-            const base = `${API_CONFIG.BASE_URL}/projects/${project.id}`;
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+            const metaUrl    = `${API_CONFIG.BASE_URL}/project/${project.id}`;
+            const contentUrl = `${API_CONFIG.BASE_URL}/project/updateProjectFull/${project.id}`;
 
             try {
                 // 1. Save project metadata (name, description)
-                const metaRes = await fetch(base, {
+                const metaRes = await fetch(metaUrl, {
                     method: 'PUT',
                     headers,
                     body: JSON.stringify(serializeProjectMeta(state)),
@@ -768,7 +797,7 @@ const useEditorStore = create(
                 if (!metaRes.ok) throw new Error(`Meta save failed: HTTP ${metaRes.status}`);
 
                 // 2. Save full content snapshot (stages, tables, attributes, FDs, relationships)
-                const contentRes = await fetch(`${base}/content`, {
+                const contentRes = await fetch(contentUrl, {
                     method: 'PUT',
                     headers,
                     body: JSON.stringify(serializeForAPI(state)),

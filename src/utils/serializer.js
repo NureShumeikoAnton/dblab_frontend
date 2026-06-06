@@ -1,19 +1,32 @@
 /**
- * Serializer — converts Zustand editor store state to API payload and localStorage data.
+ * Serializer — converts Zustand editor store state to the API payload format and back.
  *
- * Fields NOT included in the API payload (frontend-only or localStorage-only):
- *   - table.position          → localStorage (canvas coords; backend doesn't store these)
- *   - tableAttribute.order    → derived from array index at load time
- *   - stage.initialized       → derived from tables.length > 0 at load time
+ * PUT /project/updateProjectFull/:id uses sequential 1-based integers as cross-reference
+ * keys (not UUIDs). Field names also differ from the store (colour vs color, ispk vs is_PK, etc).
+ * See SPEC_API_NEW.md for the full mapping.
+ *
+ * Fields NOT included in the API payload (localStorage-only or derived on load):
+ *   - table.position          → localStorage
+ *   - tableAttribute.order    → derived from array index on load
+ *   - stage.initialized       → derived from tables.length > 0 on load
  *   - stage.violationChecks   → localStorage only
- *   - ui.*                    → session-only, never persisted
+ *   - fd.type                 → not persisted (no DB column); always null after reload
+ *   - attr.retired_at_stage_Id → not in DB model; always null after reload
  */
 
 const localKey = (projectId) => `dblab_editor_${projectId}`;
 
+// Maps store stageId strings to the 1-based integer the backend expects for
+// introduced_at_stage_id on the PUT payload.
+const STAGE_INDEX = {
+    'stage-1nf': 1,
+    'stage-fds': 2,
+    'stage-2nf': 3,
+    'stage-3nf': 4,
+};
+
 /**
- * Returns the project metadata payload for PUT /projects/:id.
- * Only name and description — the projectId goes in the URL.
+ * Returns the project metadata payload for PUT /project/:id.
  */
 export function serializeProjectMeta(store) {
     const { project } = store;
@@ -24,57 +37,137 @@ export function serializeProjectMeta(store) {
 }
 
 /**
- * Returns the content payload for PUT /projects/:id/content.
- * Includes attributePool and all stages. All frontend-only fields are stripped.
+ * Returns the content payload for PUT /project/updateProjectFull/:id.
+ *
+ * All local UUIDs are replaced with sequential 1-based integers so the backend
+ * can resolve cross-references within the same transaction.
  */
 export function serializeForAPI(store) {
     const { attributePool, stages } = store;
 
+    // attr local id → sequential integer (1-based)
+    const attrIndexMap = {};
+    attributePool.forEach((attr, i) => {
+        attrIndexMap[attr.id] = i + 1;
+    });
+
+    // table local id → sequential integer (1-based, ordered across all stages)
+    const tableIndexMap = {};
+    let tableCounter = 0;
+    stages.forEach((stage) => {
+        stage.tables.forEach((table) => {
+            tableCounter++;
+            tableIndexMap[table.id] = tableCounter;
+        });
+    });
+
     return {
-        attributePool: attributePool.map((attr) => ({
-            id: attr.id,
+        attributePool: attributePool.map((attr, i) => ({
+            attribute_id: i + 1,
             name: attr.name,
             data_type: attr.data_type,
-            introduced_at_stage_Id: attr.introduced_at_stage_Id,
-            retired_at_stage_Id: attr.retired_at_stage_Id ?? null,
+            introduced_at_stage_id: STAGE_INDEX[attr.introduced_at_stage_Id] ?? 1,
         })),
         stages: stages.map((stage) => ({
-            stageId: stage.stageId,
             form: stage.form,
             tables: stage.tables.map((table) => ({
-                id: table.id,
                 name: table.name,
-                color: table.color,
+                colour: table.color,
                 tableAttributes: [...table.tableAttributes]
                     .sort((a, b) => a.order - b.order)
                     .map((ta) => ({
-                        id: ta.id,
-                        attributeId: ta.attributeId,
-                        is_PK: ta.is_PK,
-                        is_FK: ta.is_FK,
-                        alias: ta.alias ?? null,
+                        attribute_id: attrIndexMap[ta.attributeId],
+                        ispk: ta.is_PK,
+                        isfk: ta.is_FK,
+                        pseudonim: ta.alias ?? null,
                     })),
             })),
             relationships: stage.relationships.map((rel) => ({
-                id: rel.id,
                 type: rel.type,
-                color: rel.color,
-                cardinality_t1: rel.cardinality_t1,
-                cardinality_t2: rel.cardinality_t2,
-                table1Id: rel.table1Id,
-                table2Id: rel.table2Id,
+                colour: rel.color,
+                cardinal1: rel.cardinality_t1,
+                cardinal2: rel.cardinality_t2,
+                table1_id: tableIndexMap[rel.table1Id],
+                table2_id: tableIndexMap[rel.table2Id],
             })),
             fds: stage.fds.map((fd) => ({
-                id: fd.id,
-                color: fd.color,
+                colour: fd.color,
                 level: fd.level,
                 type: fd.type,
-                tableId: fd.tableId,
-                starts: fd.starts.map((s) => ({ id: s.id, attributeId: s.attributeId })),
-                ends: fd.ends.map((e) => ({ id: e.id, attributeId: e.attributeId })),
+                table_id: tableIndexMap[fd.tableId],
+                starts: fd.starts.map((s) => ({ attribute_id: attrIndexMap[s.attributeId] })),
+                ends:   fd.ends.map((e)   => ({ attribute_id: attrIndexMap[e.attributeId] })),
             })),
         })),
     };
+}
+
+/**
+ * Converts the GET /project/:id response into the shape the editor store expects.
+ *
+ * Key transformations:
+ *   - fds are nested inside table objects in the response → lifted to stage.fds[]
+ *   - tableAttribute.order is absent → derived from array index
+ *   - table.position is absent → set to {x:0,y:0} (overridden by loadLocalState)
+ *   - stage.violationChecks is absent → set to [] (overridden by loadLocalState)
+ *   - fd.type is undefined (not in DB) → defaulted to null
+ */
+export function deserializeFromAPI(data) {
+    const project = {
+        id: data.project_Id,
+        name: data.name,
+        description: data.description,
+    };
+
+    const attributePool = (data.attributePool ?? []).map((attr) => ({
+        id: attr.id,
+        name: attr.name,
+        data_type: attr.data_type,
+        introduced_at_stage_Id: attr.introduced_at_stage_Id,
+        retired_at_stage_Id: attr.retired_at_stage_Id ?? null,
+    }));
+
+    const stages = (data.stages ?? []).map((stage) => {
+        // Lift FDs from inside each table object up to the stage level
+        const allFds = (stage.tables ?? []).flatMap((table) =>
+            (table.fds ?? []).map((fd) => ({
+                id: fd.id,
+                color: fd.color,
+                level: fd.level,
+                type: fd.type ?? null,
+                tableId: fd.tableId,
+                starts: fd.starts ?? [],
+                ends:   fd.ends   ?? [],
+            }))
+        );
+
+        const tables = (stage.tables ?? []).map((table, tableIndex) => ({
+            id: table.id,
+            name: table.name,
+            color: table.color,
+            position: { x: tableIndex * 280, y: 80 }, // default grid; overridden by loadLocalState
+            tableAttributes: (table.tableAttributes ?? []).map((ta, i) => ({
+                id: ta.id,
+                attributeId: ta.attributeId,
+                is_PK: ta.is_PK,
+                is_FK: ta.is_FK,
+                alias: ta.alias ?? null,
+                order: i,
+            })),
+        }));
+
+        return {
+            stageId: stage.stageId,
+            form: stage.form,
+            initialized: tables.length > 0,
+            tables,
+            relationships: stage.relationships ?? [],
+            fds: allFds,
+            violationChecks: [],
+        };
+    });
+
+    return { project, attributePool, stages };
 }
 
 /**

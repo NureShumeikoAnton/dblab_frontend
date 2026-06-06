@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './styles/NewProjectModal.css';
 
-const NewProjectModal = ({ onClose, onSubmit }) => {
+const NewProjectModal = ({ onClose, onSubmit, isSubmitting = false }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
 
@@ -67,9 +67,9 @@ const NewProjectModal = ({ onClose, onSubmit }) => {
                             <button
                                 type="submit"
                                 className="npm-btn npm-btn--primary"
-                                disabled={!name.trim()}
+                                disabled={!name.trim() || isSubmitting}
                             >
-                                Create project
+                                {isSubmitting ? 'Creating…' : 'Create project'}
                             </button>
                         </div>
                     </form>
