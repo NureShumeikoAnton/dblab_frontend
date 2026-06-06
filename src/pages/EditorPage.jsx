@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import useEditorStore from '../store/editorStore.js';
@@ -7,16 +7,14 @@ import EditorCanvas from '../components/EditorCanvas.jsx';
 import AttributePanel from '../components/AttributePanel.jsx';
 import StageBar from '../components/StageBar.jsx';
 import StageInitDialog from '../components/StageInitDialog.jsx';
+import ConflictResolutionModal from '../components/ConflictResolutionModal.jsx';
 import { NFAnalysisProvider } from '../hooks/useNFAnalysis.jsx';
 import API_CONFIG from '../config/api.js';
-import { loadFromLocal } from '../utils/serializer.js';
+import { loadFromLocal, deserializeFromAPI, compareStructural } from '../utils/serializer.js';
 import './styles/EditorPage.css';
 
 const AUTOSAVE_INTERVAL_MS = 30_000;
 const STAGE_LABELS = ['1NF', 'FDs', '2NF', '3NF'];
-
-// Project IDs that trigger mock data instead of a real API fetch
-const MOCK_IDS = new Set(['mock', '1']);
 
 const EditorPage = () => {
     const { projectId } = useParams();
@@ -24,10 +22,12 @@ const EditorPage = () => {
     const authHeaderRef = useRef(authHeader);
     authHeaderRef.current = authHeader;
 
-    const loadMockData = useEditorStore((s) => s.loadMockData);
-    const loadEmptyMockData = useEditorStore((s) => s.loadEmptyMockData);
-    const loadLocalState = useEditorStore((s) => s.loadLocalState);
+    const [conflictData, setConflictData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+
     const loadProject = useEditorStore((s) => s.loadProject);
+    const loadFromLocalSnapshot = useEditorStore((s) => s.loadFromLocalSnapshot);
+    const setLastSaveError = useEditorStore((s) => s.setLastSaveError);
     const projectName = useEditorStore((s) => s.project.name);
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const setCurrentStageIndex = useEditorStore((s) => s.setCurrentStageIndex);
@@ -36,27 +36,37 @@ const EditorPage = () => {
     const initializeStageCopyFromPrevious = useEditorStore((s) => s.initializeStageCopyFromPrevious);
 
     useEffect(() => {
-        if (projectId === '2') {
-            loadEmptyMockData();
-            loadLocalState();
-        } else if (!projectId || MOCK_IDS.has(projectId)) {
-            loadMockData();
-            loadLocalState();
-        } else {
-            const token = authHeader?.split(' ')[1] ?? null;
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
-            fetch(`${API_CONFIG.BASE_URL}/project/${projectId}`, { headers })
-                .then((r) => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
-                .then((data) => {
-                    loadProject(data, loadFromLocal(projectId));
-                })
-                .catch((err) => {
-                    console.error('[editor] load failed', err);
-                });
-        }
+        const token = authHeader?.split(' ')[1] ?? null;
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const localData = loadFromLocal(projectId);
+
+        fetch(`${API_CONFIG.BASE_URL}/project/${projectId}`, { headers })
+            .then((r) => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then((rawApiData) => {
+                const serverDeserialized = deserializeFromAPI(rawApiData);
+                const { hasConflict, serverSummary, localSummary } =
+                    compareStructural(serverDeserialized, localData);
+
+                if (hasConflict) {
+                    setConflictData({ rawApiData, localData, serverSummary, localSummary });
+                } else {
+                    loadProject(rawApiData, localData);
+                }
+                setIsLoading(false);
+            })
+            .catch((err) => {
+                console.error('[editor] load failed', err);
+                if (localData?.snapshot) {
+                    loadFromLocalSnapshot(localData);
+                    setLastSaveError('Server unavailable — loaded from local cache');
+                } else {
+                    setLastSaveError(`Failed to load project: ${err.message}`);
+                }
+                setIsLoading(false);
+            });
     }, [projectId]);
 
     // Autosave every 30s — uses ref so the interval always has the latest token
@@ -88,12 +98,26 @@ const EditorPage = () => {
                     currentStageIndex={currentStageIndex}
                     onStageChange={setCurrentStageIndex}
                 />
-                {isUninitialized && (
+                {!isLoading && isUninitialized && (
                     <StageInitDialog
                         stageLabel={stageLabel}
                         prevStageLabel={prevStageLabel}
                         onStartEmpty={() => initializeStageEmpty(currentStageIndex)}
                         onCopyFromPrevious={() => initializeStageCopyFromPrevious(currentStageIndex)}
+                    />
+                )}
+                {conflictData && (
+                    <ConflictResolutionModal
+                        serverSummary={conflictData.serverSummary}
+                        localSummary={conflictData.localSummary}
+                        onUseServer={() => {
+                            loadProject(conflictData.rawApiData, conflictData.localData);
+                            setConflictData(null);
+                        }}
+                        onUseLocal={() => {
+                            loadFromLocalSnapshot(conflictData.localData);
+                            setConflictData(null);
+                        }}
                     />
                 )}
             </NFAnalysisProvider>

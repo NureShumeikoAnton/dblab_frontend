@@ -182,10 +182,11 @@ export function deserializeFromAPI(data) {
 }
 
 /**
- * Persists positions and violationChecks for the project to localStorage.
+ * Persists positions, violationChecks, and a full structural snapshot to localStorage.
+ * Positions are keyed by table name (not ID) because IDs change on every server save.
  */
 export function serializeToLocal(projectId, store) {
-    const { stages } = store;
+    const { stages, attributePool } = store;
     const positions = {};
     const violationChecks = {};
 
@@ -200,11 +201,73 @@ export function serializeToLocal(projectId, store) {
         violationChecks[i] = [...stage.violationChecks];
     });
 
+    const snapshot = {
+        attributePool: attributePool.map(({ id, name, data_type, introduced_at_stage_Id, retired_at_stage_Id }) => ({
+            id, name, data_type, introduced_at_stage_Id, retired_at_stage_Id: retired_at_stage_Id ?? null,
+        })),
+        stages: stages.map((stage) => ({
+            stageId: stage.stageId,
+            form: stage.form,
+            initialized: stage.initialized,
+            tables: stage.tables.map(({ id, name, color, tableAttributes }) => ({ id, name, color, tableAttributes })),
+            relationships: stage.relationships,
+            fds: stage.fds,
+        })),
+    };
+
     try {
-        localStorage.setItem(localKey(projectId), JSON.stringify({ positions, violationChecks }));
+        localStorage.setItem(
+            localKey(projectId),
+            JSON.stringify({ lastSavedAt: new Date().toISOString(), snapshot, positions, violationChecks })
+        );
     } catch {
         // Quota exceeded or private browsing — silently ignore
     }
+}
+
+// ─── Conflict detection ───────────────────────────────────────────────────────
+
+function buildFingerprint(attrPool, stages) {
+    const attrs = (attrPool ?? []).map((a) => `${a.name}:${a.data_type}`).sort().join(',');
+    const stagesStr = (stages ?? []).map((s) => {
+        const tables = (s.tables ?? []).map((t) => t.name).sort().join(',');
+        return `${s.form}|t:${tables}|f:${(s.fds ?? []).length}|r:${(s.relationships ?? []).length}`;
+    }).join(';');
+    return `${attrs}__${stagesStr}`;
+}
+
+function buildSummary(attrPool, stages, lastSavedAt) {
+    return {
+        attrCount: (attrPool ?? []).length,
+        stages: (stages ?? []).map((s) => ({
+            form: s.form,
+            tableCount: (s.tables ?? []).length,
+            fdCount: (s.fds ?? []).length,
+            relCount: (s.relationships ?? []).length,
+        })),
+        lastSavedAt: lastSavedAt ?? null,
+    };
+}
+
+/**
+ * Compares server-deserialized data against the local snapshot.
+ * Returns { hasConflict: false } when no local snapshot exists (first load).
+ * Returns { hasConflict: true, serverSummary, localSummary } when structural data differs.
+ */
+export function compareStructural(serverDeserialized, localData) {
+    if (!localData?.snapshot) return { hasConflict: false };
+
+    const { snapshot } = localData;
+    const serverFP = buildFingerprint(serverDeserialized.attributePool, serverDeserialized.stages);
+    const localFP  = buildFingerprint(snapshot.attributePool, snapshot.stages);
+
+    if (serverFP === localFP) return { hasConflict: false };
+
+    return {
+        hasConflict: true,
+        serverSummary: buildSummary(serverDeserialized.attributePool, serverDeserialized.stages, null),
+        localSummary:  buildSummary(snapshot.attributePool, snapshot.stages, localData.lastSavedAt),
+    };
 }
 
 /**

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { MOCK_PROJECT, MOCK_ATTRIBUTES, MOCK_STAGES, MOCK_EMPTY_PROJECT, MOCK_EMPTY_ATTRIBUTES, MOCK_EMPTY_STAGES } from './mockData.js';
-import { serializeProjectMeta, serializeForAPI, serializeToLocal, loadFromLocal, deserializeFromAPI } from '../utils/serializer.js';
+import { serializeProjectMeta, serializeForAPI, serializeToLocal, loadFromLocal, deserializeFromAPI, compareStructural } from '../utils/serializer.js';
 import API_CONFIG from '../config/api.js';
 
 export const STAGE_ORDER = ['stage-1nf', 'stage-fds', 'stage-2nf', 'stage-3nf'];
@@ -161,6 +161,30 @@ const useEditorStore = create(
                 state.ui.isServerSaved = true;
                 state.ui.lastSaveError = null;
             });
+        },
+
+        /** Hydrates store from a localStorage snapshot (offline fallback or conflict resolution). */
+        loadFromLocalSnapshot(localData) {
+            const { snapshot } = localData ?? {};
+            if (!snapshot) return;
+            set((state) => {
+                state.attributePool = snapshot.attributePool ?? [];
+                state.currentStageIndex = 0;
+                (snapshot.stages ?? []).forEach((stage, i) => {
+                    Object.assign(state.stages[i], stage);
+                    const pos = localData.positions?.[i] ?? {};
+                    state.stages[i].tables.forEach((table) => {
+                        if (pos[table.name]) table.position = pos[table.name];
+                    });
+                    state.stages[i].violationChecks = localData.violationChecks?.[i] ?? [];
+                });
+                state.ui.hasUnsavedChanges = true;
+                state.ui.isServerSaved = false;
+            });
+        },
+
+        setLastSaveError(msg) {
+            set((s) => { s.ui.lastSaveError = msg ?? null; });
         },
 
         /** Switch the active stage. */
@@ -732,8 +756,8 @@ const useEditorStore = create(
                         const stagePosMap = positions[i];
                         if (!stagePosMap) return;
                         stage.tables.forEach((table) => {
-                            if (stagePosMap[table.id]) {
-                                table.position = stagePosMap[table.id];
+                            if (stagePosMap[table.name]) {
+                                table.position = stagePosMap[table.name];
                             }
                         });
                     });
@@ -803,6 +827,8 @@ const useEditorStore = create(
                     body: JSON.stringify(serializeForAPI(state)),
                 });
                 if (!contentRes.ok) throw new Error(`Content save failed: HTTP ${contentRes.status}`);
+
+                serializeToLocal(project.id, get());
 
                 set((s) => {
                     s.ui.isSaving = false;
