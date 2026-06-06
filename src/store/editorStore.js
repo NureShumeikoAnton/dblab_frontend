@@ -164,10 +164,11 @@ const useEditorStore = create(
         },
 
         /** Hydrates store from a localStorage snapshot (offline fallback or conflict resolution). */
-        loadFromLocalSnapshot(localData) {
+        loadFromLocalSnapshot(localData, projectId = null) {
             const { snapshot } = localData ?? {};
             if (!snapshot) return;
             set((state) => {
+                if (projectId) state.project.id = parseInt(projectId, 10) || projectId;
                 state.attributePool = snapshot.attributePool ?? [];
                 state.currentStageIndex = 0;
                 (snapshot.stages ?? []).forEach((stage, i) => {
@@ -178,7 +179,7 @@ const useEditorStore = create(
                     });
                     state.stages[i].violationChecks = localData.violationChecks?.[i] ?? [];
                 });
-                state.ui.hasUnsavedChanges = true;
+                state.ui.hasUnsavedChanges = false;
                 state.ui.isServerSaved = false;
             });
         },

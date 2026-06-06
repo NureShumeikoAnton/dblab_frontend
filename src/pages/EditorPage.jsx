@@ -60,7 +60,7 @@ const EditorPage = () => {
             .catch((err) => {
                 console.error('[editor] load failed', err);
                 if (localData?.snapshot) {
-                    loadFromLocalSnapshot(localData);
+                    loadFromLocalSnapshot(localData, projectId);
                     setLastSaveError('Server unavailable — loaded from local cache');
                 } else {
                     setLastSaveError(`Failed to load project: ${err.message}`);
@@ -115,6 +115,7 @@ const EditorPage = () => {
                             setConflictData(null);
                         }}
                         onUseLocal={() => {
+                            loadProject(conflictData.rawApiData, null);
                             loadFromLocalSnapshot(conflictData.localData);
                             setConflictData(null);
                         }}
