@@ -152,7 +152,7 @@ const useEditorStore = create(
                     stages.forEach((_, i) => {
                         const pos = localData.positions?.[i] ?? {};
                         state.stages[i].tables.forEach((table) => {
-                            if (pos[table.id]) table.position = pos[table.id];
+                            if (pos[table.name]) table.position = pos[table.name];
                         });
                         state.stages[i].violationChecks = localData.violationChecks?.[i] ?? [];
                     });

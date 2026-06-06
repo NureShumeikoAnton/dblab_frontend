@@ -119,13 +119,21 @@ export function deserializeFromAPI(data) {
         description: data.description,
     };
 
-    const attributePool = (data.attributePool ?? []).map((attr) => ({
-        id: attr.id,
-        name: attr.name,
-        data_type: attr.data_type,
-        introduced_at_stage_Id: attr.introduced_at_stage_Id,
-        retired_at_stage_Id: attr.retired_at_stage_Id ?? null,
-    }));
+    // Sort by numeric ID suffix so the pool is always in insertion/sequential order
+    // regardless of how Sequelize/MySQL returns rows when multiple hasMany are JOINed.
+    const numId = (prefixedId, prefix) =>
+        parseInt(prefixedId?.replace(prefix, '') ?? '0', 10);
+
+    const attributePool = (data.attributePool ?? [])
+        .slice()
+        .sort((a, b) => numId(a.id, 'attr-') - numId(b.id, 'attr-'))
+        .map((attr) => ({
+            id: attr.id,
+            name: attr.name,
+            data_type: attr.data_type,
+            introduced_at_stage_Id: attr.introduced_at_stage_Id,
+            retired_at_stage_Id: attr.retired_at_stage_Id ?? null,
+        }));
 
     const stages = (data.stages ?? []).map((stage) => {
         // Lift FDs from inside each table object up to the stage level
@@ -146,14 +154,17 @@ export function deserializeFromAPI(data) {
             name: table.name,
             color: table.color,
             position: { x: tableIndex * 280, y: 80 }, // default grid; overridden by loadLocalState
-            tableAttributes: (table.tableAttributes ?? []).map((ta, i) => ({
-                id: ta.id,
-                attributeId: ta.attributeId,
-                is_PK: ta.is_PK,
-                is_FK: ta.is_FK,
-                alias: ta.alias ?? null,
-                order: i,
-            })),
+            tableAttributes: (table.tableAttributes ?? [])
+                .slice()
+                .sort((a, b) => numId(a.id, 'ta-') - numId(b.id, 'ta-'))
+                .map((ta, i) => ({
+                    id: ta.id,
+                    attributeId: ta.attributeId,
+                    is_PK: ta.is_PK,
+                    is_FK: ta.is_FK,
+                    alias: ta.alias ?? null,
+                    order: i,
+                })),
         }));
 
         return {
@@ -182,7 +193,8 @@ export function serializeToLocal(projectId, store) {
         positions[i] = {};
         stage.tables.forEach((table) => {
             if (table.position) {
-                positions[i][table.id] = { x: table.position.x, y: table.position.y };
+                // Key by table name, not ID — IDs change after every server save (delete+reinsert).
+                positions[i][table.name] = { x: table.position.x, y: table.position.y };
             }
         });
         violationChecks[i] = [...stage.violationChecks];
