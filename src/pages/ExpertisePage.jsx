@@ -61,6 +61,7 @@ const ExpertisePage = () => {
     const [statusFilter, setStatusFilter] = useState('');
     const [sortDir, setSortDir] = useState('desc');
     const [requestModalOpen, setRequestModalOpen] = useState(false);
+    const [onlyMyExpertises, setOnlyMyExpertises] = useState(false);
 
     const isStudent = authUser && authUser.role === 'student';
     const hasActiveRequest = isStudent && MOCK_EXPERT_REQUESTS.some(
@@ -72,12 +73,17 @@ const ExpertisePage = () => {
         let result = statusFilter
             ? projects.filter(p => p.status === statusFilter)
             : [...projects];
+            
+        if (onlyMyExpertises && authUser) {
+            result = result.filter(p => p.reviewers && p.reviewers.some(r => r.user_Id === authUser.user_Id));
+        }
+
         result.sort((a, b) => {
             const diff = new Date(a.creation_date) - new Date(b.creation_date);
             return sortDir === 'asc' ? diff : -diff;
         });
         return result;
-    }, [projects, statusFilter, sortDir]);
+    }, [projects, statusFilter, sortDir, onlyMyExpertises, authUser]);
 
     return (
         <div className="client-page">
@@ -125,14 +131,26 @@ const ExpertisePage = () => {
                         </button>
                     ))}
                 </div>
-                <button
-                    className="expertise-sort-btn"
-                    onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')}
-                    title={sortDir === 'desc' ? 'Спочатку нові' : 'Спочатку старі'}
-                >
-                    <ArrowUpDown size={15} />
-                    {sortDir === 'desc' ? 'Спочатку нові' : 'Спочатку старі'}
-                </button>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    {isAlreadyExpert && (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-color)', fontSize: '0.9rem' }}>
+                            <input 
+                                type="checkbox" 
+                                checked={onlyMyExpertises} 
+                                onChange={e => setOnlyMyExpertises(e.target.checked)} 
+                            />
+                            Мої експертизи
+                        </label>
+                    )}
+                    <button
+                        className="expertise-sort-btn"
+                        onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')}
+                        title={sortDir === 'desc' ? 'Спочатку нові' : 'Спочатку старі'}
+                    >
+                        <ArrowUpDown size={15} />
+                        {sortDir === 'desc' ? 'Спочатку нові' : 'Спочатку старі'}
+                    </button>
+                </div>
             </div>
 
             {displayed.length === 0 ? (
@@ -163,6 +181,7 @@ function ExpertRequestModal({ authUser, onClose }) {
             request_Id: Date.now(),
             user_Id: authUser.user_Id,
             username: authUser.username,
+            email: authUser.email || 'student@nure.ua',
             message: message.trim() || null,
             status: 'pending',
             created_date: new Date().toISOString(),

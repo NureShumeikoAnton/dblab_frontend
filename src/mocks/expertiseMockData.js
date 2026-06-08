@@ -3,26 +3,26 @@ export const DATA_MODEL_TYPES = ['conceptual_model', 'er_model', 'logical_model'
 
 export const TYPE_LABEL = {
     'conceptual_model': 'Концептуальна модель (UML)',
-    'er_model':        'ЕR-модель',
-    'logical_model':   'Логічна модель',
-    'physical_model':  'Фізична модель',
-    'other':           'Інше',
+    'er_model': 'ЕR-модель',
+    'logical_model': 'Логічна модель',
+    'physical_model': 'Фізична модель',
+    'other': 'Інше',
 };
 
 // Mutable users list — role can be 'student' | 'expert' | 'admin'
 export const MOCK_USERS = [
-    { user_Id: 1,  username: 'admin',         role: 'admin',   full_name: 'Адміністратор',        email: 'admin@nure.ua',           group: null        },
-    { user_Id: 2,  username: 'oleksiy_dev',   role: 'student', full_name: 'Олексій Коваль',       email: 'o.koval@nure.ua',         group: 'ПЗПІ-22-4' },
-    { user_Id: 3,  username: 'maria_sql',      role: 'student', full_name: 'Марія Сидоренко',      email: 'm.sydorenko@nure.ua',     group: 'ПЗПІ-22-4' },
-    { user_Id: 4,  username: 'yana_db',        role: 'student', full_name: 'Яна Бондаренко',       email: 'y.bondarenko@nure.ua',    group: 'ПЗПІ-22-3' },
-    { user_Id: 5,  username: 'pavlo_be',       role: 'student', full_name: 'Павло Безус',          email: 'p.bezus@nure.ua',         group: 'ПЗПІ-22-4' },
-    { user_Id: 6,  username: 'ivan_student',   role: 'student', full_name: 'Іван Гриценко',        email: 'i.hrytsenko@nure.ua',     group: 'ПЗПІ-22-2' },
-    { user_Id: 7,  username: 'tetyana_db',     role: 'student', full_name: 'Тетяна Вовк',          email: 't.vovk@nure.ua',          group: 'ПЗПІ-22-4' },
-    { user_Id: 8,  username: 'serhiy_arch',    role: 'student', full_name: 'Сергій Архипенко',     email: 's.arkhypenko@nure.ua',    group: 'ПЗПІ-22-1' },
-    { user_Id: 9,  username: 'nazar_perf',     role: 'student', full_name: 'Назар Перебийнос',     email: 'n.perebynos@nure.ua',     group: 'ПЗПІ-22-3' },
-    { user_Id: 10, username: 'prof_kovalenko', role: 'expert',  full_name: 'Коваленко Володимир',  email: 'v.kovalenko@nure.ua',     group: null        },
-    { user_Id: 11, username: 'dr_petrenko',    role: 'expert',  full_name: 'Петренко Олександр',   email: 'o.petrenko@nure.ua',      group: null        },
-    { user_Id: 12, username: 'expert_melnyk',  role: 'expert',  full_name: 'Мельник Ірина',        email: 'i.melnyk@nure.ua',        group: null        },
+    { user_Id: 1, username: 'admin', role: 'admin', full_name: 'Адміністратор', email: 'admin@nure.ua', group: null },
+    { user_Id: 2, username: 'oleksiy_dev', role: 'student', full_name: 'Олексій Коваль', email: 'oleksiy.koval@nure.ua', group: 'ПЗПІ-22-4' },
+    { user_Id: 3, username: 'maria_sql', role: 'student', full_name: 'Марія Сидоренко', email: 'maria.sydorenko@nure.ua', group: 'ПЗПІ-22-4' },
+    { user_Id: 4, username: 'yana_db', role: 'student', full_name: 'Яна Бондаренко', email: 'yana.bondarenko@nure.ua', group: 'ПЗПІ-22-3' },
+    { user_Id: 5, username: 'pavlo_be', role: 'student', full_name: 'Павло Безус', email: 'pavlo.bezus@nure.ua', group: 'ПЗПІ-22-4' },
+    { user_Id: 6, username: 'ivan_student', role: 'student', full_name: 'Іван Гриценко', email: 'ivan.hrytsenko@nure.ua', group: 'ПЗПІ-22-2' },
+    { user_Id: 7, username: 'tetyana_db', role: 'student', full_name: 'Тетяна Вовк', email: 'tetyana.vovk@nure.ua', group: 'ПЗПІ-22-4' },
+    { user_Id: 8, username: 'serhiy_arch', role: 'student', full_name: 'Сергій Архипенко', email: 'serhiy.arkhypenko@nure.ua', group: 'ПЗПІ-22-1' },
+    { user_Id: 9, username: 'nazar_perf', role: 'student', full_name: 'Назар Перебийнос', email: 'nazar.perebynos@nure.ua', group: 'ПЗПІ-22-3' },
+    { user_Id: 10, username: 'prof_kovalenko', role: 'expert', full_name: 'Коваленко Володимир', email: 'volodymyr.kovalenko@nure.ua', group: null },
+    { user_Id: 11, username: 'dr_petrenko', role: 'expert', full_name: 'Петренко Олександр', email: 'oleksandr.petrenko@nure.ua', group: null },
+    { user_Id: 12, username: 'expert_melnyk', role: 'expert', full_name: 'Мельник Ірина', email: 'iryna.melnyk@nure.ua', group: null },
 ];
 
 // Mutable expert role requests — status: 'pending' | 'approved' | 'rejected'
@@ -31,6 +31,7 @@ export const MOCK_EXPERT_REQUESTS = [
         request_Id: 1,
         user_Id: 6,
         username: 'ivan_student',
+        email: 'ivan.hrytsenko@nure.ua',
         message: 'Я пройшов 5 курсів з баз даних та хотів би допомагати у перевірці проєктів однокурсників.',
         status: 'pending',
         created_date: '2026-04-15T10:00:00.000Z',
@@ -39,6 +40,7 @@ export const MOCK_EXPERT_REQUESTS = [
         request_Id: 2,
         user_Id: 8,
         username: 'serhiy_arch',
+        email: 'serhiy.arkhypenko@nure.ua',
         message: 'Маю досвід у проєктуванні БД та розподілених системах. Хочу ділитись знаннями.',
         status: 'approved',
         created_date: '2026-04-10T09:30:00.000Z',
@@ -47,6 +49,7 @@ export const MOCK_EXPERT_REQUESTS = [
         request_Id: 3,
         user_Id: 7,
         username: 'tetyana_db',
+        email: 'tetyana.vovk@nure.ua',
         message: null,
         status: 'pending',
         created_date: '2026-04-18T14:00:00.000Z',
@@ -64,8 +67,10 @@ export const MOCK_PROJECTS = [
         is_for_normalization: false,
         author_user_Id: 2,
         author_nickname: 'oleksiy_dev',
-        claimed_by_user_Id: null,
-        claimed_by_nickname: null,
+        reviewers: [
+            { user_Id: 12, nickname: 'expert_melnyk', status: 'in-progress' },
+            { user_Id: 10, nickname: 'prof_kovalenko', status: 'completed' }
+        ],
     },
     {
         project_Id: 2,
@@ -77,8 +82,9 @@ export const MOCK_PROJECTS = [
         is_for_normalization: true,
         author_user_Id: 3,
         author_nickname: 'maria_sql',
-        claimed_by_user_Id: null,
-        claimed_by_nickname: null,
+        reviewers: [
+            { user_Id: 11, nickname: 'dr_petrenko', status: 'completed' }
+        ],
     },
     {
         project_Id: 3,
@@ -90,8 +96,10 @@ export const MOCK_PROJECTS = [
         is_for_normalization: false,
         author_user_Id: 4,
         author_nickname: 'yana_db',
-        claimed_by_user_Id: 12,
-        claimed_by_nickname: 'expert_melnyk',
+        reviewers: [
+            { user_Id: 12, nickname: 'expert_melnyk', status: 'in-progress' },
+            { user_Id: 10, nickname: 'prof_kovalenko', status: 'in-progress' }
+        ],
     },
     {
         project_Id: 4,
@@ -103,8 +111,7 @@ export const MOCK_PROJECTS = [
         is_for_normalization: false,
         author_user_Id: 5,
         author_nickname: 'pavlo_be',
-        claimed_by_user_Id: null,
-        claimed_by_nickname: null,
+        reviewers: [],
     },
 ];
 

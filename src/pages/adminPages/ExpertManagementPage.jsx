@@ -104,7 +104,7 @@ function RequestsTab() {
                                 <User size={12} /> {user.full_name}
                             </span>
                             <span className="request-card__info-item">
-                                <Mail size={12} /> {user.email}
+                                <Mail size={12} /> {req.email}
                             </span>
                             {user.group && (
                                 <span className="request-card__info-item">

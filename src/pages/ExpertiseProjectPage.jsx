@@ -50,13 +50,10 @@ const ExpertiseProjectPage = () => {
     );
 
     const isExpert = authUser?.role === 'expert' || authUser?.role === 'admin';
-    const canClaim = isExpert && localProject?.status === 'pending';
-    const isMyClaim = isExpert
-        && localProject?.status === 'in-review'
-        && localProject?.claimed_by_user_Id === authUser?.user_Id;
-    const myDraftExpertise = isMyClaim
-        ? localExpertises.find(e => e.end_date === null && e.expert_user_Id === authUser.user_Id)
-        : null;
+    const myDraftExpertise = localExpertises.find(e => e.end_date === null && e.expert_user_Id === authUser?.user_Id);
+    const hasCompletedReview = localExpertises.some(e => e.end_date !== null && e.expert_user_Id === authUser?.user_Id);
+    const isMyClaim = !!myDraftExpertise;
+    const canClaim = isExpert && !isMyClaim && !hasCompletedReview;
 
     const [reviewScore, setReviewScore] = useState('');
     const [reviewText, setReviewText] = useState('');
@@ -74,29 +71,44 @@ const ExpertiseProjectPage = () => {
     }
 
     const handleClaim = () => {
-        const updated = { ...localProject, status: 'in-review', claimed_by_user_Id: authUser.user_Id, claimed_by_nickname: authUser.username };
-        const idx = MOCK_PROJECTS.findIndex(p => p.project_Id === pid);
-        if (idx !== -1) Object.assign(MOCK_PROJECTS[idx], updated);
         const newExpertise = {
             expertise_Id: Date.now(), review_text: null, score: null,
             begin_date: new Date().toISOString(), end_date: null,
             project_Id: pid, expert_user_Id: authUser.user_Id, expert_nickname: authUser.username, attachments: [],
         };
         MOCK_EXPERTISES.push(newExpertise);
-        setLocalProject(updated);
         setLocalExpertises(prev => [...prev, newExpertise]);
+
+        const updatedReviewers = [...localProject.reviewers, { user_Id: authUser.user_Id, nickname: authUser.username, status: 'in-progress' }];
+        const newStatus = localProject.status === 'pending' ? 'in-review' : localProject.status;
+        const updated = { ...localProject, status: newStatus, reviewers: updatedReviewers };
+        
+        const idx = MOCK_PROJECTS.findIndex(p => p.project_Id === pid);
+        if (idx !== -1) Object.assign(MOCK_PROJECTS[idx], updated);
+        setLocalProject(updated);
     };
 
     const handleUnclaim = () => {
-        const updated = { ...localProject, status: 'pending', claimed_by_user_Id: null, claimed_by_nickname: null };
-        const idx = MOCK_PROJECTS.findIndex(p => p.project_Id === pid);
-        if (idx !== -1) Object.assign(MOCK_PROJECTS[idx], updated);
         const draftId = myDraftExpertise?.expertise_Id;
         const exIdx = MOCK_EXPERTISES.findIndex(e => e.expertise_Id === draftId);
         if (exIdx !== -1) MOCK_EXPERTISES.splice(exIdx, 1);
-        setLocalProject(updated);
-        setLocalExpertises(prev => prev.filter(e => e.expertise_Id !== draftId));
+        
+        const newLocalExpertises = localExpertises.filter(e => e.expertise_Id !== draftId);
+        setLocalExpertises(newLocalExpertises);
         setReviewScore(''); setReviewText(''); setReviewAttachments([{ link: '' }]);
+
+        const updatedReviewers = localProject.reviewers.filter(r => r.user_Id !== authUser.user_Id || r.status === 'completed');
+        const hasCompleted = updatedReviewers.some(r => r.status === 'completed');
+        const hasInProgress = updatedReviewers.some(r => r.status === 'in-progress');
+        
+        let newStatus = 'pending';
+        if (hasCompleted) newStatus = 'reviewed';
+        else if (hasInProgress) newStatus = 'in-review';
+
+        const updated = { ...localProject, status: newStatus, reviewers: updatedReviewers };
+        const idx = MOCK_PROJECTS.findIndex(p => p.project_Id === pid);
+        if (idx !== -1) Object.assign(MOCK_PROJECTS[idx], updated);
+        setLocalProject(updated);
     };
 
     const handleSubmitReview = () => {
@@ -110,13 +122,21 @@ const ExpertiseProjectPage = () => {
         const draftId = myDraftExpertise.expertise_Id;
         const exIdx = MOCK_EXPERTISES.findIndex(e => e.expertise_Id === draftId);
         if (exIdx !== -1) Object.assign(MOCK_EXPERTISES[exIdx], { review_text: reviewText.trim(), score, end_date: now, attachments });
-        const updatedProject = { ...localProject, status: 'reviewed', claimed_by_user_Id: null, claimed_by_nickname: null };
+        
+        const newLocalExpertises = localExpertises.map(e =>
+            e.expertise_Id === draftId ? { ...e, review_text: reviewText.trim(), score, end_date: now, attachments } : e
+        );
+        setLocalExpertises(newLocalExpertises);
+        
+        const updatedReviewers = localProject.reviewers.map(r => 
+            (r.user_Id === authUser.user_Id && r.status === 'in-progress') ? { ...r, status: 'completed' } : r
+        );
+        
+        const updatedProject = { ...localProject, status: 'reviewed', reviewers: updatedReviewers };
         const pIdx = MOCK_PROJECTS.findIndex(p => p.project_Id === pid);
         if (pIdx !== -1) Object.assign(MOCK_PROJECTS[pIdx], updatedProject);
-        setLocalExpertises(prev => prev.map(e =>
-            e.expertise_Id === draftId ? { ...e, review_text: reviewText.trim(), score, end_date: now, attachments } : e
-        ));
         setLocalProject(updatedProject);
+        
         return true;
     };
 
@@ -151,9 +171,23 @@ const ExpertiseProjectPage = () => {
                 <div>
                     <h1 className="project-detail-title">{localProject.name}</h1>
                     <div className="project-detail-meta">
-                        <span className="expertise-meta-item"><User size={14} />{localProject.author_nickname}</span>
+                        <span className="expertise-meta-item"><User size={14} />Автор: {localProject.author_nickname}</span>
                         <span className="expertise-meta-item"><Calendar size={14} />{dayjs(localProject.creation_date).format('DD.MM.YYYY')}</span>
                     </div>
+                    {localProject.reviewers && localProject.reviewers.filter(r => r.status === 'in-progress').length > 0 && (
+                        <div className="project-detail-meta" style={{ marginTop: '0.5rem', color: 'var(--primary-color)' }}>
+                            <span className="expertise-meta-item">
+                                <User size={14} /> На перевірці у: {localProject.reviewers.filter(r => r.status === 'in-progress').map(r => r.nickname).join(', ')}
+                            </span>
+                        </div>
+                    )}
+                    {localProject.reviewers && localProject.reviewers.filter(r => r.status === 'completed').length > 0 && (
+                        <div className="project-detail-meta" style={{ marginTop: '0.25rem', color: 'var(--success-color, #10b981)' }}>
+                            <span className="expertise-meta-item">
+                                <User size={14} /> Перевірено експертами: {localProject.reviewers.filter(r => r.status === 'completed').map(r => r.nickname).join(', ')}
+                            </span>
+                        </div>
+                    )}
                 </div>
                 <div className="expert-actions">
                     <span className={`expertise-status-badge status-${localProject.status}`}>
