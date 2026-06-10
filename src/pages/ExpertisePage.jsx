@@ -232,7 +232,7 @@ function ExpertRequestModal({ authUser, onClose, onRequestSubmitted }) {
                 {submitted ? (
                     <div className="modal-card__body">
                         <p style={{ color: 'var(--text-color)', marginBottom: '1rem' }}>
-                            Ваш запит надіслано! Адміністратор розгляне його найближчасом.
+                            Ваш запит надіслано! Адміністратор розгляне його найближчим часом.
                         </p>
                         <button className="action-btn" onClick={onClose}>Закрити</button>
                     </div>

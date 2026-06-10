@@ -3,23 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { User, ArrowUpDown, CheckCircle, XCircle, Mail, Users2, Hash, X } from 'lucide-react';
 import dayjs from 'dayjs';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
-import { MOCK_USERS, MOCK_EXPERT_REQUESTS } from '../../mocks/expertiseMockData.js';
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
+import axios from 'axios';
+import API_CONFIG from '../../config/api.js';
 import './styles/ExpertManagement.css';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 const ROLE_LABEL = { student: 'Студент', expert: 'Експерт', admin: 'Адмін' };
 const STATUS_LABEL = { pending: 'Очікує', approved: 'Схвалено', rejected: 'Відхилено' };
-
-function setUserRole(userId, role) {
-    const idx = MOCK_USERS.findIndex(u => u.user_Id === userId);
-    if (idx !== -1) MOCK_USERS[idx].role = role;
-}
-
-function setRequestStatus(requestId, status) {
-    const idx = MOCK_EXPERT_REQUESTS.findIndex(r => r.request_Id === requestId);
-    if (idx !== -1) MOCK_EXPERT_REQUESTS[idx].status = status;
-}
 
 // ── page ─────────────────────────────────────────────────────────────────────
 
@@ -60,88 +52,220 @@ const ExpertManagementPage = () => {
 export default ExpertManagementPage;
 
 function RequestsTab() {
-    const [requests, setRequests] = useState([...MOCK_EXPERT_REQUESTS]);
+    const authHeader = useAuthHeader();
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [statusFilter, setStatusFilter] = useState('');
+    const [sortDir, setSortDir] = useState('asc');
+    const [confirmDeleteTarget, setConfirmDeleteTarget] = useState(null);
 
-    const sorted = [...requests].sort(
-        (a, b) => new Date(a.created_date) - new Date(b.created_date)
-    );
-
-    const handleApprove = (req) => {
-        setUserRole(req.user_Id, 'expert');
-        setRequestStatus(req.request_Id, 'approved');
-        setRequests([...MOCK_EXPERT_REQUESTS]);
+    const fetchRequests = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get(`${API_CONFIG.BASE_URL}/expertRequest/getAll`, {
+                headers: { 'Authorization': authHeader }
+            });
+            setRequests(res.data);
+        } catch (error) {
+            console.error('Failed to load expert requests', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleReject = (req) => {
-        setRequestStatus(req.request_Id, 'rejected');
-        setRequests([...MOCK_EXPERT_REQUESTS]);
+    useEffect(() => {
+        fetchRequests();
+    }, []);
+
+    const displayed = [...requests]
+        .filter(req => statusFilter ? req.status === statusFilter : true)
+        .sort((a, b) => {
+            const diff = new Date(a.creation_date) - new Date(b.creation_date);
+            return sortDir === 'asc' ? diff : -diff;
+        });
+
+    const handleApprove = async (req) => {
+        try {
+            await axios.put(`${API_CONFIG.BASE_URL}/expertRequest/update/${req.request_id}`, 
+                { status: 'approved' },
+                { headers: { 'Authorization': authHeader } }
+            );
+            
+            // Also update the user's role to expert
+            if (req.User) {
+                const { password, ...userData } = req.User;
+                await axios.put(`${API_CONFIG.BASE_URL}/user/${req.user_id}`,
+                    { ...userData, role: 'expert' },
+                    { headers: { 'Authorization': authHeader } }
+                );
+            }
+            fetchRequests();
+        } catch (error) {
+            console.error('Failed to approve request', error);
+        }
     };
 
-    if (sorted.length === 0) {
-        return <p className="expert-mgmt-empty">Запитів немає.</p>;
+    const handleReject = async (req) => {
+        try {
+            await axios.put(`${API_CONFIG.BASE_URL}/expertRequest/update/${req.request_id}`, 
+                { status: 'rejected' },
+                { headers: { 'Authorization': authHeader } }
+            );
+            fetchRequests();
+        } catch (error) {
+            console.error('Failed to reject request', error);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            await axios.delete(`${API_CONFIG.BASE_URL}/expertRequest/delete/${confirmDeleteTarget.request_id}`, {
+                headers: { 'Authorization': authHeader }
+            });
+            fetchRequests();
+            setConfirmDeleteTarget(null);
+        } catch (error) {
+            console.error('Failed to delete request', error);
+        }
+    };
+
+    if (loading) {
+        return <p className="expert-mgmt-empty">Завантаження...</p>;
     }
 
     return (
-        <div className="requests-list">
-            {sorted.map(req => {
-                const user = MOCK_USERS.find(u => u.user_Id === req.user_Id);
-                return (
-                <div key={req.request_Id} className={`request-card request-card--${req.status}`}>
-                    <div className="request-card__header">
-                        <span className="request-card__user">
-                            <User size={14} /> {req.username}
-                        </span>
-                        <span className="request-card__date">
-                            {dayjs(req.created_date).format('DD.MM.YYYY HH:mm')}
-                        </span>
-                        <span className={`request-card__status status-badge--${req.status}`}>
-                            {STATUS_LABEL[req.status]}
-                        </span>
+        <div className="requests-tab-container">
+            {/* Delete Confirmation Modal */}
+            {confirmDeleteTarget && (
+                <div className="modal-overlay" onClick={() => setConfirmDeleteTarget(null)}>
+                    <div className="modal-card" onClick={e => e.stopPropagation()}>
+                        <div className="modal-card__header">
+                            <p className="modal-card__title">Видалення запиту</p>
+                            <button className="modal-card__close" onClick={() => setConfirmDeleteTarget(null)}>
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div className="modal-card__body">
+                            <p>
+                                Ви впевнені, що хочете видалити цей запит від користувача{' '}
+                                <strong>{confirmDeleteTarget.User?.nickname || 'Невідомий'}</strong>?
+                            </p>
+                            <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-color-light)' }}>
+                                Ця дія є незворотною.
+                            </p>
+                            <div className="modal-card__actions">
+                                <button className="cancel-btn-text" onClick={() => setConfirmDeleteTarget(null)}>
+                                    Скасувати
+                                </button>
+                                <button className="req-reject-btn" onClick={handleDeleteConfirm}>
+                                    Видалити
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    {user && (
-                        <div className="request-card__user-info">
-                            <span className="request-card__info-item">
-                                <User size={12} /> {user.full_name}
-                            </span>
-                            <span className="request-card__info-item">
-                                <Mail size={12} /> {req.email}
-                            </span>
-                            {user.group && (
-                                <span className="request-card__info-item">
-                                    <Users2 size={12} /> {user.group}
-                                </span>
-                            )}
-                            <span className="request-card__info-item">
-                                <Hash size={12} /> ID: {user.user_Id}
-                            </span>
-                        </div>
-                    )}
-                    {req.message ? (
-                        <p className="request-card__message">«{req.message}»</p>
-                    ) : (
-                        <p className="request-card__message request-card__message--empty">
-                            Без повідомлення
-                        </p>
-                    )}
-                    {req.status === 'pending' && (
-                        <div className="request-card__actions">
-                            <button
-                                className="req-approve-btn"
-                                onClick={() => handleApprove(req)}
-                            >
-                                <CheckCircle size={14} /> Схвалити
-                            </button>
-                            <button
-                                className="req-reject-btn"
-                                onClick={() => handleReject(req)}
-                            >
-                                <XCircle size={14} /> Відхилити
-                            </button>
-                        </div>
-                    )}
                 </div>
-                );
-            })}
+            )}
+
+            {/* Filters and Sort */}
+            <div className="users-tab-controls" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="users-filter-group">
+                    {['', 'pending', 'approved', 'rejected'].map(s => (
+                        <button
+                            key={s}
+                            className={`users-filter-btn ${statusFilter === s ? 'active' : ''}`}
+                            onClick={() => setStatusFilter(s)}
+                        >
+                            {s === '' ? 'Усі' : STATUS_LABEL[s]}
+                        </button>
+                    ))}
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <button
+                        className="users-filter-btn"
+                        onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')}
+                        title={sortDir === 'desc' ? 'Спочатку старі' : 'Спочатку нові'}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                        <ArrowUpDown size={15} />
+                        {sortDir === 'desc' ? 'Спочатку старі' : 'Спочатку нові'}
+                    </button>
+                </div>
+            </div>
+
+            {displayed.length === 0 ? (
+                <p className="expert-mgmt-empty">Запитів немає.</p>
+            ) : (
+                <div className="requests-list">
+                    {displayed.map(req => {
+                        const user = req.User;
+                        return (
+                        <div key={req.request_id} className={`request-card request-card--${req.status}`}>
+                            <div className="request-card__header">
+                                <span className="request-card__user">
+                                    <User size={14} /> {user?.nickname || 'Невідомий'}
+                                </span>
+                                <span className="request-card__date">
+                                    {dayjs(req.creation_date).format('DD.MM.YYYY HH:mm')}
+                                </span>
+                                <span className={`request-card__status status-badge--${req.status}`}>
+                                    {STATUS_LABEL[req.status]}
+                                </span>
+                            </div>
+                            {user && (
+                                <div className="request-card__user-info">
+                                    <span className="request-card__info-item">
+                                        <Mail size={12} /> {user.email}
+                                    </span>
+                                    {user.student_group && (
+                                        <span className="request-card__info-item">
+                                            <Users2 size={12} /> {user.student_group}
+                                        </span>
+                                    )}
+                                    <span className="request-card__info-item">
+                                        <Hash size={12} /> ID: {user.user_id}
+                                    </span>
+                                </div>
+                            )}
+                            {req.message ? (
+                                <p className="request-card__message">«{req.message}»</p>
+                            ) : (
+                                <p className="request-card__message request-card__message--empty">
+                                    Без повідомлення
+                                </p>
+                            )}
+                            
+                            <div className="request-card__actions" style={{ justifyContent: 'space-between', display: 'flex', width: '100%' }}>
+                                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                    {req.status === 'pending' && (
+                                        <>
+                                            <button
+                                                className="req-approve-btn"
+                                                onClick={() => handleApprove(req)}
+                                            >
+                                                <CheckCircle size={14} /> Схвалити
+                                            </button>
+                                            <button
+                                                className="req-reject-btn"
+                                                onClick={() => handleReject(req)}
+                                            >
+                                                <XCircle size={14} /> Відхилити
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                                <button
+                                    className="req-reject-btn"
+                                    style={{ backgroundColor: 'transparent', color: 'var(--danger-color)', border: '1px solid var(--danger-color)' }}
+                                    onClick={() => setConfirmDeleteTarget(req)}
+                                >
+                                    <X size={14} /> Видалити
+                                </button>
+                            </div>
+                        </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }
@@ -149,11 +273,31 @@ function RequestsTab() {
 // ── Users tab ─────────────────────────────────────────────────────────────────
 
 function UsersTab() {
-    const [users, setUsers] = useState([...MOCK_USERS]);
+    const authHeader = useAuthHeader();
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [roleFilter, setRoleFilter] = useState('');
-    const [sortKey, setSortKey] = useState('username');
+    const [sortKey, setSortKey] = useState('nickname');
     const [sortDir, setSortDir] = useState('asc');
     const [confirmTarget, setConfirmTarget] = useState(null);
+
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get(`${API_CONFIG.BASE_URL}/user/getall`, {
+                headers: { 'Authorization': authHeader }
+            });
+            setUsers(res.data);
+        } catch (error) {
+            console.error('Failed to load users', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
     const toggleSort = (key) => {
         if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -168,11 +312,19 @@ function UsersTab() {
             return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
         });
 
-    const handleConfirmToggle = () => {
+    const handleConfirmToggle = async () => {
         const newRole = confirmTarget.role === 'expert' ? 'student' : 'expert';
-        setUserRole(confirmTarget.user_Id, newRole);
-        setUsers([...MOCK_USERS]);
-        setConfirmTarget(null);
+        try {
+            const { password, ...userData } = confirmTarget;
+            await axios.put(`${API_CONFIG.BASE_URL}/user/${confirmTarget.user_Id}`,
+                { ...userData, role: newRole },
+                { headers: { 'Authorization': authHeader } }
+            );
+            fetchUsers();
+            setConfirmTarget(null);
+        } catch (error) {
+            console.error('Failed to toggle user role', error);
+        }
     };
 
     const SortTh = ({ field, label }) => (
@@ -180,6 +332,10 @@ function UsersTab() {
             {label}{sortKey === field && <ArrowUpDown size={13} style={{ marginLeft: 4 }} />}
         </th>
     );
+
+    if (loading) {
+        return <p className="expert-mgmt-empty">Завантаження...</p>;
+    }
 
     return (
         <div>
@@ -196,9 +352,8 @@ function UsersTab() {
                         <div className="modal-card__body">
                             <p>
                                 Змінити роль користувача{' '}
-                                <strong>{confirmTarget.username}</strong>{' '}
-                                ({confirmTarget.full_name})
-                                {' '}з <strong>{ROLE_LABEL[confirmTarget.role]}</strong> на{' '}
+                                <strong>{confirmTarget.nickname}</strong>{' '}
+                                з <strong>{ROLE_LABEL[confirmTarget.role]}</strong> на{' '}
                                 <strong>{ROLE_LABEL[confirmTarget.role === 'expert' ? 'student' : 'expert']}</strong>?
                             </p>
                             <div className="modal-card__actions">
@@ -236,7 +391,6 @@ function UsersTab() {
             <table className="users-table">
                 <colgroup>
                     <col className="col-username" />
-                    <col className="col-fullname" />
                     <col className="col-email" />
                     <col className="col-group" />
                     <col className="col-role" />
@@ -244,10 +398,9 @@ function UsersTab() {
                 </colgroup>
                 <thead>
                     <tr>
-                        <SortTh field="username" label="Нікнейм" />
-                        <SortTh field="full_name" label="ПІБ" />
-                        <th>Email</th>
-                        <th>Група</th>
+                        <SortTh field="nickname" label="Нікнейм" />
+                        <SortTh field="email" label="Email" />
+                        <SortTh field="student_group" label="Група" />
                         <SortTh field="role" label="Роль" />
                         <th>Дія</th>
                     </tr>
@@ -255,10 +408,9 @@ function UsersTab() {
                 <tbody>
                     {displayed.map(u => (
                         <tr key={u.user_Id}>
-                            <td>{u.username}</td>
-                            <td>{u.full_name}</td>
+                            <td>{u.nickname || 'Невідомий'}</td>
                             <td>{u.email}</td>
-                            <td>{u.group ?? '–'}</td>
+                            <td>{u.student_group ?? '–'}</td>
                             <td>
                                 <span className={`role-badge role-badge--${u.role}`}>
                                     {ROLE_LABEL[u.role]}

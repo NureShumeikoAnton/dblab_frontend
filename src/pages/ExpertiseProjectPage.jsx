@@ -6,7 +6,6 @@ import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import dayjs from 'dayjs';
 import axios from 'axios';
 import API_CONFIG from '../config/api.js';
-import { TYPE_LABEL } from '../mocks/expertiseMockData.js';
 import { CommentInput, CommentThread } from '../components/ProjectComments.jsx';
 import './styles/ClientPages.css';
 import './styles/ExpertiseProjectPage.css';
@@ -15,6 +14,14 @@ const STATUS_LABEL = {
     'pending':   'Очікує',
     'in-review': 'На перевірці',
     'reviewed':  'Перевірено',
+};
+
+const TYPE_LABEL = {
+    'conceptual_model': 'Концептуальна модель (UML)',
+    'er_model': 'ER-модель',
+    'logical_model': 'Логічна модель',
+    'physical_model': 'Фізична модель',
+    'other': 'Інше',
 };
 
 function ModelIcon({ type }) {
@@ -62,24 +69,7 @@ const ExpertiseProjectPage = () => {
                 }))
             })));
             
-            const flatComments = [];
-            const extractComments = (commentsList) => {
-                if (!commentsList) return;
-                commentsList.forEach(c => {
-                    const { replies, author, ...rest } = c;
-                    flatComments.push({
-                        ...rest,
-                        project_comment_Id: c.comment_Id,
-                        author_nickname: author?.nickname,
-                        author_user_Id: author?.user_Id,
-                        expertise_Id: c.expertise_Id,
-                        reply_to_Id: c.reply_to_Id
-                    });
-                    extractComments(replies);
-                });
-            };
-            extractComments(project.comments);
-            setAllComments(flatComments);
+            setAllComments(project.comments || []);
             
             setLoading(false);
         } catch (error) {
@@ -97,8 +87,6 @@ const ExpertiseProjectPage = () => {
     const hasCompletedReview = localExpertises.some(e => e.end_date !== null && e.expert_user_Id === authUser?.user_Id);
     const isMyClaim = !!myDraftExpertise;
     const canClaim = isExpert && !isMyClaim && !hasCompletedReview;
-
-    console.log(localExpertises);
     
     const pendingReviewers = localExpertises.filter(e => e.end_date === null);
 
