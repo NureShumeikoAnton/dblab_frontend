@@ -22,6 +22,17 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    position: relative;
+}
+
+.expertise-card .card-header {
+    display: block;
+    text-align: center;
+    width: 100%;
+}
+
+.expertise-card .card-header h3 {
+    margin: 0;
 }
 
 .expertise-card-description {
@@ -73,6 +84,9 @@
     padding: 3px 10px;
     border-radius: 20px;
     white-space: nowrap;
+    position: absolute;
+    top: 0.3rem;
+    right: 0.5rem;
 }
 
 .status-pending {

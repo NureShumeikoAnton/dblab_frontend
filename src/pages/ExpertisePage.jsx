@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, User, Calendar, ChevronRight, ArrowUpDown, X } from 'lucide-react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import dayjs from 'dayjs';
-import { MOCK_PROJECTS, MOCK_EXPERT_REQUESTS } from '../mocks/expertiseMockData.js';
+import axios from 'axios';
+import API_CONFIG from '../config/api.js';
 import './styles/ClientPages.css';
 import './styles/ExpertisePage.css';
 
@@ -29,9 +31,9 @@ const ProjectCard = ({ project, onClick }) => (
         </div>
 
         <p className="expertise-card-description">
-            {project.description.length > 140
+            {project.description && project.description.length > 140
                 ? project.description.slice(0, 140) + '…'
-                : project.description}
+                : (project.description || '')}
         </p>
 
         <div className="expertise-card-meta">
@@ -57,17 +59,34 @@ const ExpertisePage = () => {
     const navigate = useNavigate();
     const authUser = useAuthUser();
 
-    const [projects] = useState(MOCK_PROJECTS);
+    const [projects, setProjects] = useState([]);
     const [statusFilter, setStatusFilter] = useState('');
     const [sortDir, setSortDir] = useState('desc');
     const [requestModalOpen, setRequestModalOpen] = useState(false);
     const [onlyMyExpertises, setOnlyMyExpertises] = useState(false);
+    const [hasActiveRequest, setHasActiveRequest] = useState(false);
 
     const isStudent = authUser && authUser.role === 'student';
-    const hasActiveRequest = isStudent && MOCK_EXPERT_REQUESTS.some(
-        r => r.user_Id === authUser.user_Id && r.status === 'pending'
-    );
     const isAlreadyExpert = authUser && (authUser.role === 'expert' || authUser.role === 'admin');
+
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const response = await axios.get(`${API_CONFIG.BASE_URL}/project/getAll`);
+                setProjects(response.data);
+            } catch (error) {
+                console.error("Error fetching projects:", error);
+            }
+        };
+        fetchProjects();
+    }, []);
+
+    useEffect(() => {
+        if (isStudent && authUser) {
+            const pending = localStorage.getItem(`expert_request_pending_${authUser.user_Id}`) === 'true';
+            setHasActiveRequest(pending);
+        }
+    }, [isStudent, authUser]);
 
     const displayed = useMemo(() => {
         let result = statusFilter
@@ -91,6 +110,7 @@ const ExpertisePage = () => {
                 <ExpertRequestModal
                     authUser={authUser}
                     onClose={() => setRequestModalOpen(false)}
+                    onRequestSubmitted={() => setHasActiveRequest(true)}
                 />
             )}
             <div className="expertise-page-header">
@@ -145,10 +165,10 @@ const ExpertisePage = () => {
                     <button
                         className="expertise-sort-btn"
                         onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')}
-                        title={sortDir === 'desc' ? 'Спочатку нові' : 'Спочатку старі'}
+                        title={sortDir === 'desc' ? 'Спочатку старі' : 'Спочатку нові'}
                     >
                         <ArrowUpDown size={15} />
-                        {sortDir === 'desc' ? 'Спочатку нові' : 'Спочатку старі'}
+                        {sortDir === 'desc' ? 'Спочатку старі' : 'Спочатку нові'}
                     </button>
                 </div>
             </div>
@@ -172,22 +192,32 @@ const ExpertisePage = () => {
 
 export default ExpertisePage;
 
-function ExpertRequestModal({ authUser, onClose }) {
+function ExpertRequestModal({ authUser, onClose, onRequestSubmitted }) {
     const [message, setMessage] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const authHeader = useAuthHeader();
 
-    const handleSubmit = () => {
-        const newRequest = {
-            request_Id: Date.now(),
-            user_Id: authUser.user_Id,
-            username: authUser.username,
-            email: authUser.email || 'student@nure.ua',
-            message: message.trim() || null,
-            status: 'pending',
-            created_date: new Date().toISOString(),
-        };
-        MOCK_EXPERT_REQUESTS.push(newRequest);
-        setSubmitted(true);
+    const handleSubmit = async () => {
+        try {
+            await axios.post(
+                `${API_CONFIG.BASE_URL}/expertRequest/create`,
+                { message: message.trim() || null },
+                {
+                    headers: {
+                        'Authorization': authHeader
+                    }
+                }
+            );
+            if (authUser) {
+                localStorage.setItem(`expert_request_pending_${authUser.user_Id}`, 'true');
+            }
+            if (onRequestSubmitted) {
+                onRequestSubmitted();
+            }
+            setSubmitted(true);
+        } catch (error) {
+            console.error('Error submitting expert request:', error);
+        }
     };
 
     return (

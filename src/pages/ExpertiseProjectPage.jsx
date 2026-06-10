@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Calendar, FileSpreadsheet, FileText, FileCode, ExternalLink, Star, Plus, Trash2 } from 'lucide-react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import dayjs from 'dayjs';
-import {
-    MOCK_PROJECTS,
-    MOCK_DATA_MODELS,
-    MOCK_EXPERTISES,
-    MOCK_PROJECT_COMMENTS,
-    TYPE_LABEL,
-} from '../mocks/expertiseMockData.js';
-import { CommentInput, CommentThread, pushComment } from '../components/ProjectComments.jsx';
+import axios from 'axios';
+import API_CONFIG from '../config/api.js';
+import { TYPE_LABEL } from '../mocks/expertiseMockData.js';
+import { CommentInput, CommentThread } from '../components/ProjectComments.jsx';
 import './styles/ClientPages.css';
 import './styles/ExpertiseProjectPage.css';
 
@@ -35,19 +32,65 @@ const ExpertiseProjectPage = () => {
     const { projectId } = useParams();
     const navigate = useNavigate();
     const authUser = useAuthUser();
+    const authHeader = useAuthHeader();
 
     const pid = parseInt(projectId);
 
-    const [localProject, setLocalProject] = useState(
-        () => MOCK_PROJECTS.find(p => p.project_Id === pid)
-    );
-    const dataModels = MOCK_DATA_MODELS.filter(m => m.project_Id === pid);
-    const [localExpertises, setLocalExpertises] = useState(
-        () => MOCK_EXPERTISES.filter(e => e.project_Id === pid)
-    );
-    const [allComments, setAllComments] = useState(
-        () => MOCK_PROJECT_COMMENTS.filter(c => c.project_Id === pid)
-    );
+    const [localProject, setLocalProject] = useState(null);
+    const [dataModels, setDataModels] = useState([]);
+    const [localExpertises, setLocalExpertises] = useState([]);
+    const [allComments, setAllComments] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchProjectData = async () => {
+        try {
+            const response = await axios.get(`${API_CONFIG.BASE_URL}/project/${pid}`);
+            const project = response.data;
+            
+            setLocalProject({
+                ...project,
+                author_nickname: project.author?.nickname,
+            });
+            setDataModels(project.models || []);
+            setLocalExpertises((project.expertises || []).map(e => ({
+                ...e,
+                expert_nickname: e.expert?.nickname,
+                expert_user_Id: e.expert?.user_Id,
+                attachments: (e.attachments || []).map(a => ({
+                    ...a,
+                    link: `${API_CONFIG.BASE_URL}/imbed/photo/file/${a.link_url || a.link}`
+                }))
+            })));
+            
+            const flatComments = [];
+            const extractComments = (commentsList) => {
+                if (!commentsList) return;
+                commentsList.forEach(c => {
+                    const { replies, author, ...rest } = c;
+                    flatComments.push({
+                        ...rest,
+                        project_comment_Id: c.comment_Id,
+                        author_nickname: author?.nickname,
+                        author_user_Id: author?.user_Id,
+                        expertise_Id: c.expertise_Id,
+                        reply_to_Id: c.reply_to_Id
+                    });
+                    extractComments(replies);
+                });
+            };
+            extractComments(project.comments);
+            setAllComments(flatComments);
+            
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching project:', error);
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProjectData();
+    }, [pid]);
 
     const isExpert = authUser?.role === 'expert' || authUser?.role === 'admin';
     const myDraftExpertise = localExpertises.find(e => e.end_date === null && e.expert_user_Id === authUser?.user_Id);
@@ -55,106 +98,127 @@ const ExpertiseProjectPage = () => {
     const isMyClaim = !!myDraftExpertise;
     const canClaim = isExpert && !isMyClaim && !hasCompletedReview;
 
+    console.log(localExpertises);
+    
+    const pendingReviewers = localExpertises.filter(e => e.end_date === null);
+
     const [reviewScore, setReviewScore] = useState('');
     const [reviewText, setReviewText] = useState('');
-    const [reviewAttachments, setReviewAttachments] = useState([{ link: '' }]);
+    const [reviewAttachments, setReviewAttachments] = useState([{ file: null }]);
+
+    if (loading) {
+        return <div className="client-page"><p className="expertise-empty">Завантаження...</p></div>;
+    }
 
     if (!localProject) {
         return (
             <div className="client-page">
                 <p className="expertise-empty">Проєкт не знайдено.</p>
-                <button className="cancel-btn-text" onClick={() => navigate('/expertise')}>
-                    <ArrowLeft size={16} /> Назад
-                </button>
+                <div className="project-page-actions">
+                    <button className="cancel-btn-text" onClick={() => navigate('/expertise')}>
+                        <ArrowLeft size={16} /> Назад
+                    </button>
+                </div>
             </div>
         );
     }
 
-    const handleClaim = () => {
-        const newExpertise = {
-            expertise_Id: Date.now(), review_text: null, score: null,
-            begin_date: new Date().toISOString(), end_date: null,
-            project_Id: pid, expert_user_Id: authUser.user_Id, expert_nickname: authUser.username, attachments: [],
-        };
-        MOCK_EXPERTISES.push(newExpertise);
-        setLocalExpertises(prev => [...prev, newExpertise]);
-
-        const updatedReviewers = [...localProject.reviewers, { user_Id: authUser.user_Id, nickname: authUser.username, status: 'in-progress' }];
-        const newStatus = localProject.status === 'pending' ? 'in-review' : localProject.status;
-        const updated = { ...localProject, status: newStatus, reviewers: updatedReviewers };
-        
-        const idx = MOCK_PROJECTS.findIndex(p => p.project_Id === pid);
-        if (idx !== -1) Object.assign(MOCK_PROJECTS[idx], updated);
-        setLocalProject(updated);
+    const handleClaim = async () => {
+        try {
+            await axios.post(`${API_CONFIG.BASE_URL}/expertise/create/${pid}`, {}, {
+                headers: { 'Authorization': authHeader }
+            });
+            await fetchProjectData();
+        } catch (error) {
+            console.error('Error claiming expertise:', error);
+        }
     };
 
-    const handleUnclaim = () => {
+    const handleUnclaim = async () => {
         const draftId = myDraftExpertise?.expertise_Id;
-        const exIdx = MOCK_EXPERTISES.findIndex(e => e.expertise_Id === draftId);
-        if (exIdx !== -1) MOCK_EXPERTISES.splice(exIdx, 1);
-        
-        const newLocalExpertises = localExpertises.filter(e => e.expertise_Id !== draftId);
-        setLocalExpertises(newLocalExpertises);
-        setReviewScore(''); setReviewText(''); setReviewAttachments([{ link: '' }]);
-
-        const updatedReviewers = localProject.reviewers.filter(r => r.user_Id !== authUser.user_Id || r.status === 'completed');
-        const hasCompleted = updatedReviewers.some(r => r.status === 'completed');
-        const hasInProgress = updatedReviewers.some(r => r.status === 'in-progress');
-        
-        let newStatus = 'pending';
-        if (hasCompleted) newStatus = 'reviewed';
-        else if (hasInProgress) newStatus = 'in-review';
-
-        const updated = { ...localProject, status: newStatus, reviewers: updatedReviewers };
-        const idx = MOCK_PROJECTS.findIndex(p => p.project_Id === pid);
-        if (idx !== -1) Object.assign(MOCK_PROJECTS[idx], updated);
-        setLocalProject(updated);
+        if (!draftId) return;
+        try {
+            await axios.delete(`${API_CONFIG.BASE_URL}/expertise/delete/${draftId}`, {
+                headers: { 'Authorization': authHeader }
+            });
+            await fetchProjectData();
+            setReviewScore(''); setReviewText(''); setReviewAttachments([{ file: null }]);
+        } catch (error) {
+            console.error('Error unclaiming expertise:', error);
+        }
     };
 
-    const handleSubmitReview = () => {
+    const handleSubmitReview = async () => {
         const score = parseInt(reviewScore);
         if (isNaN(score) || score < 0 || score > 100) return false;
         if (!reviewText.trim()) return false;
-        const now = new Date().toISOString();
-        const attachments = reviewAttachments
-            .filter(a => a.link.trim())
-            .map((a, i) => ({ attachment_Id: Date.now() + i, link: a.link.trim() }));
-        const draftId = myDraftExpertise.expertise_Id;
-        const exIdx = MOCK_EXPERTISES.findIndex(e => e.expertise_Id === draftId);
-        if (exIdx !== -1) Object.assign(MOCK_EXPERTISES[exIdx], { review_text: reviewText.trim(), score, end_date: now, attachments });
         
-        const newLocalExpertises = localExpertises.map(e =>
-            e.expertise_Id === draftId ? { ...e, review_text: reviewText.trim(), score, end_date: now, attachments } : e
-        );
-        setLocalExpertises(newLocalExpertises);
-        
-        const updatedReviewers = localProject.reviewers.map(r => 
-            (r.user_Id === authUser.user_Id && r.status === 'in-progress') ? { ...r, status: 'completed' } : r
-        );
-        
-        const updatedProject = { ...localProject, status: 'reviewed', reviewers: updatedReviewers };
-        const pIdx = MOCK_PROJECTS.findIndex(p => p.project_Id === pid);
-        if (pIdx !== -1) Object.assign(MOCK_PROJECTS[pIdx], updatedProject);
-        setLocalProject(updatedProject);
-        
-        return true;
+        const draftId = myDraftExpertise?.expertise_Id;
+        if (!draftId) return false;
+
+        try {
+            await axios.put(`${API_CONFIG.BASE_URL}/expertise/update/${draftId}`, {
+                score,
+                review_text: reviewText.trim()
+            }, {
+                headers: { 'Authorization': authHeader }
+            });
+
+            const validAttachments = reviewAttachments.filter(a => a.file);
+            for (const att of validAttachments) {
+                const formData = new FormData();
+                formData.append('photo', att.file);
+                await axios.post(`${API_CONFIG.BASE_URL}/imbed/create/${draftId}`, formData, {
+                    headers: { 'Authorization': authHeader, 'Content-Type': 'multipart/form-data' }
+                });
+            }
+
+            await fetchProjectData();
+            return true;
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            return false;
+        }
     };
 
-    const addComment = (text, expertiseId = null, replyToId = null) => {
-        const c = pushComment(text, pid, expertiseId, authUser?.user_Id ?? null, authUser?.username ?? 'Анонім', replyToId);
-        setAllComments(prev => [...prev, c]);
+    const addComment = async (text, expertiseId = null, replyToId = null) => {
+        try {
+            await axios.post(`${API_CONFIG.BASE_URL}/projectComment/create`, {
+                text,
+                projectId: pid,
+                expertiseId: expertiseId,
+                reply_to_id: replyToId
+            }, {
+                headers: { 'Authorization': authHeader }
+            });
+            await fetchProjectData();
+        } catch (error) {
+            console.error('Error adding comment:', error);
+        }
     };
 
-    const handleSaveEdit = (id, newText) => {
-        setAllComments(prev => prev.map(c => c.project_comment_Id === id ? { ...c, text: newText } : c));
-        const idx = MOCK_PROJECT_COMMENTS.findIndex(c => c.project_comment_Id === id);
-        if (idx !== -1) MOCK_PROJECT_COMMENTS[idx].text = newText;
+    const handleSaveEdit = async (id, newText) => {
+        try {
+            await axios.put(`${API_CONFIG.BASE_URL}/projectComment/${id}`, {
+                text: newText
+            }, {
+                headers: { 'Authorization': authHeader }
+            });
+            await fetchProjectData();
+        } catch (error) {
+            console.error('Error editing comment:', error);
+        }
     };
 
-    const handleDelete = (id) => {
-        setAllComments(prev => prev.filter(c => c.project_comment_Id !== id));
-        const idx = MOCK_PROJECT_COMMENTS.findIndex(c => c.project_comment_Id === id);
-        if (idx !== -1) MOCK_PROJECT_COMMENTS.splice(idx, 1);
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`${API_CONFIG.BASE_URL}/projectComment/delete/${id}`, {
+                headers: { 'Authorization': authHeader }
+            });
+            await fetchProjectData();
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+        }
     };
 
     const projectComments = allComments.filter(c => !c.expertise_Id);
@@ -163,9 +227,11 @@ const ExpertiseProjectPage = () => {
 
     return (
         <div className="client-page">
-            <button className="cancel-btn-text" onClick={() => navigate('/expertise')}>
-                <ArrowLeft size={16} /> Назад до списку
-            </button>
+            <div className="project-page-actions">
+                <button className="cancel-btn-text" onClick={() => navigate('/expertise')}>
+                    <ArrowLeft size={16} /> Назад до списку
+                </button>
+            </div>
 
             <div className="project-detail-header">
                 <div>
@@ -174,17 +240,17 @@ const ExpertiseProjectPage = () => {
                         <span className="expertise-meta-item"><User size={14} />Автор: {localProject.author_nickname}</span>
                         <span className="expertise-meta-item"><Calendar size={14} />{dayjs(localProject.creation_date).format('DD.MM.YYYY')}</span>
                     </div>
-                    {localProject.reviewers && localProject.reviewers.filter(r => r.status === 'in-progress').length > 0 && (
+                    {pendingReviewers.length > 0 && (
                         <div className="project-detail-meta" style={{ marginTop: '0.5rem', color: 'var(--primary-color)' }}>
                             <span className="expertise-meta-item">
-                                <User size={14} /> На перевірці у: {localProject.reviewers.filter(r => r.status === 'in-progress').map(r => r.nickname).join(', ')}
+                                <User size={14} /> На перевірці у: {pendingReviewers.map(r => r.expert_nickname).join(', ')}
                             </span>
                         </div>
                     )}
-                    {localProject.reviewers && localProject.reviewers.filter(r => r.status === 'completed').length > 0 && (
+                    {completedExpertises.length > 0 && (
                         <div className="project-detail-meta" style={{ marginTop: '0.25rem', color: 'var(--success-color, #10b981)' }}>
                             <span className="expertise-meta-item">
-                                <User size={14} /> Перевірено експертами: {localProject.reviewers.filter(r => r.status === 'completed').map(r => r.nickname).join(', ')}
+                                <User size={14} /> Перевірено експертами: {completedExpertises.map(r => r.expert_nickname).join(', ')}
                             </span>
                         </div>
                     )}
@@ -266,8 +332,8 @@ function DataModelsSection({ dataModels }) {
                         <li key={m.data_model_Id} className="model-list__item">
                             <span className="model-list__icon"><ModelIcon type={m.type} /></span>
                             <span className="model-list__type">{TYPE_LABEL[m.type] || m.type}</span>
-                            <a href={m.file} target="_blank" rel="noopener noreferrer" className="model-list__link">
-                                {m.file} <ExternalLink size={13} />
+                            <a href={`${API_CONFIG.BASE_URL}/model/photo/file/${m.file_url || m.file}`} target="_blank" rel="noopener noreferrer" className="model-list__link">
+                                {m.file_url || m.file} <ExternalLink size={13} />
                             </a>
                             <span className="model-list__date">{dayjs(m.upload_date).format('DD.MM.YYYY')}</span>
                         </li>
@@ -372,11 +438,15 @@ function ReviewForm({ reviewScore, setReviewScore, reviewText, setReviewText, re
                 {reviewAttachments.map((a, i) => (
                     <div key={i} className="review-attachment-row">
                         <input
-                            type="url"
+                            type="file"
+                            accept="image/png, image/jpeg, image/webp"
                             className="review-form__input"
-                            placeholder="https://…"
-                            value={a.link}
-                            onChange={e => setReviewAttachments(prev => prev.map((x, j) => j === i ? { link: e.target.value } : x))}
+                            onChange={e => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    setReviewAttachments(prev => prev.map((x, j) => j === i ? { file } : x));
+                                }
+                            }}
                         />
                         {reviewAttachments.length > 1 && (
                             <button
@@ -389,8 +459,8 @@ function ReviewForm({ reviewScore, setReviewScore, reviewText, setReviewText, re
                         )}
                     </div>
                 ))}
-                <button className="action-btn-outline model-add-btn" onClick={() => setReviewAttachments(prev => [...prev, { link: '' }])}>
-                    <Plus size={14} /> Додати посилання
+                <button className="action-btn-outline model-add-btn" onClick={() => setReviewAttachments(prev => [...prev, { file: null }])}>
+                    <Plus size={14} /> Додати файл
                 </button>
             </div>
 

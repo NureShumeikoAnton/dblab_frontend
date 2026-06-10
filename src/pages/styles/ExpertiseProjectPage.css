@@ -1,4 +1,9 @@
 /* Project header */
+.project-page-actions {
+    text-align: left;
+    margin-bottom: 0.5rem;
+}
+
 .project-detail-header {
     display: flex;
     align-items: flex-start;
@@ -14,6 +19,7 @@
     font-weight: 700;
     color: var(--text-color);
     margin: 0 0 0.5rem;
+    text-align: left;
 }
 
 .project-detail-meta {

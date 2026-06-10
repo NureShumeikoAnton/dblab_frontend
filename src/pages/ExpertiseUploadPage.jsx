@@ -2,10 +2,22 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, ArrowLeft } from 'lucide-react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
+import axios from 'axios';
+import API_CONFIG from '../config/api.js';
 import { useToast } from '../context/ToastContext.jsx';
-import { MOCK_PROJECTS, MOCK_DATA_MODELS, DATA_MODEL_TYPES, TYPE_LABEL } from '../mocks/expertiseMockData.js';
 import './styles/ClientPages.css';
 import './styles/ExpertiseUploadPage.css';
+
+const DATA_MODEL_TYPES = ['conceptual_model', 'er_model', 'logical_model', 'physical_model', 'other'];
+
+const TYPE_LABEL = {
+    'conceptual_model': 'Концептуальна модель (UML)',
+    'er_model': 'ЕR-модель',
+    'logical_model': 'Логічна модель',
+    'physical_model': 'Фізична модель',
+    'other': 'Інше',
+};
 
 const ExpertiseUploadPage = () => {
     const navigate = useNavigate();
@@ -18,15 +30,16 @@ const ExpertiseUploadPage = () => {
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [dataModels, setDataModels] = useState([{ link: '', type: 'er_model' }]);
+    const [dataModels, setDataModels] = useState([{ file: null, type: 'er_model' }]);
     const [errors, setErrors] = useState({});
+    const authHeader = useAuthHeader();
 
     const handleModelChange = (index, field, value) => {
         setDataModels(prev => prev.map((m, i) => i === index ? { ...m, [field]: value } : m));
     };
 
     const handleAddModel = () => {
-        setDataModels(prev => [...prev, { link: '', type: 'er_model' }]);
+        setDataModels(prev => [...prev, { file: null, type: 'er_model' }]);
     };
 
     const handleRemoveModel = (index) => {
@@ -36,11 +49,23 @@ const ExpertiseUploadPage = () => {
     const validate = () => {
         const e = {};
         if (!name.trim()) e.name = "Назва обов'язкова";
-        if (dataModels.some(m => !m.link.trim())) e.dataModels = 'Усі посилання на моделі мають бути заповнені';
+        if (dataModels.some(m => !m.file)) {
+            e.dataModels = 'Усі файли моделей мають бути завантажені';
+        } else {
+            const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+            const hasInvalidFile = dataModels.some(m => {
+                if (!m.file || !m.file.name) return true;
+                const ext = m.file.name.slice(m.file.name.lastIndexOf('.')).toLowerCase();
+                return !allowedExtensions.includes(ext);
+            });
+            if (hasInvalidFile) {
+                e.dataModels = 'Дозволені лише зображення (png, jpg, jpeg, webp)';
+            }
+        }
         return e;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const errs = validate();
         if (Object.keys(errs).length) {
@@ -48,32 +73,47 @@ const ExpertiseUploadPage = () => {
             return;
         }
 
-        const newId = Math.max(...MOCK_PROJECTS.map(p => p.project_Id)) + 1;
-        MOCK_PROJECTS.push({
-            project_Id: newId,
-            name: name.trim(),
-            description: description.trim(),
-            creation_date: new Date().toISOString(),
-            status: 'pending',
-            is_for_expertise: true,
-            is_for_normalization: false,
-            author_user_Id: authUser?.user_Id ?? null,
-            author_nickname: authUser?.username ?? 'Невідомий',
-        });
+        try {
+            // 1. Create project
+            const response = await axios.post(
+                `${API_CONFIG.BASE_URL}/project/create`,
+                { name: name.trim(), description: description.trim() },
+                {
+                    headers: {
+                        'Authorization': authHeader
+                    }
+                }
+            );
 
-        let nextModelId = Math.max(...MOCK_DATA_MODELS.map(m => m.data_model_Id), 0) + 1;
-        dataModels.forEach(m => {
-            MOCK_DATA_MODELS.push({
-                data_model_Id: nextModelId++,
-                file: m.link.trim(),
-                type: m.type,
-                upload_date: new Date().toISOString(),
-                project_Id: newId,
-            });
-        });
+            const createdProject = response.data;
+            const project_id = createdProject.project_id || createdProject.project_Id;
 
-        addToast('Проєкт успішно завантажено!', 'success');
-        navigate('/expertise');
+            // 2. Upload each data model
+            for (const model of dataModels) {
+                if (model.file) {
+                    const formData = new FormData();
+                    formData.append('photo', model.file);
+                    formData.append('type', model.type);
+
+                    await axios.post(
+                        `${API_CONFIG.BASE_URL}/model/create/${project_id}`,
+                        formData,
+                        {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                                'Authorization': authHeader
+                            }
+                        }
+                    );
+                }
+            }
+
+            addToast('Проєкт успішно завантажено!', 'success');
+            navigate('/expertise');
+        } catch (error) {
+            console.error('Error uploading project:', error);
+            addToast('Не вдалося завантажити проєкт', 'error');
+        }
     };
 
     return (
@@ -126,12 +166,11 @@ const ExpertiseUploadPage = () => {
                                 ))}
                             </select>
                             <input
-                                className={`upload-form__input ${errors.dataModels && !model.link.trim() ? 'input-error' : ''}`}
-                                type="url"
-                                placeholder="Посилання (Google Drive тощо)"
-                                value={model.link}
+                                className={`upload-form__input ${errors.dataModels && !model.file ? 'input-error' : ''}`}
+                                type="file"
+                                accept=".png,.jpg,.jpeg,.webp"
                                 onChange={e => {
-                                    handleModelChange(index, 'link', e.target.value);
+                                    handleModelChange(index, 'file', e.target.files[0]);
                                     setErrors(prev => ({ ...prev, dataModels: undefined }));
                                 }}
                             />
