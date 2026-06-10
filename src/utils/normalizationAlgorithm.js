@@ -73,6 +73,20 @@ export function runNFChecks(tables, fds, attributePool) {
 
         if (hdr.length) tableHeaderIssues.set(table.id, hdr);
 
+        // 1NF-D — numbered repeating groups (phone1, phone2, …): collect the base
+        // names of digit-suffixed attributes so the per-attribute loop can flag
+        // members of groups with ≥2 numbered columns (or a plain base + a numbered one).
+        const namesInTable = new Set();
+        const numberedBaseCount = new Map();
+        for (const ta of table.tableAttributes) {
+            const attr = attrMap.get(ta.attributeId);
+            if (!attr) continue;
+            const lower = attr.name.toLowerCase().trim();
+            namesInTable.add(lower);
+            const m = lower.match(/^(.*?)[_-]?\d+$/);
+            if (m && m[1]) numberedBaseCount.set(m[1], (numberedBaseCount.get(m[1]) ?? 0) + 1);
+        }
+
         for (const ta of table.tableAttributes) {
             const attr = attrMap.get(ta.attributeId);
             if (!attr) continue;
@@ -94,6 +108,16 @@ export function runNFChecks(tables, fds, attributePool) {
                 issues.push({ type: 'warning', rule: '1NF-C', message: 'Attribute name has multiple segments — it may represent composite data (e.g. "first_last_name"). Consider splitting into separate attributes.' });
                 summary['1nf_atomic'] = worse(summary['1nf_atomic'], 'warning');
                 summary.atomic_attrs.push({ attributeId: ta.attributeId, name: attr.name, tableId: table.id, tableName: table.name });
+            }
+
+            const numMatch = attr.name.toLowerCase().trim().match(/^(.*?)[_-]?\d+$/);
+            if (
+                numMatch && numMatch[1] &&
+                ((numberedBaseCount.get(numMatch[1]) ?? 0) >= 2 || namesInTable.has(numMatch[1]))
+            ) {
+                issues.push({ type: 'warning', rule: '1NF-D', message: 'Attribute looks like part of a numbered repeating group (e.g. "phone1", "phone2") — repeating groups violate 1NF. Move them to a separate table.' });
+                summary['1nf_plural'] = worse(summary['1nf_plural'], 'warning');
+                summary.plural_attrs.push({ attributeId: ta.attributeId, name: attr.name, tableId: table.id, tableName: table.name });
             }
 
             if (issues.length) attrRowIssues.set(ta.attributeId, issues);
@@ -132,6 +156,11 @@ export function runNFChecks(tables, fds, attributePool) {
         for (const table of compositePKTables) {
             const pkSet = new Set(table.tableAttributes.filter((ta) => ta.is_PK).map((ta) => ta.attributeId));
             const nonKeySet = new Set(table.tableAttributes.filter((ta) => !ta.is_PK).map((ta) => ta.attributeId));
+
+            // Pure junction table (every attribute is part of the key) — nothing can
+            // partially depend on the key, so don't warn about missing FDs.
+            if (nonKeySet.size === 0) continue;
+
             const tableFDs = liveFDs.filter((fd) => getFDTable(fd)?.id === table.id);
 
             if (tableFDs.length === 0) {

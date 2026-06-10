@@ -90,14 +90,18 @@ export function serializeForAPI(store) {
                 table1_id: tableIndexMap[rel.table1Id],
                 table2_id: tableIndexMap[rel.table2Id],
             })),
-            fds: stage.fds.map((fd) => ({
-                colour: fd.color,
-                level: fd.level,
-                type: fd.type,
-                table_id: tableIndexMap[fd.tableId],
-                starts: fd.starts.map((s) => ({ attribute_id: attrIndexMap[s.attributeId] })),
-                ends:   fd.ends.map((e)   => ({ attribute_id: attrIndexMap[e.attributeId] })),
-            })),
+            // Orphaned FDs (their table was deleted; deleteTable keeps them on purpose)
+            // have no resolvable table_id — sending them would corrupt the payload.
+            fds: stage.fds
+                .filter((fd) => tableIndexMap[fd.tableId] != null)
+                .map((fd) => ({
+                    colour: fd.color,
+                    level: fd.level,
+                    type: fd.type,
+                    table_id: tableIndexMap[fd.tableId],
+                    starts: fd.starts.map((s) => ({ attribute_id: attrIndexMap[s.attributeId] })),
+                    ends:   fd.ends.map((e)   => ({ attribute_id: attrIndexMap[e.attributeId] })),
+                })),
         })),
     };
 }
@@ -227,12 +231,45 @@ export function serializeToLocal(projectId, store) {
 
 // ─── Conflict detection ───────────────────────────────────────────────────────
 
+// Fingerprints compare by attribute/table NAME, never by id — DB ids drift upward
+// on every server save (delete+reinsert), so ids on the two sides never match.
 function buildFingerprint(attrPool, stages) {
+    const attrNameById = new Map((attrPool ?? []).map((a) => [a.id, a.name]));
+    const attrName = (ref) => attrNameById.get(ref.attributeId) ?? '?';
+
     const attrs = (attrPool ?? []).map((a) => `${a.name}:${a.data_type}`).sort().join(',');
+
     const stagesStr = (stages ?? []).map((s) => {
-        const tables = (s.tables ?? []).map((t) => t.name).sort().join(',');
-        return `${s.form}|t:${tables}|f:${(s.fds ?? []).length}|r:${(s.relationships ?? []).length}`;
+        const tableNameById = new Map((s.tables ?? []).map((t) => [t.id, t.name]));
+
+        const tables = (s.tables ?? [])
+            .map((t) => {
+                const cols = (t.tableAttributes ?? [])
+                    .map((ta) => `${attrName(ta)}${ta.is_PK ? '*' : ''}${ta.is_FK ? '^' : ''}`)
+                    .sort()
+                    .join('.');
+                return `${t.name}(${cols})`;
+            })
+            .sort()
+            .join(',');
+
+        // Skip orphaned FDs — serializeForAPI drops them from the save payload,
+        // so the server side never has them; counting them locally would produce
+        // a phantom conflict on every load.
+        const fds = (s.fds ?? [])
+            .filter((fd) => !fd.tableId || tableNameById.has(fd.tableId))
+            .map((fd) => `${(fd.starts ?? []).map(attrName).sort().join('.')}>${(fd.ends ?? []).map(attrName).sort().join('.')}`)
+            .sort()
+            .join(',');
+
+        const rels = (s.relationships ?? [])
+            .map((r) => `${tableNameById.get(r.table1Id) ?? '?'}>${tableNameById.get(r.table2Id) ?? '?'}`)
+            .sort()
+            .join(',');
+
+        return `${s.form}|t:${tables}|f:${fds}|r:${rels}`;
     }).join(';');
+
     return `${attrs}__${stagesStr}`;
 }
 

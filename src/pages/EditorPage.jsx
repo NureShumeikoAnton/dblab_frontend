@@ -36,7 +36,9 @@ const EditorPage = () => {
     const initializeStageCopyFromPrevious = useEditorStore((s) => s.initializeStageCopyFromPrevious);
 
     useEffect(() => {
-        const token = authHeader?.split(' ')[1] ?? null;
+        setIsLoading(true);
+        setConflictData(null);
+        const token = authHeaderRef.current?.split(' ')[1] ?? null;
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const localData = loadFromLocal(projectId);
 
@@ -98,7 +100,7 @@ const EditorPage = () => {
                     currentStageIndex={currentStageIndex}
                     onStageChange={setCurrentStageIndex}
                 />
-                {!isLoading && isUninitialized && (
+                {!isLoading && !conflictData && isUninitialized && (
                     <StageInitDialog
                         stageLabel={stageLabel}
                         prevStageLabel={prevStageLabel}
@@ -118,6 +120,10 @@ const EditorPage = () => {
                             loadProject(conflictData.rawApiData, null);
                             loadFromLocalSnapshot(conflictData.localData);
                             setConflictData(null);
+                            // Push the chosen local version to the server right away —
+                            // otherwise the conflict resurfaces on the next load.
+                            const token = authHeaderRef.current?.split(' ')[1] ?? null;
+                            useEditorStore.getState().saveProject(token);
                         }}
                     />
                 )}

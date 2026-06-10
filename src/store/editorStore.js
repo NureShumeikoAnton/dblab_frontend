@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { MOCK_PROJECT, MOCK_ATTRIBUTES, MOCK_STAGES, MOCK_EMPTY_PROJECT, MOCK_EMPTY_ATTRIBUTES, MOCK_EMPTY_STAGES } from './mockData.js';
-import { serializeProjectMeta, serializeForAPI, serializeToLocal, loadFromLocal, deserializeFromAPI, compareStructural } from '../utils/serializer.js';
+import { serializeProjectMeta, serializeForAPI, serializeToLocal, loadFromLocal, deserializeFromAPI } from '../utils/serializer.js';
 import API_CONFIG from '../config/api.js';
 
 export const STAGE_ORDER = ['stage-1nf', 'stage-fds', 'stage-2nf', 'stage-3nf'];
@@ -161,6 +161,10 @@ const useEditorStore = create(
                 state.ui.isServerSaved = true;
                 state.ui.lastSaveError = null;
             });
+            // Sync the local snapshot to the freshly loaded state. This marks the
+            // local badge as saved and makes "Use server version" stick — otherwise
+            // the stale local snapshot re-triggers the conflict modal on every load.
+            get().saveLocally();
         },
 
         /** Hydrates store from a localStorage snapshot (offline fallback or conflict resolution). */
@@ -174,8 +178,11 @@ const useEditorStore = create(
                 (snapshot.stages ?? []).forEach((stage, i) => {
                     Object.assign(state.stages[i], stage);
                     const pos = localData.positions?.[i] ?? {};
-                    state.stages[i].tables.forEach((table) => {
+                    state.stages[i].tables.forEach((table, idx) => {
                         if (pos[table.name]) table.position = pos[table.name];
+                        // Snapshot tables carry no position — fall back to a default
+                        // grid so React Flow never receives an undefined position.
+                        else if (!table.position) table.position = { x: idx * 280, y: 80 };
                     });
                     state.stages[i].violationChecks = localData.violationChecks?.[i] ?? [];
                 });
@@ -261,8 +268,6 @@ const useEditorStore = create(
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
                     state.ui.isServerSaved = false;
-                state.ui.isLocalSaved = false;
-                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -275,8 +280,6 @@ const useEditorStore = create(
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
                     state.ui.isServerSaved = false;
-                state.ui.isLocalSaved = false;
-                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -329,8 +332,6 @@ const useEditorStore = create(
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
                     state.ui.isServerSaved = false;
-                state.ui.isLocalSaved = false;
-                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -345,10 +346,6 @@ const useEditorStore = create(
                         state.ui.hasUnsavedChanges = true;
                         state.ui.isLocalSaved = false;
                         state.ui.isServerSaved = false;
-                    state.ui.isLocalSaved = false;
-                    state.ui.isServerSaved = false;
-                state.ui.isLocalSaved = false;
-                state.ui.isServerSaved = false;
                     }
                 }
             });
@@ -436,8 +433,6 @@ const useEditorStore = create(
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
                     state.ui.isServerSaved = false;
-                state.ui.isLocalSaved = false;
-                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -450,8 +445,6 @@ const useEditorStore = create(
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
                     state.ui.isServerSaved = false;
-                state.ui.isLocalSaved = false;
-                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -464,8 +457,6 @@ const useEditorStore = create(
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
                     state.ui.isServerSaved = false;
-                state.ui.isLocalSaved = false;
-                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -506,8 +497,6 @@ const useEditorStore = create(
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
                     state.ui.isServerSaved = false;
-                state.ui.isLocalSaved = false;
-                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -545,8 +534,6 @@ const useEditorStore = create(
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
                     state.ui.isServerSaved = false;
-                state.ui.isLocalSaved = false;
-                state.ui.isServerSaved = false;
                 }
             });
         },
@@ -792,6 +779,9 @@ const useEditorStore = create(
             set((s) => {
                 s.ui.isSaving = true;
                 s.ui.lastSaveError = null;
+                // Cleared optimistically: edits made while the save is in flight
+                // re-set the flag, so they aren't wiped when the save completes.
+                s.ui.hasUnsavedChanges = false;
             });
 
             // Always persist positions + violationChecks locally
@@ -833,13 +823,13 @@ const useEditorStore = create(
 
                 set((s) => {
                     s.ui.isSaving = false;
-                    s.ui.hasUnsavedChanges = false;
                     s.ui.isServerSaved = true;
                 });
                 return true;
             } catch (err) {
                 set((s) => {
                     s.ui.isSaving = false;
+                    s.ui.hasUnsavedChanges = true;
                     s.ui.lastSaveError = err.message;
                 });
                 return false;
