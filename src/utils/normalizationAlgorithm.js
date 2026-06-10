@@ -11,8 +11,10 @@ function check1NF_A(name) {
 }
 
 function check1NF_B(name) {
-    const lower = name.toLowerCase().trim();
-    return NF_CONFIG.NON_ATOMIC_KEYWORDS.some((kw) => lower.includes(kw));
+    // Match whole _-separated segments, not substrings — otherwise "asset_id"
+    // trips on "set" and "dataset" trips on "data".
+    const segments = name.toLowerCase().trim().split('_');
+    return NF_CONFIG.NON_ATOMIC_KEYWORDS.some((kw) => segments.includes(kw));
 }
 
 function check1NF_C(name) {
@@ -78,7 +80,9 @@ export function runNFChecks(tables, fds, attributePool) {
         // members of groups with ≥2 numbered columns (or a plain base + a numbered one).
         const namesInTable = new Set();
         const numberedBaseCount = new Map();
+        const attrIdCount = new Map(); // same pool attribute added to THIS table more than once
         for (const ta of table.tableAttributes) {
+            attrIdCount.set(ta.attributeId, (attrIdCount.get(ta.attributeId) ?? 0) + 1);
             const attr = attrMap.get(ta.attributeId);
             if (!attr) continue;
             const lower = attr.name.toLowerCase().trim();
@@ -91,6 +95,10 @@ export function runNFChecks(tables, fds, attributePool) {
             const attr = attrMap.get(ta.attributeId);
             if (!attr) continue;
             const issues = [];
+
+            if (attrIdCount.get(ta.attributeId) > 1) {
+                issues.push({ type: 'error', rule: 'DUP', message: `Attribute "${attr.name}" is added to this table more than once — remove the duplicate.` });
+            }
 
             if (check1NF_A(attr.name)) {
                 issues.push({ type: 'warning', rule: '1NF-A', message: 'Attribute name appears to be plural — this may represent a multi-valued field, which violates 1NF.' });
