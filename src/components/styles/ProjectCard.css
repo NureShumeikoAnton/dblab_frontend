@@ -29,6 +29,47 @@
     background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
 }
 
+.project-card__actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.project-card:hover .project-card__actions,
+.project-card:focus-within .project-card__actions {
+    opacity: 1;
+}
+
+.project-card__action {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--border-radius);
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.project-card__action:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: #f0f9ff;
+}
+
+.project-card__action--danger:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: #fef2f2;
+}
+
 .project-card__body {
     padding: 18px 20px 14px;
     flex: 1;

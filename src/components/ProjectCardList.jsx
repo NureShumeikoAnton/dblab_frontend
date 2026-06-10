@@ -34,7 +34,7 @@ const EmptyState = ({ onNew }) => (
     </div>
 );
 
-const ProjectCardList = ({ projects, onNew }) => {
+const ProjectCardList = ({ projects, onNew, onEdit, onDelete }) => {
     if (projects.length === 0) {
         return <EmptyState onNew={onNew} />;
     }
@@ -42,7 +42,12 @@ const ProjectCardList = ({ projects, onNew }) => {
     return (
         <div className="pcl-grid">
             {projects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard
+                    key={project.id}
+                    project={project}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                />
             ))}
         </div>
     );

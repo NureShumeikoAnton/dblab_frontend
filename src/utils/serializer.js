@@ -10,8 +10,9 @@
  *   - tableAttribute.order    → derived from array index on load
  *   - stage.initialized       → derived from tables.length > 0 on load
  *   - stage.violationChecks   → localStorage only
- *   - fd.type                 → not persisted (no DB column); always null after reload
- *   - attr.retired_at_stage_Id → not in DB model; always null after reload
+ *   - fd.type                 → not persisted (no DB column); restored from the local
+ *                               snapshot on load (mergeLocalOnlyFields), else null
+ *   - attr.retired_at_stage_Id → not in DB model; restored the same way, else null
  */
 
 const localKey = (projectId) => `dblab_editor_${projectId}`;
@@ -318,4 +319,65 @@ export function loadFromLocal(projectId) {
     } catch {
         return null;
     }
+}
+
+/**
+ * Removes the local snapshot for a project. Called when a project is created or
+ * deleted — auto-increment ids can be reused after a DB reset, and a stale
+ * snapshot under a reused id would trigger a bogus conflict modal.
+ */
+export function clearLocalProject(projectId) {
+    try {
+        localStorage.removeItem(localKey(projectId));
+    } catch {
+        // Private browsing — nothing to clear
+    }
+}
+
+/**
+ * Copies fields the backend cannot persist (fd.type, attr.retired_at_stage_Id)
+ * from the local snapshot onto freshly server-loaded data.
+ *
+ * Matching is done by attribute NAME, never by id — DB ids drift upward on every
+ * server save, so snapshot ids never match the ids of a fresh GET response.
+ * Mutates attributePool/stages in place (designed to run on the immer draft).
+ */
+export function mergeLocalOnlyFields({ attributePool, stages }, snapshot) {
+    if (!snapshot) return;
+
+    const retiredByName = new Map(
+        (snapshot.attributePool ?? [])
+            .filter((a) => a.retired_at_stage_Id != null)
+            .map((a) => [a.name, a.retired_at_stage_Id])
+    );
+    attributePool.forEach((attr) => {
+        if (attr.retired_at_stage_Id == null && retiredByName.has(attr.name)) {
+            attr.retired_at_stage_Id = retiredByName.get(attr.name);
+        }
+    });
+
+    // FD identity = stage index + sorted determinant names + sorted dependent names
+    const fdKey = (fd, nameById, stageIdx) => {
+        const names = (refs) => (refs ?? []).map((r) => nameById.get(r.attributeId) ?? '?').sort().join('.');
+        return `${stageIdx}|${names(fd.starts)}>${names(fd.ends)}`;
+    };
+
+    const snapAttrName = new Map((snapshot.attributePool ?? []).map((a) => [a.id, a.name]));
+    const typeByKey = new Map();
+    (snapshot.stages ?? []).forEach((stage, i) => {
+        (stage.fds ?? []).forEach((fd) => {
+            if (fd.type) typeByKey.set(fdKey(fd, snapAttrName, i), fd.type);
+        });
+    });
+    if (typeByKey.size === 0) return;
+
+    const attrName = new Map(attributePool.map((a) => [a.id, a.name]));
+    stages.forEach((stage, i) => {
+        (stage.fds ?? []).forEach((fd) => {
+            if (fd.type == null) {
+                const type = typeByKey.get(fdKey(fd, attrName, i));
+                if (type) fd.type = type;
+            }
+        });
+    });
 }

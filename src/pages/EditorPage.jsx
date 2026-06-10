@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import useEditorStore from '../store/editorStore.js';
 import EditorToolbar from '../components/EditorToolbar.jsx';
@@ -8,6 +8,8 @@ import AttributePanel from '../components/AttributePanel.jsx';
 import StageBar from '../components/StageBar.jsx';
 import StageInitDialog from '../components/StageInitDialog.jsx';
 import ConflictResolutionModal from '../components/ConflictResolutionModal.jsx';
+import SessionExpiredModal from '../components/SessionExpiredModal.jsx';
+import EditorLoadingOverlay from '../components/EditorLoadingOverlay.jsx';
 import { NFAnalysisProvider } from '../hooks/useNFAnalysis.jsx';
 import API_CONFIG from '../config/api.js';
 import { loadFromLocal, deserializeFromAPI, compareStructural } from '../utils/serializer.js';
@@ -18,6 +20,7 @@ const STAGE_LABELS = ['1NF', 'FDs', '2NF', '3NF'];
 
 const EditorPage = () => {
     const { projectId } = useParams();
+    const navigate = useNavigate();
     const authHeader = useAuthHeader();
     const authHeaderRef = useRef(authHeader);
     authHeaderRef.current = authHeader;
@@ -34,6 +37,8 @@ const EditorPage = () => {
     const stages = useEditorStore((s) => s.stages);
     const initializeStageEmpty = useEditorStore((s) => s.initializeStageEmpty);
     const initializeStageCopyFromPrevious = useEditorStore((s) => s.initializeStageCopyFromPrevious);
+    const sessionExpired = useEditorStore((s) => s.ui.sessionExpired);
+    const dismissSessionExpired = useEditorStore((s) => s.dismissSessionExpired);
 
     useEffect(() => {
         setIsLoading(true);
@@ -106,6 +111,13 @@ const EditorPage = () => {
                         prevStageLabel={prevStageLabel}
                         onStartEmpty={() => initializeStageEmpty(currentStageIndex)}
                         onCopyFromPrevious={() => initializeStageCopyFromPrevious(currentStageIndex)}
+                    />
+                )}
+                {isLoading && <EditorLoadingOverlay />}
+                {sessionExpired && (
+                    <SessionExpiredModal
+                        onContinue={dismissSessionExpired}
+                        onLogin={() => navigate('/projects')}
                     />
                 )}
                 {conflictData && (

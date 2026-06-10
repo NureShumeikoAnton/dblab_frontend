@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { MOCK_PROJECT, MOCK_ATTRIBUTES, MOCK_STAGES, MOCK_EMPTY_PROJECT, MOCK_EMPTY_ATTRIBUTES, MOCK_EMPTY_STAGES } from './mockData.js';
-import { serializeProjectMeta, serializeForAPI, serializeToLocal, loadFromLocal, deserializeFromAPI } from '../utils/serializer.js';
+import { serializeProjectMeta, serializeForAPI, serializeToLocal, deserializeFromAPI, mergeLocalOnlyFields } from '../utils/serializer.js';
 import API_CONFIG from '../config/api.js';
 
 export const STAGE_ORDER = ['stage-1nf', 'stage-fds', 'stage-2nf', 'stage-3nf'];
@@ -89,51 +88,11 @@ const useEditorStore = create(
             pendingRelationshipSourceTableId: null, // null | string — canvas pick mode
             pendingRelationshipSetup: null, // null | { sourceTableId, targetTableId } — awaiting modal confirmation
             lastSaveError: null, // null | string — set on API save failure, cleared on next save attempt
+            sessionExpired: false, // true when a save failed with HTTP 401 — shows SessionExpiredModal
+            sessionExpiredDismissed: false, // user chose "continue offline" — don't re-show on autosave retries
         },
 
         // ─── Actions ─────────────────────────────────────────────────────────────
-
-        /** Load mock data into the store (called on editor page mount during Phase 1). */
-        loadMockData() {
-            set((state) => {
-                state.project = { ...MOCK_PROJECT };
-                state.attributePool = MOCK_ATTRIBUTES.map((a) => ({ ...a }));
-                MOCK_STAGES.forEach((stage, i) => {
-                    state.stages[i] = {
-                        ...stage,
-                        tables: stage.tables.map((t) => ({
-                            ...t,
-                            tableAttributes: t.tableAttributes.map((ta) => ({ ...ta })),
-                        })),
-                        relationships: stage.relationships.map((r) => ({ ...r })),
-                        fds: stage.fds.map((fd) => ({
-                            ...fd,
-                            starts: fd.starts.map((s) => ({ ...s })),
-                            ends: fd.ends.map((e) => ({ ...e })),
-                        })),
-                        violationChecks: [...stage.violationChecks],
-                    };
-                });
-            });
-        },
-
-        /** Load empty project mock — used to test StageInitDialog (projectId '2'). */
-        loadEmptyMockData() {
-            set((state) => {
-                state.project = { ...MOCK_EMPTY_PROJECT };
-                state.attributePool = [...MOCK_EMPTY_ATTRIBUTES];
-                state.currentStageIndex = 0;
-                MOCK_EMPTY_STAGES.forEach((stage, i) => {
-                    state.stages[i] = {
-                        ...stage,
-                        tables: [],
-                        relationships: [],
-                        fds: [],
-                        violationChecks: [...stage.violationChecks],
-                    };
-                });
-            });
-        },
 
         /**
          * Hydrates the store from a GET /project/:id API response.
@@ -156,6 +115,11 @@ const useEditorStore = create(
                         });
                         state.stages[i].violationChecks = localData.violationChecks?.[i] ?? [];
                     });
+                    // Restore fields the backend cannot persist (fd.type, retirement)
+                    mergeLocalOnlyFields(
+                        { attributePool: state.attributePool, stages: state.stages },
+                        localData.snapshot
+                    );
                 }
                 state.ui.hasUnsavedChanges = false;
                 state.ui.isServerSaved = true;
@@ -225,13 +189,11 @@ const useEditorStore = create(
             });
         },
 
-        /** Mark save as in-progress. */
-        setSaving(isSaving) {
+        /** User chose "continue offline" in the session-expired modal. */
+        dismissSessionExpired() {
             set((state) => {
-                state.ui.isSaving = isSaving;
-                if (isSaving === false) {
-                    state.ui.hasUnsavedChanges = false;
-                }
+                state.ui.sessionExpired = false;
+                state.ui.sessionExpiredDismissed = true;
             });
         },
 
@@ -328,6 +290,8 @@ const useEditorStore = create(
             set((state) => {
                 const table = state.stages[stageIndex].tables.find((t) => t.id === tableId);
                 if (table) {
+                    // The same pool attribute must not appear twice in one table
+                    if (table.tableAttributes.some((ta) => ta.attributeId === tableAttribute.attributeId)) return;
                     table.tableAttributes.push(tableAttribute);
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
@@ -723,42 +687,9 @@ const useEditorStore = create(
          */
         saveLocally() {
             const state = get();
-            const projectId = state.project.id ?? 'mock';
-            serializeToLocal(projectId, state);
+            if (!state.project.id) return; // nothing loaded yet — no key to write under
+            serializeToLocal(state.project.id, state);
             set((s) => { s.ui.isLocalSaved = true; });
-        },
-
-        /**
-         * Restore positions and violationChecks from localStorage into the store.
-         * Uses project.id from the store (set by loadMockData / API load), so call this
-         * AFTER the project data is loaded.
-         */
-        loadLocalState() {
-            const projectId = get().project.id ?? 'mock';
-            const local = loadFromLocal(projectId);
-            if (!local) return;
-            set((state) => {
-                const { positions, violationChecks } = local;
-                if (positions) {
-                    state.stages.forEach((stage, i) => {
-                        const stagePosMap = positions[i];
-                        if (!stagePosMap) return;
-                        stage.tables.forEach((table) => {
-                            if (stagePosMap[table.name]) {
-                                table.position = stagePosMap[table.name];
-                            }
-                        });
-                    });
-                }
-                if (violationChecks) {
-                    state.stages.forEach((stage, i) => {
-                        if (Array.isArray(violationChecks[i])) {
-                            stage.violationChecks = [...violationChecks[i]];
-                        }
-                    });
-                }
-                state.ui.isLocalSaved = true;
-            });
         },
 
         /**
@@ -788,12 +719,8 @@ const useEditorStore = create(
             get().saveLocally();
 
             if (!project.id) {
-                // Mock data mode — no real API calls
-                console.log('[editor] saving... (mock mode)');
-                set((s) => {
-                    s.ui.isSaving = false;
-                    s.ui.hasUnsavedChanges = false;
-                });
+                // Project not loaded yet — nothing to send
+                set((s) => { s.ui.isSaving = false; });
                 return true;
             }
 
@@ -802,6 +729,12 @@ const useEditorStore = create(
             const metaUrl    = `${API_CONFIG.BASE_URL}/project/${project.id}`;
             const contentUrl = `${API_CONFIG.BASE_URL}/project/updateProjectFull/${project.id}`;
 
+            const httpError = (message, status) => {
+                const err = new Error(message);
+                err.status = status;
+                return err;
+            };
+
             try {
                 // 1. Save project metadata (name, description)
                 const metaRes = await fetch(metaUrl, {
@@ -809,7 +742,7 @@ const useEditorStore = create(
                     headers,
                     body: JSON.stringify(serializeProjectMeta(state)),
                 });
-                if (!metaRes.ok) throw new Error(`Meta save failed: HTTP ${metaRes.status}`);
+                if (!metaRes.ok) throw httpError(`Meta save failed: HTTP ${metaRes.status}`, metaRes.status);
 
                 // 2. Save full content snapshot (stages, tables, attributes, FDs, relationships)
                 const contentRes = await fetch(contentUrl, {
@@ -817,7 +750,7 @@ const useEditorStore = create(
                     headers,
                     body: JSON.stringify(serializeForAPI(state)),
                 });
-                if (!contentRes.ok) throw new Error(`Content save failed: HTTP ${contentRes.status}`);
+                if (!contentRes.ok) throw httpError(`Content save failed: HTTP ${contentRes.status}`, contentRes.status);
 
                 serializeToLocal(project.id, get());
 
@@ -830,7 +763,10 @@ const useEditorStore = create(
                 set((s) => {
                     s.ui.isSaving = false;
                     s.ui.hasUnsavedChanges = true;
-                    s.ui.lastSaveError = err.message;
+                    s.ui.lastSaveError = err.status === 401 ? 'Session expired' : err.message;
+                    if (err.status === 401 && !s.ui.sessionExpiredDismissed) {
+                        s.ui.sessionExpired = true;
+                    }
                 });
                 return false;
             }

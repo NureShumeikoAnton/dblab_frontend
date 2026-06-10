@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import ProjectCardList from '../components/ProjectCardList.jsx';
 import NewProjectModal from '../components/NewProjectModal.jsx';
+import EditProjectModal from '../components/EditProjectModal.jsx';
+import ConfirmDeleteProjectModal from '../components/ConfirmDeleteProjectModal.jsx';
 import InteractiveGuideComponent from '../components/InteractiveGuideComponent.jsx';
 import API_CONFIG from '../config/api.js';
+import { clearLocalProject } from '../utils/serializer.js';
 import './styles/Projects.css';
 
 const normalizeProject = (p) => ({
@@ -18,14 +21,30 @@ const ProjectsPage = () => {
     const navigate = useNavigate();
     const authHeader = useAuthHeader();
     const [projects, setProjects] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isCreating, setIsCreating] = useState(false);
     const [loadError, setLoadError] = useState(null);
 
-    useEffect(() => {
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [createError, setCreateError] = useState(null);
+
+    const [editTarget, setEditTarget] = useState(null); // project | null
+    const [isEditing, setIsEditing] = useState(false);
+    const [editError, setEditError] = useState(null);
+
+    const [deleteTarget, setDeleteTarget] = useState(null); // project | null
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState(null);
+
+    const buildHeaders = (withJson = false) => {
         const token = authHeader?.split(' ')[1] ?? null;
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        fetch(`${API_CONFIG.BASE_URL}/project/getAll`, { headers })
+        return {
+            ...(withJson ? { 'Content-Type': 'application/json' } : {}),
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+    };
+
+    useEffect(() => {
+        fetch(`${API_CONFIG.BASE_URL}/project/getAll`, { headers: buildHeaders() })
             .then((r) => {
                 if (!r.ok) throw new Error(`HTTP ${r.status}`);
                 return r.json();
@@ -42,25 +61,66 @@ const ProjectsPage = () => {
 
     const handleCreate = async ({ name, description }) => {
         setIsCreating(true);
-        const token = authHeader?.split(' ')[1] ?? null;
-        const headers = {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        };
+        setCreateError(null);
         try {
             const r = await fetch(`${API_CONFIG.BASE_URL}/project/create`, {
                 method: 'POST',
-                headers,
+                headers: buildHeaders(true),
                 body: JSON.stringify({ name, description }),
             });
             if (!r.ok) throw new Error(`HTTP ${r.status}`);
             const data = await r.json();
             const newId = data.project_id ?? data.id;
+            // Auto-increment ids can be reused after a DB reset — a stale snapshot
+            // under this id would trigger a bogus conflict modal in the editor.
+            clearLocalProject(newId);
             navigate(`/projects/${newId}`);
         } catch (err) {
             console.error('[ProjectsPage] create failed', err);
             setIsCreating(false);
-            setIsModalOpen(false);
+            setCreateError('Failed to create the project. Please try again.');
+        }
+    };
+
+    const handleEdit = async ({ name, description }) => {
+        setIsEditing(true);
+        setEditError(null);
+        try {
+            const r = await fetch(`${API_CONFIG.BASE_URL}/project/${editTarget.id}`, {
+                method: 'PUT',
+                headers: buildHeaders(true),
+                body: JSON.stringify({ name, description }),
+            });
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            setProjects((prev) =>
+                prev.map((p) => (p.id === editTarget.id ? { ...p, name, description } : p))
+            );
+            setEditTarget(null);
+        } catch (err) {
+            console.error('[ProjectsPage] edit failed', err);
+            setEditError('Failed to save changes. Please try again.');
+        } finally {
+            setIsEditing(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        setDeleteError(null);
+        try {
+            const r = await fetch(`${API_CONFIG.BASE_URL}/project/delete/${deleteTarget.id}`, {
+                method: 'DELETE',
+                headers: buildHeaders(),
+            });
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            clearLocalProject(deleteTarget.id);
+            setProjects((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+            setDeleteTarget(null);
+        } catch (err) {
+            console.error('[ProjectsPage] delete failed', err);
+            setDeleteError('Failed to delete the project. Please try again.');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -77,7 +137,7 @@ const ProjectsPage = () => {
                         </p>
                         <button
                             className="projects-page__new-btn"
-                            onClick={() => setIsModalOpen(true)}
+                            onClick={() => { setCreateError(null); setIsCreateOpen(true); }}
                         >
                             + New Project
                         </button>
@@ -91,15 +151,36 @@ const ProjectsPage = () => {
                 </div>
                 <ProjectCardList
                     projects={projects}
-                    onNew={() => setIsModalOpen(true)}
+                    onNew={() => { setCreateError(null); setIsCreateOpen(true); }}
+                    onEdit={(project) => { setEditError(null); setEditTarget(project); }}
+                    onDelete={(project) => { setDeleteError(null); setDeleteTarget(project); }}
                 />
             </div>
 
-            {isModalOpen && (
+            {isCreateOpen && (
                 <NewProjectModal
-                    onClose={() => !isCreating && setIsModalOpen(false)}
+                    onClose={() => !isCreating && setIsCreateOpen(false)}
                     onSubmit={handleCreate}
                     isSubmitting={isCreating}
+                    error={createError}
+                />
+            )}
+            {editTarget && (
+                <EditProjectModal
+                    project={editTarget}
+                    onClose={() => !isEditing && setEditTarget(null)}
+                    onSubmit={handleEdit}
+                    isSubmitting={isEditing}
+                    error={editError}
+                />
+            )}
+            {deleteTarget && (
+                <ConfirmDeleteProjectModal
+                    projectName={deleteTarget.name}
+                    onConfirm={handleDelete}
+                    onCancel={() => setDeleteTarget(null)}
+                    isDeleting={isDeleting}
+                    error={deleteError}
                 />
             )}
         </div>

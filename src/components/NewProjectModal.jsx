@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import './styles/NewProjectModal.css';
 
-const NewProjectModal = ({ onClose, onSubmit, isSubmitting = false }) => {
+const NewProjectModal = ({ onClose, onSubmit, isSubmitting = false, error = null }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!name.trim()) return;
-        console.log('[NewProjectModal] Submitting:', { name, description });
         onSubmit({ name, description });
     };
 
@@ -60,6 +59,7 @@ const NewProjectModal = ({ onClose, onSubmit, isSubmitting = false }) => {
                                 rows={3}
                             />
                         </div>
+                        {error && <div className="npm-error" role="alert">{error}</div>}
                         <div className="npm-actions">
                             <button type="button" className="npm-btn npm-btn--ghost" onClick={onClose}>
                                 Cancel
