@@ -50,6 +50,12 @@ const ExpertiseProjectPage = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [loading, setLoading] = useState(true);
 
+    const [isEditingProject, setIsEditingProject] = useState(false);
+    const [editName, setEditName] = useState('');
+    const [editDesc, setEditDesc] = useState('');
+    const [newModelFile, setNewModelFile] = useState(null);
+    const [newModelType, setNewModelType] = useState('other');
+
     const fetchProjectData = async () => {
         try {
             const response = await axios.get(`${API_CONFIG.BASE_URL}/project/${pid}`);
@@ -60,6 +66,8 @@ const ExpertiseProjectPage = () => {
                 author_nickname: project.author?.nickname,
             });
             setDataModels(project.models || []);
+            setEditName(project.name);
+            setEditDesc(project.description);
             setLocalExpertises((project.expertises || []).map(e => ({
                 ...e,
                 expert_nickname: e.expert?.nickname,
@@ -85,10 +93,12 @@ const ExpertiseProjectPage = () => {
 
     const isAdmin = authUser && authUser.role === 'admin';
     const isExpert = authUser && (authUser.role === 'expert' || authUser.role === 'admin');
-    const isAuthor = authUser && localProject && authUser.user_Id === localProject.user_id;
-    
-    const myDraftExpertise = localExpertises.find(e => e.end_date === null && e.expert_user_Id === authUser?.user_Id);
-    const hasCompletedReview = localExpertises.some(e => e.end_date !== null && e.expert_user_Id === authUser?.user_Id);
+    const currentUserId = authUser?.id || authUser?.user_Id;
+    const isAuthor = authUser && localProject && currentUserId === localProject.author.user_Id;
+    console.log(localProject);
+    console.log(isAuthor);
+    const myDraftExpertise = localExpertises.find(e => e.end_date === null && e.expert_user_Id === currentUserId);
+    const hasCompletedReview = localExpertises.some(e => e.end_date !== null && e.expert_user_Id === currentUserId);
     const isMyClaim = !!myDraftExpertise;
     const canClaim = isExpert && !isMyClaim && !hasCompletedReview;
     
@@ -250,6 +260,56 @@ const ExpertiseProjectPage = () => {
         }
     };
 
+    const handleSaveProjectDetails = async () => {
+        try {
+            await axios.put(`${API_CONFIG.BASE_URL}/project/${pid}`, {
+                name: editName,
+                description: editDesc
+            }, {
+                headers: { 'Authorization': authHeader }
+            });
+            setIsEditingProject(false);
+            await fetchProjectData();
+        } catch (err) {
+            console.error('Error updating project', err);
+            alert('Помилка при оновленні проєкту');
+        }
+    };
+
+    const handleDeleteDataModel = async (modelId) => {
+        if (!window.confirm("Видалити цю модель?")) return;
+        try {
+            await axios.delete(`${API_CONFIG.BASE_URL}/model/delete/${modelId}`, {
+                headers: { 'Authorization': authHeader }
+            });
+            await fetchProjectData();
+        } catch (err) {
+            console.error('Error deleting data model', err);
+            alert('Помилка при видаленні моделі');
+        }
+    };
+
+    const handleAddDataModel = async () => {
+        if (!newModelFile) return;
+        const formData = new FormData();
+        formData.append('photo', newModelFile);
+        formData.append('type', newModelType);
+        try {
+            await axios.post(`${API_CONFIG.BASE_URL}/model/create/${pid}`, formData, {
+                headers: { 
+                    'Authorization': authHeader,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            setNewModelFile(null);
+            setNewModelType('other');
+            await fetchProjectData();
+        } catch (err) {
+            console.error('Error adding data model', err);
+            alert('Помилка при додаванні моделі');
+        }
+    };
+
     const projectComments = allComments.filter(c => !c.expertise_Id);
     const handleContinueThread = (commentId) => navigate(`/expertise/${projectId}/comment/${commentId}`);
     const completedExpertises = localExpertises.filter(e => e.end_date !== null);
@@ -276,7 +336,7 @@ const ExpertiseProjectPage = () => {
                                 <button className="cancel-btn-text" onClick={() => setShowDeleteModal(false)}>
                                     Скасувати
                                 </button>
-                                <button className="action-btn" onClick={handleDeleteProject} style={{ background: 'var(--danger-color)' }}>
+                                <button className="action-btn action-btn-danger" onClick={handleDeleteProject}>
                                     Видалити
                                 </button>
                             </div>
@@ -289,14 +349,14 @@ const ExpertiseProjectPage = () => {
                 <button className="cancel-btn-text cancel-btn-text-no-margin" onClick={() => navigate('/expertise')}>
                     <ArrowLeft size={16} /> Назад до списку
                 </button>
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <div className="project-page-actions-group">
                     {isAdmin && (
                         <button className="action-btn-outline action-btn-outline-primary" onClick={handleToggleArchive}>
                             {localProject.isarchived ? 'Відновити з архіву' : 'Заархівувати'}
                         </button>
                     )}
                     {(isAdmin || (!localProject.isarchived && isAuthor)) && (
-                        <button className="action-btn-outline" style={{ borderColor: 'var(--danger-color)', color: 'var(--danger-color)' }} onClick={() => setShowDeleteModal(true)}>
+                        <button className="action-btn-outline action-btn-danger-outline" onClick={() => setShowDeleteModal(true)}>
                             <Trash2 size={16} /> Видалити
                         </button>
                     )}
@@ -310,8 +370,43 @@ const ExpertiseProjectPage = () => {
             )}
 
             <div className="project-detail-header">
-                <div>
-                    <h1 className="project-detail-title">{localProject.name}</h1>
+                <div className="project-detail-header__main">
+                    <div className="project-detail-header__title-container">
+                        {isEditingProject ? (
+                            <input 
+                                type="text" 
+                                className="auth-form__input project-edit-title-input" 
+                                value={editName} 
+                                onChange={e => setEditName(e.target.value)} 
+                            />
+                        ) : (
+                            <h1 className="project-detail-title">{localProject.name}</h1>
+                        )}
+                        
+                        <div className="project-actions">
+                            {!localProject.isarchived && isAuthor && !isEditingProject && (
+                                <button className="action-btn-outline" onClick={() => setIsEditingProject(true)}>
+                                    Редагувати
+                                </button>
+                            )}
+                            {isEditingProject && (
+                                <>
+                                    <button className="action-btn" onClick={handleSaveProjectDetails}>
+                                        Зберегти
+                                    </button>
+                                    <button className="cancel-btn-text" onClick={() => {
+                                        setIsEditingProject(false);
+                                        setEditName(localProject.name);
+                                        setEditDesc(localProject.description);
+                                        setNewModelFile(null);
+                                    }}>
+                                        Скасувати
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="project-detail-meta">
                         <span className="expertise-meta-item"><User size={14} />Автор: {localProject.author_nickname}</span>
                         <span className="expertise-meta-item"><Calendar size={14} />{dayjs(localProject.creation_date).format('DD.MM.YYYY')}</span>
@@ -323,7 +418,7 @@ const ExpertiseProjectPage = () => {
                                     <React.Fragment key={r.expertise_Id}>
                                         {r.expert_nickname}
                                         {isAdmin && (
-                                            <button className="cancel-btn-text" style={{ padding: 0, margin: '0 4px', color: 'var(--danger-color)' }} onClick={() => handleDeleteExpertise(r.expertise_Id)}>
+                                            <button className="cancel-btn-text reviewer-delete-btn" onClick={() => handleDeleteExpertise(r.expertise_Id)}>
                                                 <X size={12} />
                                             </button>
                                         )}
@@ -350,11 +445,29 @@ const ExpertiseProjectPage = () => {
                 </div>
             </div>
 
-            {localProject.description && (
-                <p className="project-detail-description">{localProject.description}</p>
+            {isEditingProject ? (
+                <textarea 
+                    className="auth-form__input project-detail-description project-detail-description-edit" 
+                    value={editDesc} 
+                    onChange={e => setEditDesc(e.target.value)}
+                    rows={4}
+                />
+            ) : (
+                localProject.description && (
+                    <p className="project-detail-description">{localProject.description}</p>
+                )
             )}
 
-            <DataModelsSection dataModels={dataModels} />
+            <DataModelsSection 
+                dataModels={dataModels} 
+                isEditingProject={isEditingProject}
+                onDeleteModel={handleDeleteDataModel}
+                newModelType={newModelType}
+                setNewModelType={setNewModelType}
+                newModelFile={newModelFile}
+                setNewModelFile={setNewModelFile}
+                onAddModel={handleAddDataModel}
+            />
 
             <section className="project-section">
                 <h2 className="section-title">Експертні оцінки</h2>
@@ -383,6 +496,8 @@ const ExpertiseProjectPage = () => {
                                 isArchived={localProject.isarchived}
                                 isAdmin={isAdmin}
                                 onDeleteExpertise={handleDeleteExpertise}
+                                fetchProjectData={fetchProjectData}
+                                authHeader={authHeader}
                             />
                         ))}
                     </div>
@@ -394,7 +509,7 @@ const ExpertiseProjectPage = () => {
                 {(!localProject.isarchived && authUser) && <CommentInput onSubmit={(text) => addComment(text, null)} />}
                 <CommentThread
                     comments={projectComments}
-                    currentUserId={authUser?.user_Id}
+                    currentUserId={currentUserId}
                     isArchived={localProject.isarchived}
                     onAdd={(text, replyToId) => addComment(text, null, replyToId)}
                     onSaveEdit={handleSaveEdit}
@@ -411,11 +526,11 @@ export default ExpertiseProjectPage;
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function DataModelsSection({ dataModels }) {
+function DataModelsSection({ dataModels, isEditingProject, onDeleteModel, newModelType, setNewModelType, newModelFile, setNewModelFile, onAddModel }) {
     return (
         <section className="project-section">
             <h2 className="section-title">Моделі даних</h2>
-            {dataModels.length === 0 ? (
+            {dataModels.length === 0 && !isEditingProject ? (
                 <p className="project-section__empty">Моделі відсутні.</p>
             ) : (
                 <ul className="model-list">
@@ -426,42 +541,185 @@ function DataModelsSection({ dataModels }) {
                             <a href={`${API_CONFIG.BASE_URL}/model/photo/file/${m.file_url || m.file}`} target="_blank" rel="noopener noreferrer" className="model-list__link">
                                 {m.file_url || m.file} <ExternalLink size={13} />
                             </a>
-                            <span className="model-list__date">{dayjs(m.upload_date).format('DD.MM.YYYY')}</span>
+                            <span className={`model-list__date ${isEditingProject ? 'model-list__date--editing' : ''}`}>{dayjs(m.upload_date).format('DD.MM.YYYY')}</span>
+                            {isEditingProject && (
+                                <button className="cancel-btn-text model-delete-btn" onClick={() => onDeleteModel(m.data_model_Id)}>
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
                         </li>
                     ))}
                 </ul>
+            )}
+            {isEditingProject && (
+                <div className="add-model-form">
+                    <h4>Додати модель</h4>
+                    <div className="add-model-form__inputs">
+                        <select className="auth-form__input add-model-form__select" value={newModelType} onChange={e => setNewModelType(e.target.value)}>
+                            {Object.entries(TYPE_LABEL).map(([val, label]) => (
+                                <option key={val} value={val}>{label}</option>
+                            ))}
+                        </select>
+                        <input type="file" className="auth-form__input add-model-form__file" onChange={e => setNewModelFile(e.target.files[0])} />
+                        <button className="action-btn add-model-form__submit" onClick={onAddModel} disabled={!newModelFile}>
+                            Додати
+                        </button>
+                    </div>
+                </div>
             )}
         </section>
     );
 }
 
-function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment, onSaveEdit, onDelete, onContinueThread, isArchived, isAdmin, onDeleteExpertise }) {
+function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment, onSaveEdit, onDelete, onContinueThread, isArchived, isAdmin, onDeleteExpertise, fetchProjectData, authHeader }) {
     const exComments = allComments.filter(c => c.expertise_Id === ex.expertise_Id);
+    
+    const [isEditing, setIsEditing] = useState(false);
+    const [editScore, setEditScore] = useState(ex.score !== null ? ex.score : '');
+    const [editReviewText, setEditReviewText] = useState(ex.review_text || '');
+    const [newAttachmentFile, setNewAttachmentFile] = useState(null);
+
+    const currentUserId = authUser?.id || authUser?.user_Id;
+    const isAuthor = currentUserId === ex.expert?.user_Id;
+
+    const handleSaveExpertise = async () => {
+        try {
+            await axios.put(`${API_CONFIG.BASE_URL}/expertise/update/${ex.expertise_Id}`, {
+                score: editScore,
+                review_text: editReviewText
+            }, {
+                headers: { 'Authorization': authHeader }
+            });
+            setIsEditing(false);
+            if (fetchProjectData) await fetchProjectData();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error updating expertise');
+        }
+    };
+
+    const handleDeleteAttachment = async (attachmentId) => {
+        if (!window.confirm("Видалити цей додаток?")) return;
+        try {
+            await axios.delete(`${API_CONFIG.BASE_URL}/imbed/delete/${attachmentId}`, {
+                headers: { 'Authorization': authHeader }
+            });
+            if (fetchProjectData) await fetchProjectData();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error deleting attachment');
+        }
+    };
+
+    const handleAddAttachment = async () => {
+        if (!newAttachmentFile) return;
+        const formData = new FormData();
+        formData.append('photo', newAttachmentFile);
+        try {
+            await axios.post(`${API_CONFIG.BASE_URL}/imbed/create/${ex.expertise_Id}`, formData, {
+                headers: { 
+                    'Authorization': authHeader,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            setNewAttachmentFile(null);
+            if (fetchProjectData) await fetchProjectData();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error adding attachment');
+        }
+    };
+
     return (
         <div className="expertise-review-card">
             <div className="expertise-review-header">
                 <span className="expertise-review-expert"><User size={14} /> {ex.expert_nickname}</span>
-                {ex.score !== null && (
+                {!isEditing && ex.score !== null && (
                     <span className="expertise-review-score"><Star size={14} /> {ex.score} / 100</span>
                 )}
                 <span className="expertise-review-dates">
                     {dayjs(ex.begin_date).format('DD.MM.YYYY')}
                     {ex.end_date && ` — ${dayjs(ex.end_date).format('DD.MM.YYYY')}`}
                 </span>
-                {isAdmin && (
-                    <button className="cancel-btn-text" style={{ marginLeft: 'auto', padding: 0, color: 'var(--danger-color)' }} onClick={() => onDeleteExpertise(ex.expertise_Id)}>
-                        <Trash2 size={14} />
-                    </button>
-                )}
+                <div className="project-actions expertise-review-header__actions">
+                    {!isArchived && isAuthor && !isEditing && (
+                        <button className="action-btn-outline" onClick={() => setIsEditing(true)}>
+                            Редагувати
+                        </button>
+                    )}
+                    {isAdmin && !isEditing && (
+                        <button className="cancel-btn-text expertise-delete-btn expertise-delete-btn--no-margin" onClick={() => onDeleteExpertise(ex.expertise_Id)}>
+                            <Trash2 size={14} />
+                        </button>
+                    )}
+                </div>
             </div>
-            {ex.review_text && <p className="expertise-review-text">{ex.review_text}</p>}
-            {ex.attachments?.length > 0 && (
-                <div className="expertise-review-attachments">
-                    {ex.attachments.map(a => (
-                        <a key={a.attachment_Id} href={a.link} target="_blank" rel="noopener noreferrer" className="model-list__link">
-                            <ExternalLink size={13} /> Додаток
-                        </a>
+            
+            {isEditing ? (
+                <div className="review-form__field">
+                    <label className="review-form__label">Оцінка (0-100):</label>
+                    <input 
+                        type="number" 
+                        className="review-form__input" 
+                        value={editScore} 
+                        onChange={e => setEditScore(e.target.value)} 
+                        min="0" max="100"
+                    />
+                </div>
+            ) : null}
+
+            {isEditing ? (
+                <div className="review-form__field">
+                    <label className="review-form__label">Текст рецензії:</label>
+                    <textarea 
+                        className="review-form__textarea" 
+                        value={editReviewText} 
+                        onChange={e => setEditReviewText(e.target.value)}
+                        rows={4}
+                    />
+                </div>
+            ) : (
+                ex.review_text && <p className="expertise-review-text">{ex.review_text}</p>
+            )}
+
+            {(ex.attachments?.length > 0 || isEditing) && (
+                <div className="expertise-review-attachments expertise-review-attachments--editing">
+                    {ex.attachments?.map(a => (
+                        <div key={a.attachment_Id} className="attachment-edit-item">
+                            <a href={`${API_CONFIG.BASE_URL}/imbed/photo/file/${a.link_url || a.link}`} target="_blank" rel="noopener noreferrer" className="model-list__link model-list__link--no-margin">
+                                <ExternalLink size={13} /> Додаток ({a.link_url || a.link})
+                            </a>
+                            {isEditing && (
+                                <button className="cancel-btn-text model-delete-btn" onClick={() => handleDeleteAttachment(a.attachment_Id)}>
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
+                        </div>
                     ))}
+                    {isEditing && (
+                        <div className="add-model-form add-model-form--full-width">
+                            <h4 className="add-model-form__title">Додати додаток</h4>
+                            <div className="add-model-form__inputs">
+                                <input type="file" className="auth-form__input add-model-form__file" onChange={e => setNewAttachmentFile(e.target.files[0])} />
+                                <button className="action-btn add-model-form__submit" onClick={handleAddAttachment} disabled={!newAttachmentFile}>
+                                    Додати
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {isEditing && (
+                <div className="project-actions project-actions--margin-top">
+                    <button className="action-btn" onClick={handleSaveExpertise}>
+                        Зберегти
+                    </button>
+                    <button className="cancel-btn-text" onClick={() => {
+                        setIsEditing(false);
+                        setEditScore(ex.score !== null ? ex.score : '');
+                        setEditReviewText(ex.review_text || '');
+                        setNewAttachmentFile(null);
+                    }}>
+                        Скасувати
+                    </button>
                 </div>
             )}
             <div className="expertise-comment-section">
@@ -474,7 +732,7 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
                 )}
                 <CommentThread
                     comments={exComments}
-                    currentUserId={authUser?.user_Id}
+                    currentUserId={authUser?.id || authUser?.user_Id}
                     isArchived={isArchived}
                     onAdd={(text, replyToId) => addComment(text, ex.expertise_Id, replyToId)}
                     onSaveEdit={onSaveEdit}

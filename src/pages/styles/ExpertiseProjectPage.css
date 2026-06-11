@@ -585,3 +585,167 @@
 .mt-1rem {
     margin-top: 1rem;
 }
+
+/* UI Elements - Inline style replacements */
+.action-btn-danger {
+    background-color: var(--danger-color) !important;
+}
+.action-btn-danger-outline {
+    border-color: var(--danger-color) !important;
+    color: var(--danger-color) !important;
+}
+.project-page-actions-group {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+.project-detail-header__main {
+    flex: 1;
+}
+.project-detail-header__title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+.project-edit-title-input {
+    flex: 1;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    color: var(--text-color);
+    font-family: inherit;
+    transition: var(--transition);
+}
+.project-edit-title-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 148, 200, 0.1);
+}
+.project-actions {
+    display: flex;
+    gap: 10px;
+}
+.reviewer-delete-btn {
+    padding: 0;
+    margin: 0 4px;
+    color: var(--danger-color);
+}
+.project-detail-description-edit {
+    width: 100%;
+    resize: vertical;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    color: var(--text-color);
+    font-family: inherit;
+    transition: var(--transition);
+}
+.project-detail-description-edit:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 148, 200, 0.1);
+}
+.model-list__item {
+    display: flex;
+    align-items: center;
+}
+.model-list__type {
+    flex: 1;
+}
+.model-list__link {
+    margin-right: 10px;
+}
+.model-list__date--editing {
+    margin-right: 10px;
+}
+.model-delete-btn {
+    padding: 4px;
+    color: var(--danger-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin: 0;
+    transition: var(--transition);
+}
+.model-delete-btn:hover {
+    background-color: #ffebee;
+}
+.add-model-form {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+}
+.add-model-form h4 {
+    margin: 0 0 10px 0;
+}
+.add-model-form__inputs {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.add-model-form__select,
+.add-model-form__file {
+    width: auto !important;
+    margin-bottom: 0 !important;
+    padding: 8px 12px !important;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    color: var(--text-color);
+    background: var(--white);
+    transition: var(--transition);
+}
+.add-model-form__select:focus,
+.add-model-form__file:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+.add-model-form__file {
+    padding: 5px !important;
+}
+.add-model-form__submit {
+    padding: 8px 16px;
+}
+.expertise-delete-btn {
+    margin-left: auto;
+    padding: 0;
+    color: var(--danger-color);
+}
+
+/* Inline styles removal for ExpertiseReviewCard */
+.expertise-review-header__actions {
+    margin-left: auto;
+}
+.expertise-delete-btn--no-margin {
+    margin-left: 0 !important;
+}
+.expertise-review-attachments--editing {
+    flex-direction: column;
+    align-items: flex-start;
+}
+.attachment-edit-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.model-list__link--no-margin {
+    margin: 0 !important;
+}
+.add-model-form--full-width {
+    width: 100%;
+}
+.add-model-form__title {
+    margin: 0 0 10px 0;
+}
+.project-actions--margin-top {
+    margin-top: 1rem;
+}
