@@ -150,7 +150,7 @@ function RequestsTab() {
                                 Ви впевнені, що хочете видалити цей запит від користувача{' '}
                                 <strong>{confirmDeleteTarget.User?.nickname || 'Невідомий'}</strong>?
                             </p>
-                            <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-color-light)' }}>
+                            <p className="confirm-delete-warning">
                                 Ця дія є незворотною.
                             </p>
                             <div className="modal-card__actions">
@@ -167,7 +167,7 @@ function RequestsTab() {
             )}
 
             {/* Filters and Sort */}
-            <div className="users-tab-controls" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="users-tab-controls users-tab-controls-container">
                 <div className="users-filter-group">
                     {['', 'pending', 'approved', 'rejected'].map(s => (
                         <button
@@ -179,12 +179,11 @@ function RequestsTab() {
                         </button>
                     ))}
                 </div>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div className="users-tab-sort-container">
                     <button
-                        className="users-filter-btn"
+                        className="users-filter-btn users-filter-btn-sort"
                         onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')}
                         title={sortDir === 'desc' ? 'Спочатку старі' : 'Спочатку нові'}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                     >
                         <ArrowUpDown size={15} />
                         {sortDir === 'desc' ? 'Спочатку старі' : 'Спочатку нові'}
@@ -234,8 +233,8 @@ function RequestsTab() {
                                 </p>
                             )}
                             
-                            <div className="request-card__actions" style={{ justifyContent: 'space-between', display: 'flex', width: '100%' }}>
-                                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <div className="request-card__actions request-card__actions-container">
+                                <div className="request-card__actions-group">
                                     {req.status === 'pending' && (
                                         <>
                                             <button
@@ -254,8 +253,7 @@ function RequestsTab() {
                                     )}
                                 </div>
                                 <button
-                                    className="req-reject-btn"
-                                    style={{ backgroundColor: 'transparent', color: 'var(--danger-color)', border: '1px solid var(--danger-color)' }}
+                                    className="req-reject-btn req-reject-btn-outline"
                                     onClick={() => setConfirmDeleteTarget(req)}
                                 >
                                     <X size={14} /> Видалити
@@ -329,7 +327,7 @@ function UsersTab() {
 
     const SortTh = ({ field, label }) => (
         <th className="users-table__sortable" onClick={() => toggleSort(field)}>
-            {label}{sortKey === field && <ArrowUpDown size={13} style={{ marginLeft: 4 }} />}
+            {label}{sortKey === field && <ArrowUpDown size={13} className="sort-icon-ml" />}
         </th>
     );
 

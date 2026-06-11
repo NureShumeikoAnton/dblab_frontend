@@ -172,6 +172,16 @@
     padding: 4px 12px;
 }
 
+/* Expert request rejected badge */
+.expert-request-rejected-badge {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #c62828;
+    background: #ffebee;
+    border-radius: 20px;
+    padding: 4px 12px;
+}
+
 /* Modal overlay + card */
 .modal-overlay {
     position: fixed;
@@ -244,7 +254,78 @@
     align-items: center;
 }
 
+.modal-card__actions .cancel-btn-text {
+    margin-top: 0;
+}
+
 .expertise-sort-btn:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
+}
+
+.card-header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.archive-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    background: #e0e0e0;
+    color: #616161;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.expertise-page-header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.archive-tabs {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+}
+
+.archive-tab-btn {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding-bottom: 0.25rem;
+    margin-bottom: -0.5rem;
+    border-bottom: 2px solid transparent;
+    color: var(--text-light);
+    font-weight: normal;
+}
+
+.archive-tab-btn.active {
+    font-weight: bold;
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.expertise-controls-right {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.only-my-expertises-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.modal-success-text {
+    color: var(--text-color);
+    margin-bottom: 1rem;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Calendar, FileSpreadsheet, FileText, FileCode, ExternalLink, Star, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Calendar, FileSpreadsheet, FileText, FileCode, ExternalLink, Star, Plus, Trash2, X } from 'lucide-react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import dayjs from 'dayjs';
@@ -47,6 +47,7 @@ const ExpertiseProjectPage = () => {
     const [dataModels, setDataModels] = useState([]);
     const [localExpertises, setLocalExpertises] = useState([]);
     const [allComments, setAllComments] = useState([]);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const fetchProjectData = async () => {
@@ -82,13 +83,27 @@ const ExpertiseProjectPage = () => {
         fetchProjectData();
     }, [pid]);
 
-    const isExpert = authUser?.role === 'expert' || authUser?.role === 'admin';
+    const isAdmin = authUser && authUser.role === 'admin';
+    const isExpert = authUser && (authUser.role === 'expert' || authUser.role === 'admin');
+    const isAuthor = authUser && localProject && authUser.user_Id === localProject.user_id;
+    
     const myDraftExpertise = localExpertises.find(e => e.end_date === null && e.expert_user_Id === authUser?.user_Id);
     const hasCompletedReview = localExpertises.some(e => e.end_date !== null && e.expert_user_Id === authUser?.user_Id);
     const isMyClaim = !!myDraftExpertise;
     const canClaim = isExpert && !isMyClaim && !hasCompletedReview;
     
     const pendingReviewers = localExpertises.filter(e => e.end_date === null);
+
+    const handleToggleArchive = async () => {
+        try {
+            await axios.put(`${API_CONFIG.BASE_URL}/project/archive/${pid}`, {}, {
+                headers: { 'Authorization': authHeader }
+            });
+            await fetchProjectData();
+        } catch (error) {
+            console.error('Error toggling archive:', error);
+        }
+    };
 
     const [reviewScore, setReviewScore] = useState('');
     const [reviewText, setReviewText] = useState('');
@@ -110,6 +125,19 @@ const ExpertiseProjectPage = () => {
             </div>
         );
     }
+
+    const handleDeleteProject = async () => {
+        try {
+            await axios.delete(`${API_CONFIG.BASE_URL}/project/delete/${pid}`, {
+                headers: { 'Authorization': authHeader }
+            });
+            setShowDeleteModal(false);
+            navigate('/expertise');
+        } catch (err) {
+            console.error('Error deleting project', err);
+            alert('Помилка при видаленні проєкту');
+        }
+    };
 
     const handleClaim = async () => {
         try {
@@ -209,17 +237,77 @@ const ExpertiseProjectPage = () => {
         }
     };
 
+    const handleDeleteExpertise = async (expertiseId) => {
+        if (!window.confirm("Видалити цю експертизу?")) return;
+        try {
+            await axios.delete(`${API_CONFIG.BASE_URL}/expertise/delete/${expertiseId}`, {
+                headers: { 'Authorization': authHeader }
+            });
+            await fetchProjectData();
+        } catch (err) {
+            console.error('Error deleting expertise', err);
+            alert('Помилка при видаленні експертизи');
+        }
+    };
+
     const projectComments = allComments.filter(c => !c.expertise_Id);
     const handleContinueThread = (commentId) => navigate(`/expertise/${projectId}/comment/${commentId}`);
     const completedExpertises = localExpertises.filter(e => e.end_date !== null);
 
     return (
         <div className="client-page">
-            <div className="project-page-actions">
-                <button className="cancel-btn-text" onClick={() => navigate('/expertise')}>
+            {showDeleteModal && (
+                <div className="modal-overlay">
+                    <div className="modal-card">
+                        <div className="modal-card__header">
+                            <h2>Видалення проєкту</h2>
+                            <button className="modal-card__close" onClick={() => setShowDeleteModal(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-card__body">
+                            <p>
+                                Ви впевнені, що хочете видалити проєкт <strong>{localProject.name}</strong>?
+                            </p>
+                            <p className="confirm-delete-warning">
+                                Ця дія є незворотною.
+                            </p>
+                            <div className="modal-card__actions">
+                                <button className="cancel-btn-text" onClick={() => setShowDeleteModal(false)}>
+                                    Скасувати
+                                </button>
+                                <button className="action-btn" onClick={handleDeleteProject} style={{ background: 'var(--danger-color)' }}>
+                                    Видалити
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="project-page-actions-container">
+                <button className="cancel-btn-text cancel-btn-text-no-margin" onClick={() => navigate('/expertise')}>
                     <ArrowLeft size={16} /> Назад до списку
                 </button>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    {isAdmin && (
+                        <button className="action-btn-outline action-btn-outline-primary" onClick={handleToggleArchive}>
+                            {localProject.isarchived ? 'Відновити з архіву' : 'Заархівувати'}
+                        </button>
+                    )}
+                    {(isAdmin || (!localProject.isarchived && isAuthor)) && (
+                        <button className="action-btn-outline" style={{ borderColor: 'var(--danger-color)', color: 'var(--danger-color)' }} onClick={() => setShowDeleteModal(true)}>
+                            <Trash2 size={16} /> Видалити
+                        </button>
+                    )}
+                </div>
             </div>
+
+            {localProject.isarchived && (
+                <div className="archive-banner">
+                    Цей проєкт архівовано. Зміни заборонені.
+                </div>
+            )}
 
             <div className="project-detail-header">
                 <div>
@@ -229,26 +317,36 @@ const ExpertiseProjectPage = () => {
                         <span className="expertise-meta-item"><Calendar size={14} />{dayjs(localProject.creation_date).format('DD.MM.YYYY')}</span>
                     </div>
                     {pendingReviewers.length > 0 && (
-                        <div className="project-detail-meta" style={{ marginTop: '0.5rem', color: 'var(--primary-color)' }}>
+                        <div className="project-detail-meta project-detail-meta-pending">
                             <span className="expertise-meta-item">
-                                <User size={14} /> На перевірці у: {pendingReviewers.map(r => r.expert_nickname).join(', ')}
+                                <User size={14} /> В процесі: {pendingReviewers.map((r, idx) => (
+                                    <React.Fragment key={r.expertise_Id}>
+                                        {r.expert_nickname}
+                                        {isAdmin && (
+                                            <button className="cancel-btn-text" style={{ padding: 0, margin: '0 4px', color: 'var(--danger-color)' }} onClick={() => handleDeleteExpertise(r.expertise_Id)}>
+                                                <X size={12} />
+                                            </button>
+                                        )}
+                                        {idx < pendingReviewers.length - 1 ? ', ' : ''}
+                                    </React.Fragment>
+                                ))}
                             </span>
                         </div>
                     )}
                     {completedExpertises.length > 0 && (
-                        <div className="project-detail-meta" style={{ marginTop: '0.25rem', color: 'var(--success-color, #10b981)' }}>
+                        <div className="project-detail-meta project-detail-meta-completed">
                             <span className="expertise-meta-item">
                                 <User size={14} /> Перевірено експертами: {completedExpertises.map(r => r.expert_nickname).join(', ')}
                             </span>
                         </div>
                     )}
                 </div>
-                <div className="expert-actions">
+                <div className="expert-actions-container">
                     <span className={`expertise-status-badge status-${localProject.status}`}>
                         {STATUS_LABEL[localProject.status] || localProject.status}
                     </span>
-                    {canClaim && <button className="action-btn" onClick={handleClaim}>Взяти в роботу</button>}
-                    {isMyClaim && <button className="btn-danger-outline" onClick={handleUnclaim}>Відмовитись</button>}
+                    {canClaim && !localProject.isarchived && <button className="action-btn" onClick={handleClaim}>Взяти на експертизу</button>}
+                    {isMyClaim && !localProject.isarchived && <button className="btn-danger-outline" onClick={handleUnclaim}>Відмовитись</button>}
                 </div>
             </div>
 
@@ -260,7 +358,7 @@ const ExpertiseProjectPage = () => {
 
             <section className="project-section">
                 <h2 className="section-title">Експертні оцінки</h2>
-                {isMyClaim && myDraftExpertise && (
+                {isMyClaim && myDraftExpertise && !localProject.isarchived && (
                     <ReviewForm
                         reviewScore={reviewScore} setReviewScore={setReviewScore}
                         reviewText={reviewText} setReviewText={setReviewText}
@@ -282,6 +380,9 @@ const ExpertiseProjectPage = () => {
                                 onSaveEdit={handleSaveEdit}
                                 onDelete={handleDelete}
                                 onContinueThread={handleContinueThread}
+                                isArchived={localProject.isarchived}
+                                isAdmin={isAdmin}
+                                onDeleteExpertise={handleDeleteExpertise}
                             />
                         ))}
                     </div>
@@ -290,14 +391,16 @@ const ExpertiseProjectPage = () => {
 
             <section className="project-section">
                 <h2 className="section-title">Коментарі ({projectComments.length})</h2>
-                {authUser && <CommentInput onSubmit={(text) => addComment(text, null)} />}
+                {(!localProject.isarchived && authUser) && <CommentInput onSubmit={(text) => addComment(text, null)} />}
                 <CommentThread
                     comments={projectComments}
                     currentUserId={authUser?.user_Id}
+                    isArchived={localProject.isarchived}
                     onAdd={(text, replyToId) => addComment(text, null, replyToId)}
                     onSaveEdit={handleSaveEdit}
                     onDelete={handleDelete}
                     onContinueThread={handleContinueThread}
+                    isArchived={localProject.isarchived}
                 />
             </section>
         </div>
@@ -332,7 +435,7 @@ function DataModelsSection({ dataModels }) {
     );
 }
 
-function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment, onSaveEdit, onDelete, onContinueThread }) {
+function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment, onSaveEdit, onDelete, onContinueThread, isArchived, isAdmin, onDeleteExpertise }) {
     const exComments = allComments.filter(c => c.expertise_Id === ex.expertise_Id);
     return (
         <div className="expertise-review-card">
@@ -345,6 +448,11 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
                     {dayjs(ex.begin_date).format('DD.MM.YYYY')}
                     {ex.end_date && ` — ${dayjs(ex.end_date).format('DD.MM.YYYY')}`}
                 </span>
+                {isAdmin && (
+                    <button className="cancel-btn-text" style={{ marginLeft: 'auto', padding: 0, color: 'var(--danger-color)' }} onClick={() => onDeleteExpertise(ex.expertise_Id)}>
+                        <Trash2 size={14} />
+                    </button>
+                )}
             </div>
             {ex.review_text && <p className="expertise-review-text">{ex.review_text}</p>}
             {ex.attachments?.length > 0 && (
@@ -358,7 +466,7 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
             )}
             <div className="expertise-comment-section">
                 <p className="expertise-comment-title">Коментарі до оцінки ({exComments.length})</p>
-                {authUser && (
+                {(!isArchived && authUser) && (
                     <CommentInput
                         placeholder="Коментар до цієї оцінки…"
                         onSubmit={(text) => addComment(text, ex.expertise_Id)}
@@ -367,6 +475,7 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
                 <CommentThread
                     comments={exComments}
                     currentUserId={authUser?.user_Id}
+                    isArchived={isArchived}
                     onAdd={(text, replyToId) => addComment(text, ex.expertise_Id, replyToId)}
                     onSaveEdit={onSaveEdit}
                     onDelete={onDelete}

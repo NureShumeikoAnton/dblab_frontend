@@ -119,7 +119,7 @@ const ExpertiseThreadPage = () => {
                 <div className="project-comment__header">
                     <span className="project-comment__author">{authorNickname}</span>
                     <span className="project-comment__date">{formattedDate}</span>
-                    {authUser && (
+                    {(!project.isarchived && authUser) && (
                         <div className="project-comment__header-actions">
                             <button className="reply-btn" onClick={() => setReplyOpen(o => !o)}>
                                 <MessageSquare size={13} /> Відповісти
@@ -141,14 +141,15 @@ const ExpertiseThreadPage = () => {
                 )}
 
                 {!allComments || allComments.length === 0 ? (
-                    <p className="project-section__empty" style={{ marginTop: '1rem' }}>
+                    <p className="project-section__empty mt-1rem">
                         Відповідей ще немає.
                     </p>
                 ) : (
-                    <div className="project-comment__replies" style={{ marginTop: '1rem' }}>
+                    <div className="project-comment__replies mt-1rem">
                         <CommentThread
                             comments={allComments}
                             currentUserId={authUser?.user_Id}
+                            isArchived={project.isarchived}
                             onAdd={(text, replyToId) => addComment(text, replyToId ?? rootCommentId)}
                             onSaveEdit={handleSaveEdit}
                             onDelete={handleDelete}

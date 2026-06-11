@@ -24,7 +24,12 @@ const ProjectCard = ({ project, onClick }) => (
         onKeyDown={e => e.key === 'Enter' && onClick()}
     >
         <div className="card-header">
-            <h3>{project.name}</h3>
+            <h3 className="card-header-title">
+                {project.name}
+                {project.isarchived && (
+                    <span className="archive-badge">Архів</span>
+                )}
+            </h3>
             <span className={`expertise-status-badge status-${project.status}`}>
                 {STATUS_LABEL[project.status] || project.status}
             </span>
@@ -64,7 +69,9 @@ const ExpertisePage = () => {
     const [sortDir, setSortDir] = useState('desc');
     const [requestModalOpen, setRequestModalOpen] = useState(false);
     const [onlyMyExpertises, setOnlyMyExpertises] = useState(false);
-    const [hasActiveRequest, setHasActiveRequest] = useState(false);
+    const [showArchived, setShowArchived] = useState(false);
+    const [ownRequestStatus, setOwnRequestStatus] = useState(null);
+    const authHeader = useAuthHeader();
 
     const isStudent = authUser && authUser.role === 'student';
     const isAlreadyExpert = authUser && (authUser.role === 'expert' || authUser.role === 'admin');
@@ -82,16 +89,34 @@ const ExpertisePage = () => {
     }, []);
 
     useEffect(() => {
-        if (isStudent && authUser) {
-            const pending = localStorage.getItem(`expert_request_pending_${authUser.user_Id}`) === 'true';
-            setHasActiveRequest(pending);
-        }
-    }, [isStudent, authUser]);
+        const fetchOwnRequest = async () => {
+            if (isStudent && authUser) {
+                try {
+                    const res = await axios.get(`${API_CONFIG.BASE_URL}/expertRequest/getOwn`, {
+                        headers: { 'Authorization': authHeader }
+                    });
+                    console.log(res.data);
+                    if (res.data && res.data.length > 0) {
+                        setOwnRequestStatus(res.data[0].status);
+                    }
+                } catch (error) {
+                    if (error.response && error.response.status === 404) {
+                        setOwnRequestStatus(null);
+                    } else {
+                        console.error('Error fetching own expert request', error);
+                    }
+                }
+            }
+        };
+        fetchOwnRequest();
+    }, [isStudent, authUser, authHeader]);
 
     const displayed = useMemo(() => {
-        let result = statusFilter
-            ? projects.filter(p => p.status === statusFilter)
-            : [...projects];
+        let result = projects.filter(p => !!p.isarchived === showArchived);
+
+        if (statusFilter) {
+            result = result.filter(p => p.status === statusFilter);
+        }
             
         if (onlyMyExpertises && authUser) {
             result = result.filter(p => p.reviewers && p.reviewers.some(r => r.user_Id === authUser.user_Id));
@@ -102,7 +127,7 @@ const ExpertisePage = () => {
             return sortDir === 'asc' ? diff : -diff;
         });
         return result;
-    }, [projects, statusFilter, sortDir, onlyMyExpertises, authUser]);
+    }, [projects, statusFilter, sortDir, onlyMyExpertises, authUser, showArchived]);
 
     return (
         <div className="client-page">
@@ -110,13 +135,13 @@ const ExpertisePage = () => {
                 <ExpertRequestModal
                     authUser={authUser}
                     onClose={() => setRequestModalOpen(false)}
-                    onRequestSubmitted={() => setHasActiveRequest(true)}
+                    onRequestSubmitted={() => setOwnRequestStatus('pending')}
                 />
             )}
             <div className="expertise-page-header">
-                <h1 className="page-title">Експертиза проєктів</h1>
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    {isStudent && !hasActiveRequest && (
+                <h1 className="page-title">Експертиза ІТ-проєктів</h1>
+                <div className="expertise-page-header-actions">
+                    {isStudent && ownRequestStatus === null && (
                         <button
                             className="action-btn-outline"
                             onClick={() => setRequestModalOpen(true)}
@@ -124,8 +149,11 @@ const ExpertisePage = () => {
                             Стати експертом
                         </button>
                     )}
-                    {isStudent && hasActiveRequest && (
+                    {isStudent && ownRequestStatus === 'pending' && (
                         <span className="expert-request-pending-badge">Запит надіслано</span>
+                    )}
+                    {isStudent && ownRequestStatus === 'rejected' && (
+                        <span className="expert-request-rejected-badge">Запит відхилено</span>
                     )}
                     {authUser && (
                         <button
@@ -137,6 +165,21 @@ const ExpertisePage = () => {
                         </button>
                     )}
                 </div>
+            </div>
+
+            <div className="archive-tabs">
+                <button 
+                    onClick={() => setShowArchived(false)}
+                    className={`archive-tab-btn ${!showArchived ? 'active' : ''}`}
+                >
+                    Активні
+                </button>
+                <button 
+                    onClick={() => setShowArchived(true)}
+                    className={`archive-tab-btn ${showArchived ? 'active' : ''}`}
+                >
+                    Архів
+                </button>
             </div>
 
             <div className="expertise-controls">
@@ -151,9 +194,9 @@ const ExpertisePage = () => {
                         </button>
                     ))}
                 </div>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div className="expertise-controls-right">
                     {isAlreadyExpert && (
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-color)', fontSize: '0.9rem' }}>
+                        <label className="only-my-expertises-label">
                             <input 
                                 type="checkbox" 
                                 checked={onlyMyExpertises} 
@@ -231,8 +274,8 @@ function ExpertRequestModal({ authUser, onClose, onRequestSubmitted }) {
                 </div>
                 {submitted ? (
                     <div className="modal-card__body">
-                        <p style={{ color: 'var(--text-color)', marginBottom: '1rem' }}>
-                            Ваш запит надіслано! Адміністратор розгляне його найближчим часом.
+                        <p className="modal-success-text">
+                            Дякуємо за ваш запит! Адміністратор перевірить його та надасть вам відповідну роль.
                         </p>
                         <button className="action-btn" onClick={onClose}>Закрити</button>
                     </div>

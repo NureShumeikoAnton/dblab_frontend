@@ -36,9 +36,7 @@ const HeaderComponent = () => {
                             <li><NavLink to="/schedule">Розклад</NavLink></li>
                             <li><NavLink to="/library">Бібліотека</NavLink></li>
                             <li><NavLink to="/expertise">Експертиза</NavLink></li>
-                            {authUser?.role === 'admin' && (
-                                <li><NavLink to="/apanel/experts">Експерти</NavLink></li>
-                            )}
+
                             <li><NavLink to="/dashboard">Особистий кабінет</NavLink></li>
                         </ul>
                     </nav>

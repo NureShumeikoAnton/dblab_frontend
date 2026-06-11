@@ -36,7 +36,7 @@ export function CommentInput({ onSubmit, placeholder = 'Залиште коме�
     );
 }
 
-export function CommentThread({ comments, currentUserId, onAdd, onSaveEdit, onDelete, onContinueThread }) {
+export function CommentThread({ comments, currentUserId, onAdd, onSaveEdit, onDelete, onContinueThread, isArchived }) {
     if (!comments) return null;
     return (
         <div className="project-comments-list">
@@ -49,6 +49,7 @@ export function CommentThread({ comments, currentUserId, onAdd, onSaveEdit, onDe
                     onSaveEdit={onSaveEdit}
                     onDelete={onDelete}
                     onContinueThread={onContinueThread}
+                    isArchived={isArchived}
                     depth={0}
                     autoExpandLevels={0}
                 />
@@ -57,7 +58,7 @@ export function CommentThread({ comments, currentUserId, onAdd, onSaveEdit, onDe
     );
 }
 
-export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, onDelete, onContinueThread, depth = 0, autoExpandLevels = 0 }) {
+export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, onDelete, onContinueThread, isArchived, depth = 0, autoExpandLevels = 0 }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [replyOpen, setReplyOpen] = useState(false);
     const [repliesExpanded, setRepliesExpanded] = useState(autoExpandLevels > 0);
@@ -114,12 +115,12 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
                 <span className="project-comment__author">{authorName}</span>
                 <span className="project-comment__date">{formattedDate}</span>
                 <div className="project-comment__header-actions">
-                    {currentUserId && (
+                    {(!isArchived && currentUserId) && (
                         <button className="reply-btn" onClick={() => setReplyOpen(o => !o)}>
                             <MessageSquare size={13} /> Відповісти
                         </button>
                     )}
-                    {isOwner && (
+                    {(!isArchived && isOwner) && (
                         <div className="project-comment__menu-wrapper">
                             <button className="project-comment__menu-btn" onClick={() => setMenuOpen(o => !o)}>
                                 &#8942;
@@ -198,6 +199,7 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
                                     onSaveEdit={onSaveEdit}
                                     onDelete={onDelete}
                                     onContinueThread={onContinueThread}
+                                    isArchived={isArchived}
                                     depth={depth + 1}
                                     autoExpandLevels={childLevels}
                                 />
