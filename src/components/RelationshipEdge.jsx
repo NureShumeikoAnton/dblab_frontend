@@ -15,29 +15,34 @@ const EDGE_OFFSET = FAR + LEG + 6;
 /**
  * Draws IE crow's foot notation symbols at one end of an edge.
  * facing is the Position of the handle (Left or Right).
+ * IE convention: the maximum-cardinality symbol sits next to the table
+ * (crow's foot legs touch the entity), the minimum-cardinality symbol
+ * (circle/tick) sits farther out along the edge.
  */
 const CrowsFoot = ({ cx, cy, facing, cardinality, color }) => {
     const d = facing === Position.Right ? 1 : -1;
-    const nearX = cx + d * NEAR;
-    const farX  = cx + d * FAR;
-    const legX  = cx + d * (FAR + LEG);
+    const isMany     = cardinality === '1..*' || cardinality === '0..*';
+    const isOptional = cardinality === '0..*' || cardinality === '0..1';
     const lp = { stroke: color, strokeWidth: 1.5, fill: 'none' };
 
-    const nearEl = (cardinality === '0..*' || cardinality === '0..1')
-        ? <circle cx={nearX} cy={cy} r={CIRCLE_R} stroke={color} strokeWidth={1.5} fill="#fff" />
-        : <line x1={nearX} y1={cy - TICK_H} x2={nearX} y2={cy + TICK_H} {...lp} />;
+    const footX = cx + d * (NEAR + LEG);                // crow's foot vertex
+    const minX  = cx + d * (isMany ? FAR + LEG : FAR);  // min symbol, past the foot
 
-    const farEl = (cardinality === '1..*' || cardinality === '0..*')
+    const maxEl = isMany
         ? (
             <>
-                <line x1={farX} y1={cy}         x2={legX} y2={cy}          {...lp} />
-                <line x1={farX} y1={cy}         x2={legX} y2={cy - SPREAD} {...lp} />
-                <line x1={farX} y1={cy}         x2={legX} y2={cy + SPREAD} {...lp} />
+                <line x1={footX} y1={cy} x2={cx} y2={cy}          {...lp} />
+                <line x1={footX} y1={cy} x2={cx} y2={cy - SPREAD} {...lp} />
+                <line x1={footX} y1={cy} x2={cx} y2={cy + SPREAD} {...lp} />
             </>
           )
-        : <line x1={farX} y1={cy - TICK_H} x2={farX} y2={cy + TICK_H} {...lp} />;
+        : <line x1={cx + d * NEAR} y1={cy - TICK_H} x2={cx + d * NEAR} y2={cy + TICK_H} {...lp} />;
 
-    return <>{nearEl}{farEl}</>;
+    const minEl = isOptional
+        ? <circle cx={minX} cy={cy} r={CIRCLE_R} stroke={color} strokeWidth={1.5} fill="#fff" />
+        : <line x1={minX} y1={cy - TICK_H} x2={minX} y2={cy + TICK_H} {...lp} />;
+
+    return <>{maxEl}{minEl}</>;
 };
 
 /**
