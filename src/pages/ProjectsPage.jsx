@@ -17,6 +17,18 @@ const normalizeProject = (p) => ({
     created_at: p.creation_date ?? p.created_at ?? null,
 });
 
+// getAll has no per-user filtering on the backend; we filter client-side
+// by the user id baked into the JWT payload ({ id, role }).
+const getUserIdFromToken = (token) => {
+    try {
+        const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(atob(base64));
+        return payload.id ?? null;
+    } catch {
+        return null;
+    }
+};
+
 const ProjectsPage = () => {
     const navigate = useNavigate();
     const authHeader = useAuthHeader();
@@ -44,14 +56,16 @@ const ProjectsPage = () => {
     };
 
     useEffect(() => {
-        fetch(`${API_CONFIG.BASE_URL}/project/getAll`, { headers: buildHeaders() })
+        fetch(`${API_CONFIG.BASE_URL}/project/getAll/normalisation`, { headers: buildHeaders() })
             .then((r) => {
                 if (!r.ok) throw new Error(`HTTP ${r.status}`);
                 return r.json();
             })
             .then((data) => {
                 const list = Array.isArray(data) ? data : (data.projects ?? []);
-                setProjects(list.map(normalizeProject));
+                const myId = getUserIdFromToken(authHeader?.split(' ')[1] ?? '');
+                const mine = list.filter((p) => p.author_user_Id === myId);
+                setProjects(mine.map(normalizeProject));
             })
             .catch((err) => {
                 console.error('[ProjectsPage] load failed', err);
@@ -66,7 +80,9 @@ const ProjectsPage = () => {
             const r = await fetch(`${API_CONFIG.BASE_URL}/project/create`, {
                 method: 'POST',
                 headers: buildHeaders(true),
-                body: JSON.stringify({ name, description }),
+                // Without isnormalisation the project won't be returned by
+                // /getAll/normalisation after reload.
+                body: JSON.stringify({ name, description, isnormalisation: true }),
             });
             if (!r.ok) throw new Error(`HTTP ${r.status}`);
             const data = await r.json();
