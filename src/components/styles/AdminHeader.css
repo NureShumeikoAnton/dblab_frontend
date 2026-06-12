@@ -47,6 +47,32 @@
     color: var(--primary-light);
 }
 
+.admin-header-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-header-nav__link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255,255,255,0.85);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.admin-header-nav__link:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border-color: rgba(255,255,255,0.65);
+}
+
 .up-to-date-text{
     margin-left: 10px;
     font-size: 24px;

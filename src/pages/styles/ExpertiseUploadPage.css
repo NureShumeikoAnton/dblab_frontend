@@ -1,0 +1,104 @@
+.upload-form {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.upload-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.upload-form__label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.upload-form__input,
+.upload-form__textarea,
+.upload-form__select {
+    padding: 10px 14px;
+    border: 1.5px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    color: var(--text-color);
+    background: var(--white);
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.upload-form__input:focus,
+.upload-form__textarea:focus,
+.upload-form__select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 148, 200, 0.1);
+}
+
+.upload-form__textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.upload-form__select {
+    cursor: pointer;
+    min-width: 130px;
+}
+
+.upload-form__error {
+    font-size: 0.82rem;
+    color: #d32f2f;
+}
+
+.input-error {
+    border-color: #d32f2f;
+}
+
+.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+.model-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.model-row .upload-form__input {
+    flex: 1;
+}
+
+.model-remove-btn {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.model-remove-btn:hover {
+    color: #d32f2f;
+    background-color: #fce4e4;
+}
+
+.model-add-btn {
+    align-self: flex-start;
+    margin-top: 0.25rem;
+}
+
+.upload-form__actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding-top: 0.5rem;
+}

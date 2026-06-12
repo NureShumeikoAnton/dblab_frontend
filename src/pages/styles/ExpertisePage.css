@@ -1,0 +1,332 @@
+.expertise-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.expertise-page-header .page-title {
+    margin-bottom: 0;
+}
+
+.expertise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.expertise-card {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.expertise-card .card-header {
+    display: block;
+    text-align: center;
+    width: 100%;
+}
+
+.expertise-card .card-header h3 {
+    margin: 0;
+}
+
+.expertise-card-description {
+    color: var(--text-light);
+    font-size: 0.93rem;
+    line-height: 1.5;
+    flex: 1;
+    margin: 0;
+}
+
+.expertise-card-meta {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.expertise-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.expertise-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+}
+
+.expertise-details-link {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--primary-color);
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.expertise-card:hover .expertise-details-link {
+    color: var(--primary-dark);
+    gap: 6px;
+}
+
+.expertise-status-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    position: absolute;
+    top: 0.3rem;
+    right: 0.5rem;
+}
+
+.status-pending {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.status-in-review {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-reviewed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.expertise-empty {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 1.1rem;
+    margin-top: 3rem;
+}
+
+.expertise-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+}
+
+.expertise-filter-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.expertise-filter-btn {
+    background: transparent;
+    border: 1.5px solid #ddd;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: var(--transition);
+}
+
+.expertise-filter-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.expertise-filter-btn.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white);
+}
+
+.expertise-sort-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1.5px solid #ddd;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: var(--transition);
+}
+
+/* Expert request pending badge */
+.expert-request-pending-badge {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1565c0;
+    background: #e3f2fd;
+    border-radius: 20px;
+    padding: 4px 12px;
+}
+
+/* Expert request rejected badge */
+.expert-request-rejected-badge {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #c62828;
+    background: #ffebee;
+    border-radius: 20px;
+    padding: 4px 12px;
+}
+
+/* Modal overlay + card */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 100%;
+    max-width: 480px;
+    overflow: hidden;
+}
+
+.modal-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+}
+
+.modal-card__title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.modal-card__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.modal-card__close:hover {
+    color: var(--text-color);
+    background: var(--bg-secondary);
+}
+
+.modal-card__body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-card__hint {
+    font-size: 0.88rem;
+    color: var(--text-light);
+    margin: 0;
+}
+
+.modal-card__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.modal-card__actions .cancel-btn-text {
+    margin-top: 0;
+}
+
+.expertise-sort-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.card-header-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.archive-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    background: #e0e0e0;
+    color: #616161;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.expertise-page-header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.archive-tabs {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+}
+
+.archive-tab-btn {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding-bottom: 0.25rem;
+    margin-bottom: -0.5rem;
+    border-bottom: 2px solid transparent;
+    color: var(--text-light);
+    font-weight: normal;
+}
+
+.archive-tab-btn.active {
+    font-weight: bold;
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.expertise-controls-right {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.only-my-expertises-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.modal-success-text {
+    color: var(--text-color);
+    margin-bottom: 1rem;
+}
