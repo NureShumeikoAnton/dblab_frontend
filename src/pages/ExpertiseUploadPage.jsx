@@ -77,7 +77,7 @@ const ExpertiseUploadPage = () => {
             // 1. Create project
             const response = await axios.post(
                 `${API_CONFIG.BASE_URL}/project/create`,
-                { name: name.trim(), description: description.trim() },
+                { name: name.trim(), description: description.trim(), isexpertise: true },
                 {
                     headers: {
                         'Authorization': authHeader
