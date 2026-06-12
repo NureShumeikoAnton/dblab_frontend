@@ -95,8 +95,7 @@ const ExpertiseProjectPage = () => {
     const isExpert = authUser && (authUser.role === 'expert' || authUser.role === 'admin');
     const currentUserId = authUser?.id || authUser?.user_Id;
     const isAuthor = authUser && localProject && currentUserId === localProject.author.user_Id;
-    console.log(localProject);
-    console.log(isAuthor);
+    
     const myDraftExpertise = localExpertises.find(e => e.end_date === null && e.expert_user_Id === currentUserId);
     const hasCompletedReview = localExpertises.some(e => e.end_date !== null && e.expert_user_Id === currentUserId);
     const isMyClaim = !!myDraftExpertise;
