@@ -4,6 +4,8 @@ import { RequireAuth } from 'react-auth-kit';
 
 import HomePage from "./pages/HomePage.jsx";
 import CoursesPage from "./pages/CoursesPage.jsx";
+import ProjectsPage from "./pages/ProjectsPage.jsx";
+import EditorPage from "./pages/EditorPage.jsx";
 import DirectionsPage from "./pages/DirectionsPage.jsx";
 import SchedulePage from "./pages/SchedulePage.jsx";
 import ContactPage from "./pages/ContactPage.jsx";
@@ -13,6 +15,7 @@ import LibraryPage from "./pages/LibraryPage.jsx";
 
 import MainLayout from "./layouts/MainLayout.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
+import EditorLayout from "./layouts/EditorLayout.jsx";
 
 import Teachers from "./pages/adminPages/teachers.jsx";
 import Languages from "./pages/adminPages/languages.jsx";
@@ -65,6 +68,7 @@ const App = () => {
                     <Route path={"/directions/:directionId"} element={<DirectionDetailsPage/>}></Route>
                     <Route path={"/schedule"} element={<SchedulePage/>}/>
                     <Route path={"/contact"} element={<ContactPage/>}/>
+                    <Route path={"/projects"} element={<ProjectsPage/>}/>
                     <Route path={"/library"} element={<LibraryPage/>}/>
                     <Route path={"/library/resource/:resourceId"} element={<ResourcePage/>}/>
                     <Route path={"/library/myresources/:userId"} element={<MyResourcesPage/>}/>
@@ -76,6 +80,9 @@ const App = () => {
                     <Route path={"/dashboard"} element={<Dashboard/>}/>
                     <Route path="/work/:id" element={<RequireAuth fallbackPath="/"><StudentWorkDetails/></RequireAuth>} />
                     <Route path="/workpage/:id" element={<WorkPage/>} />
+                </Route>
+                <Route path={'/projects/:projectId'} Component={EditorLayout}>
+                    <Route index element={<EditorPage/>}/>
                 </Route>
                 <Route path={'/apanel'} Component={AdminLayout}>
                     <Route path={"teachers"} element={<Teachers/>}></Route>

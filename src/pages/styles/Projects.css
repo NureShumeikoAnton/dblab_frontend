@@ -1,0 +1,155 @@
+.projects-page {
+    min-height: calc(100vh - 70px);
+    background-color: var(--bg-secondary);
+    overflow: hidden;
+}
+
+.projects-page__container {
+    margin: 0 auto;
+    padding: 56px 32px 80px;
+}
+
+/* ─── Decorative background orb ──────────────────────────────────────────── */
+
+.projects-page__container::before {
+    content: '';
+    position: fixed;
+    top: -120px;
+    right: -120px;
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 148, 200, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: orb-drift 8s ease-in-out infinite alternate;
+}
+
+@keyframes orb-drift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(-30px, 30px) scale(1.08); }
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────────── */
+
+/* ─── Top section (header + guide side by side) ──────────────────────────── */
+
+.projects-page__top {
+    display: flex;
+    align-items: stretch;
+    gap: 32px;
+    margin-bottom: 44px;
+    position: relative;
+    z-index: 1;
+    min-height: 200px;
+    max-height: 250px;
+}
+
+.projects-page__header {
+    flex: 0 0 auto;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 0 0 0 28px;
+    border-left: 3px solid var(--primary-color);
+    animation: header-bar-grow 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes header-bar-grow {
+    from { border-left-color: transparent; }
+    to   { border-left-color: var(--primary-color); }
+}
+
+.projects-page__title {
+    font-size: 44px;
+    font-weight: 800;
+    color: var(--text-color);
+    margin: 0 0 10px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    opacity: 0;
+    animation: slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.projects-page__title span {
+    color: var(--primary-color);
+}
+
+.projects-page__sub {
+    font-size: 16px;
+    color: var(--text-light);
+    margin: 0;
+    opacity: 0;
+    animation: slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+.projects-page__new-btn {
+    margin-top: auto;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 11px 22px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 14px rgba(0, 148, 200, 0.35);
+    white-space: nowrap;
+    position: absolute;
+    bottom: 10px;
+    overflow: hidden;
+    opacity: 0;
+    animation: slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+/* shimmer sweep on hover */
+.projects-page__new-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.28) 50%,
+        transparent 80%
+    );
+    transition: left 0.4s ease;
+}
+
+.projects-page__new-btn:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 6px 18px rgba(0, 148, 200, 0.4);
+    transform: translateY(-1px);
+}
+
+.projects-page__new-btn:hover::after {
+    left: 160%;
+}
+
+/* ─── Shared entrance animation ───────────────────────────────────────────── */
+
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Card list area ──────────────────────────────────────────────────────── */
+
+.projects-page__container > *:not(.projects-page__top) {
+    position: relative;
+    z-index: 1;
+}
+
+.project-page__count {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 40px;
+    text-align: left;
+}

@@ -1,0 +1,35 @@
+.save-button {
+    position: relative;
+    padding: 7px 20px;
+    border: 2px solid #e8edf4;
+    border-radius: var(--border-radius);
+    background: transparent;
+    color: #bcc5cf;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: not-allowed;
+    transition: var(--transition);
+}
+
+/* Active state wired in Phase 16 */
+.save-button:not(:disabled) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    cursor: pointer;
+}
+
+.save-button:not(:disabled):hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.save-button__dot {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    border: 1.5px solid #fff;
+}

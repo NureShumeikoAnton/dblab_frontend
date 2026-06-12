@@ -1,0 +1,236 @@
+.table-node {
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e8edf4;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    min-width: 200px;
+    max-width: 280px;
+    overflow: hidden;
+    font-family: inherit;
+    cursor: grab;
+}
+
+.table-node__header {
+    padding: 10px 12px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e8edf4;
+    border-left: 4px solid transparent;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.table-node__name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-node__body {
+    padding: 4px 0;
+}
+
+.table-node__row {
+    position: relative;  /* anchors per-row FD handles to their own row */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--text-color);
+    border-bottom: 1px solid #f1f5f9;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.table-node__row--selected {
+    background: #eff6ff;
+}
+
+.table-node__row--staged {
+    background: #f0fdf4;
+    outline: 1px solid #86efac;
+    outline-offset: -1px;
+}
+
+.table-node__row:last-child {
+    border-bottom: none;
+}
+
+.table-node__row--pk .table-node__attr-name {
+    font-weight: 700;
+}
+
+/* Left column: key badge slot — fixed width so names line up */
+.table-node__key-col {
+    width: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-node__badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 3px;
+    border-radius: 3px;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+}
+
+.table-node__badge--pk {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.table-node__badge--fk {
+    background: #e0e7ff;
+    color: #3730a3;
+    border: 1px solid #a5b4fc;
+}
+
+/* Middle column: attribute name — takes all remaining space */
+.table-node__attr-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+}
+
+/* Right column: data type — blue tinted, never wraps */
+.table-node__attr-type {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: #2563eb;
+    white-space: nowrap;
+}
+
+/* Relationship handles — functional but invisible in Phase 5 */
+.table-node__handle,
+.react-flow__node-tableNode .react-flow__handle {
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    min-width: 1px;
+    min-height: 1px;
+    border: none;
+    background: transparent;
+}
+
+/* FD per-attribute handles — half-circle tab on the node edge.
+ * Edit size/color here: width, height, background.
+ * Left handle:  flat on left,  curve on right  (border-radius: 0 R R 0)
+ * Right handle: curve on left, flat on right   (border-radius: R 0 0 R)
+ * ─────────────────────────────────────────────────────────────────────── */
+.react-flow__node-tableNode .react-flow__handle.table-node__fd-handle {
+    opacity: 0;
+    width: 4px;
+    height: 8px;
+    min-width: 4px;
+    min-height: 8px;
+    border-radius: 0 4px 4px 0;
+    background: #94a3b8;
+    border: none;
+    box-shadow: none;
+    cursor: crosshair;
+    transition: opacity 0.15s ease;
+    pointer-events: all;
+}
+
+/* Right-edge handle — mirror of the left shape */
+.react-flow__node-tableNode .react-flow__handle.table-node__fd-handle--right {
+    border-radius: 4px 0 0 4px;
+}
+
+.react-flow__node-tableNode .react-flow__handle.table-node__fd-handle--visible {
+    opacity: 1;
+}
+
+/* Source handle turns blue while a connection is being dragged from it */
+.react-flow__node-tableNode .react-flow__handle.table-node__fd-handle.react-flow__handle-connecting {
+    background: #2563eb;
+    opacity: 1;
+}
+
+/* Valid target handle highlighted on hover during connection */
+.react-flow__node-tableNode .react-flow__handle.table-node__fd-handle.react-flow__handle-valid {
+    background: #0ea5e9;
+    opacity: 1;
+}
+
+/* React Flow wrapper overrides */
+.react-flow__node-tableNode {
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.react-flow__node-tableNode.selected .table-node {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 1px var(--primary-light);
+}
+
+/* NF violation inline indicator badges */
+.table-node__issue {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    margin-left: 4px;
+    cursor: help;
+}
+
+.table-node__issue--error {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+}
+
+.table-node__issue--warning {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fcd34d;
+}
+
+.table-node--drop-target {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px #2563eb40;
+    background: #eff6ff;
+}
+
+.table-node--drop-target .table-node__header {
+    background: #dbeafe;
+}
+
+/* Pick-mode: source table (the one that started the relationship) */
+.table-node--rel-source {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px #7c3aed40;
+}
+
+/* Pick-mode: candidate target tables glow green on hover */
+.table-node--rel-target {
+    cursor: crosshair;
+}
+
+.table-node--rel-target .table-node__header {
+    cursor: crosshair;
+}
+
+.table-node--rel-target:hover {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 2px #16a34a40;
+}
