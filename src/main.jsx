@@ -5,6 +5,7 @@ import App from './App.jsx'
 import {BrowserRouter} from "react-router-dom";
 import createStore from "react-auth-kit/createStore";
 import AuthProvider from "react-auth-kit";
+import { ToastProvider } from './context/ToastContext';
 
 const store = createStore({
     authName: '_auth',
@@ -17,7 +18,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
         <AuthProvider store={store}>
+          <ToastProvider>
             <App />
+          </ToastProvider>
         </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

@@ -106,15 +106,23 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
             });
 
             // Handle successful login with react-auth-kit
+            console.log("Login Response:", response.data);
+
+            const user = response.data.user; 
+
             signIn({
                 auth: {
                     token: response.data.token,
                     type: 'Bearer'
                 },
                 userState: {
-                    username: response.data.nickname
+                    username: response.data.nickname,
+                    user_Id: response.data.user_Id,
+                    role: user.role
                 }
-            })
+            });
+
+            console.log("Збережено в Auth State:", { username: user.nickname, id: user.id });
 
             // clear form data
             setFormData({
@@ -127,6 +135,8 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
             });
 
             onClose();
+
+            window.location.reload();
         } catch (error) {
             console.error("Login error:", error);
             setApiError(

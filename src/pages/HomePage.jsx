@@ -2,15 +2,18 @@ import './styles/HomePage.css'
 import { Video } from 'lucide-react';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; 
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import API_CONFIG from '../config/api.js';
 
-const SkillCard = ({ name }) => (
-    <div className='skill-card'>
-        <p className='skill-card__name'>{name}</p>
-    </div>
+const SkillCard = ({ id, name }) => (
+    <Link to={`/studentproposals?directionId=${id}`} className='skill-card-link'>
+        <div className='skill-card'>
+            <p className='skill-card__name'>{name}</p>
+        </div>
+    </Link>
 );
 
 const DirectionCard = ({ name, link, description }) => (
@@ -48,32 +51,38 @@ const ExpertCard = ({ name, role, image, position, placeOfEmployment, level, des
 }
 
 const HomePage = () => {
-    const skills = [
-        {
-            id: 1,
-            name: "Моделювання БД",
-        },
-        {
-            id: 2,
-            name: "Високопродуктивні БД",
-        },
-        {
-            id: 3,
-            name: "Експертиза проєктів БД",
-        },
-        {
-            id: 4,
-            name: "Реінжиніринг БД",
-        },
-        {
-            id: 5,
-            name: "Реляційні та NoSQL СУБД",
-        },
-    ];
+    const [skills, setSkills] = useState([]);
     const [directions, setDirections] = useState([]);
     const [experts, setExperts] = useState([]);
 
     useEffect(() => {
+        // 1. Skills (Directions from DB) - виводимо напрями з найбільшою кількістю пропозицій
+        Promise.all([
+            axios.get(`${API_CONFIG.BASE_URL}/direction/getall`),
+            axios.get(`${API_CONFIG.BASE_URL}/proposal/getall`)
+        ])
+            .then(([dirRes, propRes]) => {
+                const proposalCounts = {};
+                propRes.data.forEach(prop => {
+                    if (prop.direction_Id) {
+                        proposalCounts[prop.direction_Id] = (proposalCounts[prop.direction_Id] || 0) + 1;
+                    }
+                });
+                const sortedDirections = dirRes.data
+                    .map(skill => ({
+                        id: skill.direction_Id,
+                        name: skill.name,
+                        proposalCount: proposalCounts[skill.direction_Id] || 0
+                    }))
+                    .filter(skill => skill.proposalCount > 0)
+                    .sort((a, b) => b.proposalCount - a.proposalCount);
+
+                setSkills(sortedDirections);
+            })
+            .catch(error => {
+                console.error("Error fetching skills:", error);
+            });
+
         axios.get(`${API_CONFIG.BASE_URL}/developmentDirection/getall`)
             .then(response => {
                 setDirections(response.data.slice(0, 4).map(direction => ({
@@ -122,10 +131,11 @@ const HomePage = () => {
                     </a>
                     <a className='dblab-presentation__button dblab-presentation__skills-button'
                         href='/courses'>
-                        Переглянути навички
+                        Переглянути дисципліни
                     </a>
                 </div>
             </section>
+            
             <section className='info'>
                 <h3 className='info__heading'>
                     Інформація про гурток
@@ -189,7 +199,13 @@ const HomePage = () => {
                         ))}
                     </Slider>
                 </div>
+
+                {/* Кнопка веде на сторінку всіх напрямів */}
+                <Link to="/studentdirections" className='directions__all-directions-button'>
+                    Усі напрями роботи гуртка
+                </Link>
             </section>
+
             <section className='directions'>
                 <h3 className='directions__heading'>
                     Обери свій напрям професійного розвитку з базами даних
@@ -199,8 +215,9 @@ const HomePage = () => {
                         <DirectionCard key={direction.id} {...direction} />
                     ))}
                 </div>
+
                 <a href="/directions" className='directions__all-directions-button'>
-                    Усі напрями
+                    Усі напрями розвитку
                 </a>
             </section>
             <section className='experts'>

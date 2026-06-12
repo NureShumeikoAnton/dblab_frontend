@@ -1,0 +1,60 @@
+/* Сітка для квадратних карток */
+.cards-grid-squares {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    justify-content: center;
+}
+
+.card-link-wrapper {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+/* Картка "Синій квадрат" */
+.skill-card-visual {
+    background: #fff;
+    border-radius: 16px;
+    border: 3px solid #009CCF; 
+    min-height: 250px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.skill-card-visual:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 156, 207, 0.2);
+    border-color: #007ba3;
+}
+
+.skill-title {
+    color: #009CCF;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    line-height: 1.3;
+}
+
+.skill-description {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+    font-weight: 400;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

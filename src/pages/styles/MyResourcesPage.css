@@ -1,0 +1,329 @@
+.my-resources-page {
+    padding: 20px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.page-title {
+    color: var(--primary-color);
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.resource-list-item {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+    border: 1px solid transparent;
+}
+
+.resource-list-item:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.resource-info {
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.resource-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+.resource-meta {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    display: flex;
+    gap: 15px;
+}
+
+.resource-stats {
+    display: flex;
+    gap: 15px;
+    font-weight: 500;
+    color: var(--primary-dark);
+}
+
+.resource-actions {
+    position: relative;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+.action-btn:hover {
+    background-color: var(--bg-secondary);
+}
+
+.context-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--white);
+    border: 1px solid #eee;
+    box-shadow: var(--box-shadow);
+    border-radius: 6px;
+    z-index: 10;
+    min-width: 120px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.context-menu-item {
+    padding: 10px 15px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.context-menu-item:hover {
+    background-color: var(--bg-secondary);
+}
+
+.context-menu-item.delete {
+    color: #e74c3c;
+}
+
+.add-resource-btn {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+}
+
+.add-resource-btn:hover {
+    background-color: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--white);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--box-shadow);
+}
+
+.modal-title {
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.resource-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-input, .form-textarea, .form-select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.error-text {
+    color: #e74c3c;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-light);
+}
+
+.btn-save {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-save:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+
+.direction-select-container {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+}
+
+.direction-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 2px 0;
+}
+
+.checkbox-label {
+    color: #333;
+    font-size: 0.95rem;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 400;
+}
+
+.direction-checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+
+.checkbox-label {
+    color: var(--text-color);
+    font-size: 0.95rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.recommended-tick {
+    color: var(--primary-color);
+    font-size: 1rem;
+    margin-left: 6px;
+    vertical-align: middle;
+    padding-bottom: 8px;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.status-badge.verified {
+    background-color: #e6fffa;
+    color: #27ae60;
+    border: 1px solid #27ae60;
+}
+
+.status-badge.unverified {
+    background-color: #ffe6e6;
+    color: #c0392b;
+    border: 1px solid #c0392b;
+}
+
+.resource-list-item.disabled {
+    background-color: #fafafa;
+    opacity: 0.9;
+}
+
+.resource-list-item.disabled .resource-info {
+    cursor: default;
+}
+
+
+.resource-list-item.disabled:hover {
+    transform: none !important;
+    border-color: transparent !important;
+    box-shadow: var(--box-shadow) !important;
+}
+
+
+.resource-list-item:hover {
+    z-index: 10;
+    position: relative;
+}
+
+.resource-list-item.z-index-active {
+    z-index: 100;
+    position: relative;
+}

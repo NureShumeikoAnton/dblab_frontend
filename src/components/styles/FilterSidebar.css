@@ -1,0 +1,156 @@
+.filter-sidebar {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border-top: 4px solid var(--secondary-color);
+    height: fit-content;
+}
+
+.filter-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.filter-group {
+    margin-bottom: 20px;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.info-icon {
+    color: var(--text-light);
+    cursor: help;
+}
+
+.filter-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+/* Inputs styling */
+.search-input-sidebar, .select-sidebar {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.search-box-sidebar {
+    position: relative;
+}
+.search-input-sidebar { padding-left: 30px; }
+.search-icon { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #999; }
+
+/* --- RANGE SLIDER STYLES --- */
+.range-slider-container {
+    position: relative;
+    padding-top: 10px;
+}
+
+.range-values {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.slider-track-wrapper {
+    position: relative;
+    height: 20px;
+}
+
+.slider-track {
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background: #e0e0e0;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 2px;
+}
+
+.slider-range {
+    position: absolute;
+    height: 4px;
+    background: var(--primary-color);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.thumb {
+    position: absolute;
+    pointer-events: none; /* Пропускає кліки крізь себе */
+    -webkit-appearance: none;
+    width: 100%;
+    background: none;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    margin: 0;
+}
+
+.thumb::-webkit-slider-thumb {
+    pointer-events: auto; /* Вмикаємо кліки тільки на "бігунку" */
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 2px solid var(--secondary-color);
+    cursor: pointer;
+    margin-top: -6px; /* center thumb */
+}
+
+/* --- SPARKLINES --- */
+.directions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.direction-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dir-name {
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.sparkline-wrapper {
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.sparkline-wrapper:hover {
+    opacity: 1;
+}

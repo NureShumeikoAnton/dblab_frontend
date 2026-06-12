@@ -2,7 +2,7 @@
 .universal-modal-window {
     background-color: #fff;
     border-radius: 8px;
-    width: 500px;
+    width: 900px;
     max-width: 90%;
     max-height: 90vh;
     overflow-y: auto;
@@ -78,10 +78,45 @@
     resize: vertical;
     outline: none;
     box-sizing: border-box;
-    height: 200px;
+    height: 100px;
 }
 
 .textarea-element:focus {
     border-color: var(--primary-light);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.universal-modal-row, 
+.universal-modal-row > div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.universal-modal-row label,
+.universal-modal-row .input-label {
+    flex: 0 0 20%;
+    min-width: 120px;
+    text-align: right;
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+.universal-modal-row input,
+.universal-modal-row select,
+.universal-modal-row textarea,
+.universal-modal-row .form-control {
+    flex: 1;
+    width: 100%;
+}
+
+.universal-modal-row:has(textarea) {
+    align-items: flex-start;
+}
+
+.universal-modal-row:has(textarea) label {
+    margin-top: 8px;
 }

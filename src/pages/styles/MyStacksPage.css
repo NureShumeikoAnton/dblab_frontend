@@ -1,0 +1,142 @@
+.modal-step-success {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.modal-actions-centered {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.modal-divider {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 20px 0 10px 0;
+}
+
+.modal-subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.stack-resources-list-edit {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+}
+
+.stack-res-item-edit {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.stack-res-item-edit.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.stack-res-item-edit.clickable-row:hover {
+    background-color: #e6f7ff;
+}
+
+.stack-res-item-edit:last-child {
+    border-bottom: none;
+}
+
+.res-name {
+    font-size: 0.9rem;
+    color: #333;
+    pointer-events: none;
+}
+
+.btn-icon-remove {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.btn-icon-remove:hover {
+    text-decoration: underline;
+}
+
+.empty-text {
+    display: block;
+    padding: 10px;
+    color: #999;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.btn-add-resource-dashed {
+    width: 100%;
+    border: 2px dashed var(--primary-color);
+    background: none;
+    color: var(--primary-color);
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 20px;
+    transition: background 0.2s;
+}
+
+.btn-add-resource-dashed:hover {
+    background-color: rgba(0, 148, 200, 0.05);
+}
+
+.toast-notification {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 2000;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translate(-50%, 20px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.toast-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.toast-undo {
+    background: none;
+    border: 1px solid #fff;
+    color: #fff;
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-weight: bold;
+}

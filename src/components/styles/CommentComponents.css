@@ -1,0 +1,236 @@
+.comments-wrapper {
+    margin-top: 2rem;
+}
+
+.comments-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.comment-input-section {
+    margin-bottom: 2.5rem;
+    max-width: 100%;
+}
+
+.comment-input-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.comment-textarea {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #eee;
+    padding: 8px 0;
+    font-size: 1rem;
+    font-family: inherit;
+    background: transparent;
+    color: var(--text-color);
+    resize: none;
+    outline: none;
+    transition: border-color 0.3s;
+    min-height: 40px;
+    overflow: hidden;
+    box-sizing: border-box;
+    line-height: 1.5;
+}
+
+.comment-textarea:focus {
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.comment-textarea.editing {
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+.input-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 12px;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid #ddd;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: #f5f5f5;
+    color: var(--text-color);
+}
+
+.btn-submit {
+    background-color: #e0e0e0;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: not-allowed;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-submit.active {
+    background-color: var(--primary-color);
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 148, 200, 0.3);
+}
+
+.btn-submit.active:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-submit.editing {
+    background-color: var(--secondary-color);
+}
+
+.horizontal-flex-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 15px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.horizontal-flex-container:last-child {
+    border-bottom: none;
+}
+
+.comment-container {
+    flex-grow: 1;
+    margin-bottom: 0;
+    color: #222;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.comment-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 4px;
+}
+
+.comment-nickname {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.comment-date {
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.comment-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-color);
+    white-space: pre-wrap;
+    margin-bottom: 8px;
+}
+
+.comment-likes {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.comment-like-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    padding: 4px 8px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.comment-like-btn:hover {
+    background-color: rgba(0, 148, 200, 0.1);
+    color: var(--primary-color);
+}
+
+.comment-like-btn.active {
+    background-color: #e6f7ff;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.comment-menu-wrapper {
+    position: relative;
+    flex-shrink: 0;
+    padding-top: 0;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.menu-btn:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-color);
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--white);
+    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 6px;
+    z-index: 100;
+    min-width: 140px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+}

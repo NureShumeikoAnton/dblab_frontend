@@ -15,7 +15,7 @@ const Chapters = () => {
     useEffect(() => {
         axios.get(`${API_CONFIG.BASE_URL}/level/getFromDb`, {
             headers: {
-                'Authorization': authHeader.split(' ')[1],
+                'Authorization': authHeader,
             }
         })
             .then(response => {
@@ -31,7 +31,7 @@ const Chapters = () => {
 
         axios.get(`${API_CONFIG.BASE_URL}/developmentDirection/getFromDb`, {
             headers: {
-                'Authorization': authHeader.split(' ')[1],
+                'Authorization': authHeader,
             }
         })
             .then(response => {
@@ -47,7 +47,7 @@ const Chapters = () => {
 
         axios.get(`${API_CONFIG.BASE_URL}/skill/getFromDb`, {
             headers: {
-                'Authorization': authHeader.split(' ')[1],
+                'Authorization': authHeader,
             }
         })
             .then(response => {

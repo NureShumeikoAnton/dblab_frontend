@@ -1,0 +1,37 @@
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+    padding: 10px 0;
+}
+
+.crumb {
+    display: flex;
+    align-items: center;
+}
+
+.crumb-link {
+    display: flex;
+    align-items: center;
+    color: #007bff; /* Акцентний колір */
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.crumb-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.crumb-separator {
+    margin: 0 8px;
+    color: #999;
+}
+
+.crumb-active {
+    color: #333;
+    font-weight: 500;
+    cursor: default;
+}
