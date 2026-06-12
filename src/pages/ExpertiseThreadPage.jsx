@@ -15,6 +15,7 @@ const ExpertiseThreadPage = () => {
     const navigate = useNavigate();
     const authUser = useAuthUser();
     const authHeader = useAuthHeader();
+    const isAdmin = authUser?.role === 'admin';
 
     const [project, setProject] = useState(null);
     const [rootComment, setRootComment] = useState(null);
@@ -28,7 +29,10 @@ const ExpertiseThreadPage = () => {
                 axios.get(`${API_CONFIG.BASE_URL}/projectComment/getThread/${commentId}`)
             ]);
             
-            setProject(projRes.data);
+            setProject({
+                ...projRes.data,
+                isarchived: projRes.data.is_archived
+            });
             
             const root = threadRes.data;
             setRootComment(root);
@@ -41,6 +45,7 @@ const ExpertiseThreadPage = () => {
     };
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         fetchData();
     }, [projectId, commentId]);
 
@@ -148,12 +153,13 @@ const ExpertiseThreadPage = () => {
                     <div className="project-comment__replies mt-1rem">
                         <CommentThread
                             comments={allComments}
-                            currentUserId={authUser?.user_Id}
+                            currentUserId={authUser?.id || authUser?.user_Id}
                             isArchived={project.isarchived}
                             onAdd={(text, replyToId) => addComment(text, replyToId ?? rootCommentId)}
                             onSaveEdit={handleSaveEdit}
                             onDelete={handleDelete}
                             onContinueThread={handleContinueThread}
+                            isAdmin={isAdmin}
                         />
                     </div>
                 )}

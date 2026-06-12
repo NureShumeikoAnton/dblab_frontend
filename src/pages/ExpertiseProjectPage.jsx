@@ -64,6 +64,7 @@ const ExpertiseProjectPage = () => {
             setLocalProject({
                 ...project,
                 author_nickname: project.author?.nickname,
+                isarchived: project.is_archived,
             });
             setDataModels(project.models || []);
             setEditName(project.name);
@@ -514,7 +515,7 @@ const ExpertiseProjectPage = () => {
                     onSaveEdit={handleSaveEdit}
                     onDelete={handleDelete}
                     onContinueThread={handleContinueThread}
-                    isArchived={localProject.isarchived}
+                    isAdmin={isAdmin}
                 />
             </section>
         </div>
@@ -737,6 +738,7 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
                     onSaveEdit={onSaveEdit}
                     onDelete={onDelete}
                     onContinueThread={onContinueThread}
+                    isAdmin={isAdmin}
                 />
             </div>
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare } from 'lucide-react';
 import dayjs from 'dayjs';
 import axios from 'axios';
@@ -36,7 +36,7 @@ export function CommentInput({ onSubmit, placeholder = 'Залиште коме�
     );
 }
 
-export function CommentThread({ comments, currentUserId, onAdd, onSaveEdit, onDelete, onContinueThread, isArchived }) {
+export function CommentThread({ comments, currentUserId, onAdd, onSaveEdit, onDelete, onContinueThread, isArchived, isAdmin }) {
     if (!comments) return null;
     return (
         <div className="project-comments-list">
@@ -50,6 +50,7 @@ export function CommentThread({ comments, currentUserId, onAdd, onSaveEdit, onDe
                     onDelete={onDelete}
                     onContinueThread={onContinueThread}
                     isArchived={isArchived}
+                    isAdmin={isAdmin}
                     depth={0}
                     autoExpandLevels={0}
                 />
@@ -58,19 +59,39 @@ export function CommentThread({ comments, currentUserId, onAdd, onSaveEdit, onDe
     );
 }
 
-export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, onDelete, onContinueThread, isArchived, depth = 0, autoExpandLevels = 0 }) {
+export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, onDelete, onContinueThread, isArchived, isAdmin, depth = 0, autoExpandLevels = 0 }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [replyOpen, setReplyOpen] = useState(false);
     const [repliesExpanded, setRepliesExpanded] = useState(autoExpandLevels > 0);
     const [childLevels, setChildLevels] = useState(autoExpandLevels - 1);
     const [editing, setEditing] = useState(false);
-    
-    const text = comment.text;
-    const [editText, setEditText] = useState(text);
+    const menuRef = useRef(null);
 
     useEffect(() => {
-        setEditText(text);
-    }, [text]);
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        };
+
+        if (menuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [menuOpen]);
+    
+    const [localText, setLocalText] = useState(comment.text);
+    const [editText, setEditText] = useState(comment.text);
+
+    useEffect(() => {
+        setLocalText(comment.text);
+        setEditText(comment.text);
+    }, [comment.text]);
 
     const [fetchedThread, setFetchedThread] = useState(null);
     const [loadingThread, setLoadingThread] = useState(false);
@@ -104,7 +125,7 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
         setRepliesExpanded(o => !o);
     };
 
-    const isOwner = currentUserId != null && currentUserId === authorId;
+    const isOwner = currentUserId != null && authorId != null && Number(currentUserId) === Number(authorId);
     const formattedDate = dayjs(creationDate).format('DD.MM.YYYY HH:mm');
 
     const visibleReplyCount = fetchedThread ? fetchedThread.length : (comment.replies ? comment.replies.length : 0);
@@ -120,16 +141,18 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
                             <MessageSquare size={13} /> Відповісти
                         </button>
                     )}
-                    {(!isArchived && isOwner) && (
-                        <div className="project-comment__menu-wrapper">
+                    {(!isArchived && (isOwner || isAdmin)) && (
+                        <div className="project-comment__menu-wrapper" ref={menuRef}>
                             <button className="project-comment__menu-btn" onClick={() => setMenuOpen(o => !o)}>
                                 &#8942;
                             </button>
                             {menuOpen && (
                                 <div className="project-comment__menu">
-                                    <button onClick={() => { setEditing(true); setMenuOpen(false); }}>
-                                        Редагувати
-                                    </button>
+                                    {isOwner && (
+                                        <button onClick={() => { setEditing(true); setMenuOpen(false); }}>
+                                            Редагувати
+                                        </button>
+                                    )}
                                     <button onClick={() => { onDelete(commentId); setMenuOpen(false); }}>
                                         Видалити
                                     </button>
@@ -152,7 +175,11 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
                         <button className="cancel-btn-text" onClick={() => setEditing(false)}>Скасувати</button>
                         <button
                             className="action-btn"
-                            onClick={() => { onSaveEdit(commentId, editText.trim()); setEditing(false); }}
+                            onClick={async () => { 
+                                await onSaveEdit(commentId, editText.trim()); 
+                                setLocalText(editText.trim());
+                                setEditing(false); 
+                            }}
                             disabled={!editText.trim()}
                         >
                             Зберегти
@@ -160,7 +187,7 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
                     </div>
                 </div>
             ) : (
-                <p className="project-comment__text">{text}</p>
+                <p className="project-comment__text">{localText}</p>
             )}
 
             {replyOpen && (
@@ -200,6 +227,7 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
                                     onDelete={onDelete}
                                     onContinueThread={onContinueThread}
                                     isArchived={isArchived}
+                                    isAdmin={isAdmin}
                                     depth={depth + 1}
                                     autoExpandLevels={childLevels}
                                 />

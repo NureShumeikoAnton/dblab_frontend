@@ -79,7 +79,7 @@ const ExpertisePage = () => {
     useEffect(() => {
         const fetchProjects = async () => {
             try {
-                const response = await axios.get(`${API_CONFIG.BASE_URL}/project/getAll`);
+                const response = await axios.get(`${API_CONFIG.BASE_URL}/project/getAll/expertise`);
                 setProjects(response.data);
             } catch (error) {
                 console.error("Error fetching projects:", error);
@@ -139,7 +139,7 @@ const ExpertisePage = () => {
                 />
             )}
             <div className="expertise-page-header">
-                <h1 className="page-title">Експертиза ІТ-проєктів</h1>
+                <h1 className="page-title">Експертиза проєктів баз даних</h1>
                 <div className="expertise-page-header-actions">
                     {isStudent && ownRequestStatus === null && (
                         <button
