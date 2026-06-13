@@ -24,6 +24,13 @@ const TYPE_LABEL = {
     'other': 'Інше',
 };
 
+const isValidFileType = (file) => {
+    if (!file) return true;
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.txt', '.sql', '.json'];
+    const ext = file.name.slice((file.name.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+    return allowedExtensions.includes(`.${ext}`);
+};
+
 function ModelIcon({ type }) {
     const typeIconMap = {
         'conceptual_model': <FileText size={16} />,
@@ -34,6 +41,38 @@ function ModelIcon({ type }) {
     };
     return typeIconMap[type] || <FileText size={16} />;
 }
+
+const handleSecureFileClick = async (e, fileUrl, authHeader) => {
+    e.preventDefault();
+    if (!authHeader) {
+        alert('Немає доступу. Будь ласка, авторизуйтесь.');
+        return;
+    }
+    const newTab = window.open('', '_blank');
+    if (newTab) newTab.document.title = "Завантаження...";
+    try {
+        const response = await axios.get(fileUrl, {
+            headers: { 'Authorization': authHeader },
+            responseType: 'blob'
+        });
+        const blobUrl = URL.createObjectURL(response.data);
+        if (newTab) {
+            newTab.location.href = blobUrl;
+        } else {
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } catch (err) {
+        if (newTab) newTab.close();
+        console.error('Error fetching file:', err);
+        alert('Помилка завантаження файлу. ' + (err.response?.data?.message || ''));
+    }
+};
 
 const ExpertiseProjectPage = () => {
     const { projectId } = useParams();
@@ -193,7 +232,7 @@ const ExpertiseProjectPage = () => {
             const validAttachments = reviewAttachments.filter(a => a.file);
             for (const att of validAttachments) {
                 const formData = new FormData();
-                formData.append('photo', att.file);
+                formData.append('file', att.file);
                 await axios.post(`${API_CONFIG.BASE_URL}/imbed/create/${draftId}`, formData, {
                     headers: { 'Authorization': authHeader, 'Content-Type': 'multipart/form-data' }
                 });
@@ -291,8 +330,12 @@ const ExpertiseProjectPage = () => {
 
     const handleAddDataModel = async () => {
         if (!newModelFile) return;
+        if (!isValidFileType(newModelFile)) {
+            alert('Недопустимий формат файлу. Дозволені: .jpg, .jpeg, .png, .webp, .txt, .sql, .json');
+            return;
+        }
         const formData = new FormData();
-        formData.append('photo', newModelFile);
+        formData.append('file', newModelFile);
         formData.append('type', newModelType);
         try {
             await axios.post(`${API_CONFIG.BASE_URL}/model/create/${pid}`, formData, {
@@ -467,6 +510,7 @@ const ExpertiseProjectPage = () => {
                 newModelFile={newModelFile}
                 setNewModelFile={setNewModelFile}
                 onAddModel={handleAddDataModel}
+                authHeader={authHeader}
             />
 
             <section className="project-section">
@@ -526,7 +570,7 @@ export default ExpertiseProjectPage;
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function DataModelsSection({ dataModels, isEditingProject, onDeleteModel, newModelType, setNewModelType, newModelFile, setNewModelFile, onAddModel }) {
+function DataModelsSection({ dataModels, isEditingProject, onDeleteModel, newModelType, setNewModelType, newModelFile, setNewModelFile, onAddModel, authHeader }) {
     return (
         <section className="project-section">
             <h2 className="section-title">Моделі даних</h2>
@@ -538,7 +582,7 @@ function DataModelsSection({ dataModels, isEditingProject, onDeleteModel, newMod
                         <li key={m.data_model_Id} className="model-list__item">
                             <span className="model-list__icon"><ModelIcon type={m.type} /></span>
                             <span className="model-list__type">{TYPE_LABEL[m.type] || m.type}</span>
-                            <a href={`${API_CONFIG.BASE_URL}/model/photo/file/${m.file_url || m.file}`} target="_blank" rel="noopener noreferrer" className="model-list__link">
+                            <a href={`${API_CONFIG.BASE_URL}/model/photo/file/${m.file_url || m.file}`} onClick={(e) => handleSecureFileClick(e, `${API_CONFIG.BASE_URL}/model/photo/file/${m.file_url || m.file}`, authHeader)} target="_blank" rel="noopener noreferrer" className="model-list__link">
                                 {m.file_url || m.file} <ExternalLink size={13} />
                             </a>
                             <span className={`model-list__date ${isEditingProject ? 'model-list__date--editing' : ''}`}>{dayjs(m.upload_date).format('DD.MM.YYYY')}</span>
@@ -560,7 +604,7 @@ function DataModelsSection({ dataModels, isEditingProject, onDeleteModel, newMod
                                 <option key={val} value={val}>{label}</option>
                             ))}
                         </select>
-                        <input type="file" className="auth-form__input add-model-form__file" onChange={e => setNewModelFile(e.target.files[0])} />
+                        <input type="file" className="auth-form__input add-model-form__file" onChange={e => setNewModelFile(e.target.files[0])} accept=".jpg,.jpeg,.png,.webp,.txt,.sql,.json" />
                         <button className="action-btn add-model-form__submit" onClick={onAddModel} disabled={!newModelFile}>
                             Додати
                         </button>
@@ -611,8 +655,12 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
 
     const handleAddAttachment = async () => {
         if (!newAttachmentFile) return;
+        if (!isValidFileType(newAttachmentFile)) {
+            alert('Недопустимий формат файлу. Дозволені: .jpg, .jpeg, .png, .webp, .txt, .sql, .json');
+            return;
+        }
         const formData = new FormData();
-        formData.append('photo', newAttachmentFile);
+        formData.append('file', newAttachmentFile);
         try {
             await axios.post(`${API_CONFIG.BASE_URL}/imbed/create/${ex.expertise_Id}`, formData, {
                 headers: { 
@@ -683,8 +731,8 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
                 <div className="expertise-review-attachments expertise-review-attachments--editing">
                     {ex.attachments?.map(a => (
                         <div key={a.attachment_Id} className="attachment-edit-item">
-                            <a href={`${API_CONFIG.BASE_URL}/imbed/photo/file/${a.link_url || a.link}`} target="_blank" rel="noopener noreferrer" className="model-list__link model-list__link--no-margin">
-                                <ExternalLink size={13} /> Додаток ({a.link_url || a.link})
+                            <a href={`${API_CONFIG.BASE_URL}/imbed/photo/file/${a.link_url || a.link}`} onClick={(e) => handleSecureFileClick(e, `${API_CONFIG.BASE_URL}/imbed/photo/file/${a.link_url || a.link}`, authHeader)} target="_blank" rel="noopener noreferrer" className="model-list__link model-list__link--no-margin">
+                                <ExternalLink size={13} /> файл ({a.link_url || a.link})
                             </a>
                             {isEditing && (
                                 <button className="cancel-btn-text model-delete-btn" onClick={() => handleDeleteAttachment(a.attachment_Id)}>
@@ -697,7 +745,7 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
                         <div className="add-model-form add-model-form--full-width">
                             <h4 className="add-model-form__title">Додати додаток</h4>
                             <div className="add-model-form__inputs">
-                                <input type="file" className="auth-form__input add-model-form__file" onChange={e => setNewAttachmentFile(e.target.files[0])} />
+                                <input type="file" className="auth-form__input add-model-form__file" onChange={e => setNewAttachmentFile(e.target.files[0])} accept=".jpg,.jpeg,.png,.webp,.txt,.sql,.json" />
                                 <button className="action-btn add-model-form__submit" onClick={handleAddAttachment} disabled={!newAttachmentFile}>
                                     Додати
                                 </button>
@@ -751,8 +799,16 @@ function ReviewForm({ reviewScore, setReviewScore, reviewText, setReviewText, re
     const validate = () => {
         const score = parseInt(reviewScore);
         const next = {};
-        if (isNaN(score) || score < 0 || score > 100) next.score = 'Введіть число від 0 до 100.';
+        if (isNaN(score) || score < 0 || score > 100) next.score = 'Оцінка має бути від 0 до 100.';
         if (!reviewText.trim()) next.text = 'Текст рецензії обов\'язковий.';
+        
+        for (const att of reviewAttachments) {
+            if (att.file && !isValidFileType(att.file)) {
+                next.text = next.text ? next.text + ' Один або декілька файлів мають недопустимий формат.' : 'Один або декілька файлів мають недопустимий формат.';
+                break;
+            }
+        }
+
         setErrors(next);
         return Object.keys(next).length === 0;
     };
@@ -795,7 +851,7 @@ function ReviewForm({ reviewScore, setReviewScore, reviewText, setReviewText, re
                     <div key={i} className="review-attachment-row">
                         <input
                             type="file"
-                            accept="image/png, image/jpeg, image/webp"
+                            accept=".jpg,.jpeg,.png,.webp,.txt,.sql,.json"
                             className="review-form__input"
                             onChange={e => {
                                 const file = e.target.files[0];
