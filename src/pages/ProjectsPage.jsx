@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import ProjectCardList from '../components/ProjectCardList.jsx';
 import NewProjectModal from '../components/NewProjectModal.jsx';
 import EditProjectModal from '../components/EditProjectModal.jsx';
@@ -17,21 +18,11 @@ const normalizeProject = (p) => ({
     created_at: p.creation_date ?? p.created_at ?? null,
 });
 
-// getAll has no per-user filtering on the backend; we filter client-side
-// by the user id baked into the JWT payload ({ id, role }).
-const getUserIdFromToken = (token) => {
-    try {
-        const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-        const payload = JSON.parse(atob(base64));
-        return payload.id ?? null;
-    } catch {
-        return null;
-    }
-};
-
 const ProjectsPage = () => {
     const navigate = useNavigate();
     const authHeader = useAuthHeader();
+    const authUser = useAuthUser();
+    const username = authUser?.username ?? null;
     const [projects, setProjects] = useState([]);
     const [loadError, setLoadError] = useState(null);
 
@@ -63,15 +54,14 @@ const ProjectsPage = () => {
             })
             .then((data) => {
                 const list = Array.isArray(data) ? data : (data.projects ?? []);
-                const myId = getUserIdFromToken(authHeader?.split(' ')[1] ?? '');
-                const mine = list.filter((p) => p.author_user_Id === myId);
+                const mine = list.filter((p) => p.author_nickname === username);
                 setProjects(mine.map(normalizeProject));
             })
             .catch((err) => {
                 console.error('[ProjectsPage] load failed', err);
                 setLoadError('Failed to load projects. Check your connection.');
             });
-    }, [authHeader]);
+    }, [authHeader, username]);
 
     const handleCreate = async ({ name, description }) => {
         setIsCreating(true);
