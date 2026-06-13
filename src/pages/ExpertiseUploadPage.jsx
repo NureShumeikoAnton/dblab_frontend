@@ -52,14 +52,14 @@ const ExpertiseUploadPage = () => {
         if (dataModels.some(m => !m.file)) {
             e.dataModels = 'Усі файли моделей мають бути завантажені';
         } else {
-            const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+            const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.txt', '.sql', '.json'];
             const hasInvalidFile = dataModels.some(m => {
                 if (!m.file || !m.file.name) return true;
                 const ext = m.file.name.slice(m.file.name.lastIndexOf('.')).toLowerCase();
                 return !allowedExtensions.includes(ext);
             });
             if (hasInvalidFile) {
-                e.dataModels = 'Дозволені лише зображення (png, jpg, jpeg, webp)';
+                e.dataModels = 'Дозволені формати: png, jpg, jpeg, webp, txt, sql, json';
             }
         }
         return e;
@@ -92,7 +92,7 @@ const ExpertiseUploadPage = () => {
             for (const model of dataModels) {
                 if (model.file) {
                     const formData = new FormData();
-                    formData.append('photo', model.file);
+                    formData.append('file', model.file);
                     formData.append('type', model.type);
 
                     await axios.post(
@@ -168,7 +168,7 @@ const ExpertiseUploadPage = () => {
                             <input
                                 className={`upload-form__input ${errors.dataModels && !model.file ? 'input-error' : ''}`}
                                 type="file"
-                                accept=".png,.jpg,.jpeg,.webp"
+                                accept=".png,.jpg,.jpeg,.webp,.txt,.sql,.json"
                                 onChange={e => {
                                     handleModelChange(index, 'file', e.target.files[0]);
                                     setErrors(prev => ({ ...prev, dataModels: undefined }));
