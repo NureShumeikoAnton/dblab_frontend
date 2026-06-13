@@ -18,23 +18,23 @@ export const NF_CONFIG = {
 // auto rules derive their status from the algorithm via autoKey.
 export const STAGE_RULES = {
     '1NF': [
-        { text: 'All attribute values are atomic (no multi-valued or composite attributes)', type: 'auto', autoKey: '1nf_atomic' },
-        { text: 'No repeating groups / arrays', type: 'auto', autoKey: '1nf_plural' },
-        { text: 'Every row is uniquely identified by a primary key', type: 'auto', autoKey: 'missingPK' },
-        { text: 'Attribute names are unambiguous within each table', type: 'manual', checkIndex: 0 },
+        { text: 'Усі значення атрибутів є атомарними (без багатозначних або складових атрибутів)', type: 'auto', autoKey: '1nf_atomic' },
+        { text: 'Відсутні групи, що повторюються / масиви', type: 'auto', autoKey: '1nf_plural' },
+        { text: 'Кожен рядок однозначно ідентифікується первинним ключем', type: 'auto', autoKey: 'missingPK' },
+        { text: 'Імена атрибутів є однозначними в межах кожної таблиці', type: 'manual', checkIndex: 0 },
     ],
     'FDs': [
-        { text: 'At least one functional dependency is defined on each table', type: 'auto', autoKey: 'fds_present' },
-        { text: 'All functional dependencies have been identified and documented', type: 'manual', checkIndex: 0 },
+        { text: 'На кожній таблиці визначена принаймні одна функціональна залежність', type: 'auto', autoKey: 'fds_present' },
+        { text: 'Усі функціональні залежності ідентифіковані та задокументовані', type: 'manual', checkIndex: 0 },
     ],
     '2NF': [
-        { text: 'Every non-key attribute is fully functionally dependent on the entire primary key', type: 'auto', autoKey: '2nf' },
-        { text: 'No partial dependencies exist (verified via FD annotations)', type: 'auto', autoKey: '2nf' },
-        { text: 'Tables have been decomposed to remove partial dependencies', type: 'manual', checkIndex: 0 },
+        { text: 'Кожен неключовий атрибут повністю функціонально залежить від усього первинного ключа', type: 'auto', autoKey: '2nf' },
+        { text: 'Відсутні часткові залежності (перевірено через анотації ФЗ)', type: 'auto', autoKey: '2nf' },
+        { text: 'Таблиці декомпозовані для усунення часткових залежностей', type: 'manual', checkIndex: 0 },
     ],
     '3NF': [
-        { text: 'No transitive dependencies (non-key → non-key attribute dependencies)', type: 'auto', autoKey: '3nf' },
-        { text: 'All transitive dependencies decomposed into separate tables', type: 'manual', checkIndex: 0 },
-        { text: 'FD annotations confirm no non-key attribute determines another non-key attribute', type: 'auto', autoKey: '3nf' },
+        { text: 'Відсутні транзитивні залежності (неключовий → неключовий атрибут)', type: 'auto', autoKey: '3nf' },
+        { text: 'Усі транзитивні залежності декомпозовані в окремі таблиці', type: 'manual', checkIndex: 0 },
+        { text: 'Анотації ФЗ підтверджують, що жоден неключовий атрибут не визначає інший неключовий атрибут', type: 'auto', autoKey: '3nf' },
     ],
 };

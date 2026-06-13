@@ -68,9 +68,9 @@ const EditorPage = () => {
                 console.error('[editor] load failed', err);
                 if (localData?.snapshot) {
                     loadFromLocalSnapshot(localData, projectId);
-                    setLastSaveError('Server unavailable — loaded from local cache');
+                    setLastSaveError('Сервер недоступний — завантажено з локального кешу');
                 } else {
-                    setLastSaveError(`Failed to load project: ${err.message}`);
+                    setLastSaveError(`Не вдалося завантажити проект: ${err.message}`);
                 }
                 setIsLoading(false);
             });

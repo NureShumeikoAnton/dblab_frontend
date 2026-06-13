@@ -30,8 +30,8 @@ const AttributeRowContextMenu = ({ x, y, attrName, stagedCount = 1, onCreateTabl
                     onClick={() => { onCreateTableWithPK(); onClose(); }}
                 >
                     🆕&nbsp; {stagedCount >= 2
-                        ? `Create new table with ${stagedCount} selected attributes as PK`
-                        : `Create new table with ${attrName} as PK`
+                        ? `Створити нову таблицю з ${stagedCount} вибраними атрибутами як PK`
+                        : `Створити нову таблицю з ${attrName} як PK`
                     }
                 </li>
             )}
@@ -39,7 +39,7 @@ const AttributeRowContextMenu = ({ x, y, attrName, stagedCount = 1, onCreateTabl
                 className="attr-row-ctx-menu__item attr-row-ctx-menu__item--danger"
                 onClick={() => { onRemove(); onClose(); }}
             >
-                🗑&nbsp; Remove from table
+                🗑&nbsp; Видалити з таблиці
             </li>
         </ul>,
         document.body

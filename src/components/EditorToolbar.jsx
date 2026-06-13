@@ -24,7 +24,7 @@ const EditorToolbar = ({ projectName }) => {
             <div className="editor-toolbar__actions">
                 {lastSaveError && (
                     <span className="editor-toolbar__save-error" title={lastSaveError}>
-                        Autosave failed — click Save to retry
+                        Помилка автозбереження — натисніть Зберегти, щоб повторити
                     </span>
                 )}
                 <ShowFDsToggle />

@@ -6,17 +6,17 @@ const UnusedAttrsWarningModal = ({ count, onClose }) => {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal unused-attrs-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal__header">
-                    <p className="modal__title">Unplaced attributes</p>
+                    <p className="modal__title">Нерозміщені атрибути</p>
                     <p className="modal__subtitle">
                         {count === 1
-                            ? 'There is 1 attribute in the pool that has not been placed on the canvas.'
-                            : `There are ${count} attributes in the pool that have not been placed on the canvas.`}
-                        {' '}Place or delete all attributes before moving to the next stage.
+                            ? 'В пулі є 1 атрибут, який не було розміщено на полотні.'
+                            : `В пулі є ${count} атрибути(-ів), що не були розміщені на полотні.`}
+                        {' '}Розмістіть або видаліть усі атрибути перед переходом до наступного етапу.
                     </p>
                 </div>
                 <div className="modal__actions">
                     <button type="button" className="modal__btn modal__btn--primary" onClick={onClose}>
-                        Got it
+                        Зрозуміло
                     </button>
                 </div>
             </div>

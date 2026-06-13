@@ -6,18 +6,18 @@ const ConfirmResetModal = ({ stageLabel, onConfirm, onCancel }) => {
         <div className="modal-overlay" onClick={onCancel}>
             <div className="modal confirm-reset-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal__header">
-                    <p className="modal__title">Reset {stageLabel} stage?</p>
+                    <p className="modal__title">Скинути етап {stageLabel}?</p>
                     <p className="modal__subtitle">
-                        All tables, functional dependencies, and relationships in this stage will be permanently deleted.
-                        You will be prompted to re-initialize the stage.
+                        Усі таблиці, функціональні залежності та зв'язки на цьому етапі будуть видалені назавжди.
+                        Вам буде запропоновано повторно ініціалізувати етап.
                     </p>
                 </div>
                 <div className="modal__actions">
                     <button type="button" className="modal__btn modal__btn--secondary" onClick={onCancel}>
-                        Cancel
+                        Скасувати
                     </button>
                     <button type="button" className="modal__btn modal__btn--danger" onClick={onConfirm}>
-                        Reset stage
+                        Скинути етап
                     </button>
                 </div>
             </div>

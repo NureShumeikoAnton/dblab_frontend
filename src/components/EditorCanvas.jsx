@@ -233,13 +233,13 @@ const EditorCanvasFlow = () => {
             </ReactFlow>
             {pendingRelationshipSourceTableId && (
                 <div className="editor-canvas__rel-banner">
-                    <span>⬤ Click on the target table to connect</span>
+                    <span>⬤ Натисніть на цільову таблицю для з'єднання</span>
                     <button
                         type="button"
                         className="editor-canvas__rel-banner-cancel"
                         onClick={cancelRelationshipCreation}
                     >
-                        Cancel
+                        Скасувати
                     </button>
                 </div>
             )}

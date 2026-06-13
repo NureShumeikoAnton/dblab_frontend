@@ -18,11 +18,11 @@ const SaveButton = () => {
             className="save-button"
             onClick={handleSave}
             disabled={isSaving}
-            title={isSaving ? 'Saving…' : hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
+            title={isSaving ? 'Збереження…' : hasUnsavedChanges ? 'Зберегти зміни' : 'Немає незбережених змін'}
         >
-            {isSaving ? 'Saving…' : 'Save'}
+            {isSaving ? 'Збереження…' : 'Зберегти'}
             {hasUnsavedChanges && !isSaving && (
-                <span className="save-button__dot" title="Unsaved changes" aria-label="Unsaved changes" />
+                <span className="save-button__dot" title="Незбережені зміни" aria-label="Незбережені зміни" />
             )}
         </button>
     );

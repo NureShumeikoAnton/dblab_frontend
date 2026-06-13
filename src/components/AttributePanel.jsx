@@ -108,16 +108,16 @@ const AttributePanel = () => {
     return (
         <div className="attribute-panel">
             <div className="attribute-panel__header">
-                <span className="attribute-panel__title">Attributes</span>
+                <span className="attribute-panel__title">Атрибути</span>
             </div>
             <div className="attribute-panel__actions">
                 <button className="attribute-panel__btn" onClick={openAddModal}>
-                    + Add attribute
+                    + Додати атрибут
                 </button>
             </div>
             <div className="attribute-panel__list">
                 {attributes.length === 0 ? (
-                    <p className="attribute-panel__empty">No attributes yet</p>
+                    <p className="attribute-panel__empty">Атрибутів ще немає</p>
                 ) : (
                     attributes.map((attr) => (
                         <AttributeItem

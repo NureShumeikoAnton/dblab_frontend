@@ -60,7 +60,7 @@ const StageBar = ({ currentStageIndex, onStageChange }) => {
                     className="stage-bar__reset-btn"
                     onClick={() => setShowResetConfirm(true)}
                 >
-                    ↺ Reset Stage
+                    ↺ Скинути етап
                 </button>
                 {showResetConfirm && (
                     <ConfirmResetModal
@@ -81,7 +81,7 @@ const StageBar = ({ currentStageIndex, onStageChange }) => {
                         setShowChecklist((v) => !v);
                     }}
                 >
-                    ✓ Check NF Rules
+                    ✓ Перевірити правила НФ
                 </button>
                 {showChecklist && (
                     <NFViolationChecklistModal

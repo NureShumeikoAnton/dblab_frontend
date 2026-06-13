@@ -28,13 +28,13 @@ const TableContextMenu = ({ x, y, hasPK, onAddRelationship, onDelete, onClose })
                 className={`table-ctx-menu__item${hasPK ? '' : ' table-ctx-menu__item--disabled'}`}
                 onClick={hasPK ? () => { onAddRelationship(); onClose(); } : undefined}
             >
-                🔗&nbsp; Add relationship to...
+                🔗&nbsp; Додати зв'язок до...
             </li>
             <li
                 className="table-ctx-menu__item table-ctx-menu__item--danger"
                 onClick={() => { onDelete(); onClose(); }}
             >
-                🗑&nbsp; Delete table
+                🗑&nbsp; Видалити таблицю
             </li>
         </ul>,
         document.body

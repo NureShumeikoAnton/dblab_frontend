@@ -81,7 +81,7 @@ const AttributeRowToolbar = () => {
 
     return (
         <div className="attr-row-toolbar">
-            <span className="attr-row-toolbar__label">Alias</span>
+            <span className="attr-row-toolbar__label">Псевдонім</span>
             <input
                 className="attr-row-toolbar__alias-input"
                 type="text"
@@ -104,8 +104,8 @@ const AttributeRowToolbar = () => {
                     className="attr-row-toolbar__order-btn"
                     onClick={handleMoveUp}
                     disabled={rowIndex <= 0}
-                    aria-label="Move up"
-                    title="Move up"
+                    aria-label="Перемістити вгору"
+                    title="Перемістити вгору"
                 >
                     ↑
                 </button>
@@ -114,8 +114,8 @@ const AttributeRowToolbar = () => {
                     className="attr-row-toolbar__order-btn"
                     onClick={handleMoveDown}
                     disabled={rowIndex < 0 || rowIndex >= sorted.length - 1}
-                    aria-label="Move down"
-                    title="Move down"
+                    aria-label="Перемістити вниз"
+                    title="Перемістити вниз"
                 >
                     ↓
                 </button>
@@ -124,7 +124,7 @@ const AttributeRowToolbar = () => {
                 type="button"
                 className="attr-row-toolbar__close"
                 onClick={clearSelectedTableAttribute}
-                aria-label="Close"
+                aria-label="Закрити"
             >
                 ✕
             </button>

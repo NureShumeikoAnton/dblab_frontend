@@ -10,7 +10,7 @@ const ShowFDsToggle = () => {
             className={`show-fds-toggle${showFDs ? ' show-fds-toggle--active' : ''}`}
             onClick={toggleShowFDs}
         >
-            Show FDs
+            Показати ФЗ
         </button>
     );
 };

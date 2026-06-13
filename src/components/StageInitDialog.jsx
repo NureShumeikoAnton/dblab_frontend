@@ -6,8 +6,8 @@ const StageInitDialog = ({ stageLabel, prevStageLabel, onStartEmpty, onCopyFromP
             <div className="modal stage-init-dialog">
                 <div className="modal__header">
                     <div>
-                        <h2 className="modal__title">Initialize {stageLabel} stage</h2>
-                        <p className="modal__subtitle">How would you like to start?</p>
+                        <h2 className="modal__title">Ініціалізувати етап {stageLabel}</h2>
+                        <p className="modal__subtitle">Як ви хочете розпочати?</p>
                     </div>
                 </div>
                 <div className="stage-init-dialog__actions">
@@ -15,14 +15,14 @@ const StageInitDialog = ({ stageLabel, prevStageLabel, onStartEmpty, onCopyFromP
                         className="stage-init-dialog__btn stage-init-dialog__btn--secondary"
                         onClick={onStartEmpty}
                     >
-                        Start empty
+                        Почати порожнім
                     </button>
                     {prevStageLabel && (
                         <button
                             className="stage-init-dialog__btn stage-init-dialog__btn--primary"
                             onClick={onCopyFromPrevious}
                         >
-                            Copy from {prevStageLabel}
+                            Скопіювати з {prevStageLabel}
                         </button>
                     )}
                 </div>

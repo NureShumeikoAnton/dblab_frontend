@@ -3,10 +3,10 @@ import { STAGE_RULES } from '../config/normalizationConfig.js';
 import './styles/NFViolationChecklistModal.css';
 
 const STATUS_CONFIG = {
-    pass:    { icon: '✓', label: 'Pass',    cls: 'pass'    },
-    error:   { icon: '✕', label: 'Error',   cls: 'error'   },
-    warning: { icon: '!', label: 'Warning', cls: 'warning' },
-    na:      { icon: '—', label: 'N/A',     cls: 'na'      },
+    pass:    { icon: '✓', label: 'Пройдено',      cls: 'pass'    },
+    error:   { icon: '✕', label: 'Помилка',       cls: 'error'   },
+    warning: { icon: '!', label: 'Попередження',  cls: 'warning' },
+    na:      { icon: '—', label: 'Н/Д',           cls: 'na'      },
 };
 
 function StatusBadge({ status }) {
@@ -27,7 +27,7 @@ function RuleDetail({ autoKey, analysis }) {
         return (
             <ul className="nf-rule__detail">
                 {summary.missingPK_tables.map((t) => (
-                    <li key={t.tableId}>Table <strong>{t.tableName}</strong> has no primary key</li>
+                    <li key={t.tableId}>Таблиця <strong>{t.tableName}</strong> не має первинного ключа</li>
                 ))}
             </ul>
         );
@@ -44,7 +44,7 @@ function RuleDetail({ autoKey, analysis }) {
         return (
             <ul className="nf-rule__detail">
                 {unique.map((a, i) => (
-                    <li key={i}><strong>{a.name}</strong> in {a.tableName}</li>
+                    <li key={i}><strong>{a.name}</strong> у {a.tableName}</li>
                 ))}
             </ul>
         );
@@ -61,7 +61,7 @@ function RuleDetail({ autoKey, analysis }) {
         return (
             <ul className="nf-rule__detail">
                 {unique.map((a, i) => (
-                    <li key={i}><strong>{a.name}</strong> in {a.tableName}</li>
+                    <li key={i}><strong>{a.name}</strong> у {a.tableName}</li>
                 ))}
             </ul>
         );
@@ -69,13 +69,13 @@ function RuleDetail({ autoKey, analysis }) {
 
     if (autoKey === 'fds_present') {
         if (summary.fds_present !== 'warning') return null;
-        return <p className="nf-rule__detail-note">No functional dependencies drawn yet — use the FD bracket tool to annotate dependencies on each table.</p>;
+        return <p className="nf-rule__detail-note">Функціональні залежності ще не накреслені — використовуйте інструмент дужок ФЗ для позначення залежностей у кожній таблиці.</p>;
     }
 
     if (autoKey === '2nf') {
         const st = summary['2nf'];
         if (st === 'warning') {
-            return <p className="nf-rule__detail-note">No FDs drawn for some composite-PK tables — draw FDs to enable 2NF verification.</p>;
+            return <p className="nf-rule__detail-note">ФЗ не накреслені для деяких таблиць з композитним PK — намалюйте ФЗ для перевірки 2НФ.</p>;
         }
         if (st !== 'error') return null;
         return (
@@ -85,7 +85,7 @@ function RuleDetail({ autoKey, analysis }) {
                         <strong>{v.tableName}</strong>:&nbsp;
                         {'{' + v.partialKeyAttrs.join(', ') + '}'}&nbsp;→&nbsp;
                         {'{' + v.dependentAttrs.join(', ') + '}'}
-                        &nbsp;— partial dependency
+                        &nbsp;— часткова залежність
                     </li>
                 ))}
             </ul>
@@ -95,7 +95,7 @@ function RuleDetail({ autoKey, analysis }) {
     if (autoKey === '3nf') {
         const st = summary['3nf'];
         if (st === 'warning') {
-            return <p className="nf-rule__detail-note">No FDs drawn for some tables — draw FDs to enable 3NF verification.</p>;
+            return <p className="nf-rule__detail-note">ФЗ не накреслені для деяких таблиць — намалюйте ФЗ для перевірки 3НФ.</p>;
         }
         if (st !== 'error') return null;
         return (
@@ -105,7 +105,7 @@ function RuleDetail({ autoKey, analysis }) {
                         <strong>{v.tableName}</strong>:&nbsp;
                         {'{' + v.determinantAttrs.join(', ') + '}'}&nbsp;→&nbsp;
                         {'{' + v.dependentAttrs.join(', ') + '}'}
-                        &nbsp;— transitive dependency
+                        &nbsp;— транзитивна залежність
                     </li>
                 ))}
             </ul>
@@ -140,10 +140,10 @@ const NFViolationChecklistModal = ({ stageForm, violationChecks, analysis, onTog
     const shownAutoKeys = new Set();
 
     return (
-        <div className="nf-checklist" ref={ref} role="dialog" aria-label={`NF Rules — ${stageForm}`}>
+        <div className="nf-checklist" ref={ref} role="dialog" aria-label={`Правила НФ — ${stageForm}`}>
             <div className="nf-checklist__header">
-                <span className="nf-checklist__title">NF Rules — {stageForm}</span>
-                <button className="nf-checklist__close" onClick={onClose} aria-label="Close">×</button>
+                <span className="nf-checklist__title">Правила НФ — {stageForm}</span>
+                <button className="nf-checklist__close" onClick={onClose} aria-label="Закрити">×</button>
             </div>
             <ul className="nf-checklist__rules">
                 {rules.map((rule, i) => {
@@ -156,7 +156,7 @@ const NFViolationChecklistModal = ({ stageForm, violationChecks, analysis, onTog
                                         type="button"
                                         className={`nf-rule__circle${checked ? ' nf-rule__circle--checked' : ''}`}
                                         aria-pressed={checked}
-                                        aria-label={checked ? 'Mark as uncomplete' : 'Mark as complete'}
+                                        aria-label={checked ? 'Позначити як не завершено' : 'Позначити як завершено'}
                                     />
                                     <span className="nf-rule__text">{rule.text}</span>
                                 </div>

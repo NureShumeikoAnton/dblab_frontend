@@ -6,18 +6,18 @@ const SessionExpiredModal = ({ onLogin, onContinue }) => (
         <div className="sem-modal" role="dialog" aria-modal="true" aria-labelledby="sem-title">
             <div className="sem-modal__strip" />
             <div className="sem-modal__inner">
-                <h2 className="sem-modal__title" id="sem-title">Session expired</h2>
+                <h2 className="sem-modal__title" id="sem-title">Сесію завершено</h2>
                 <p className="sem-modal__text">
-                    Your login session has expired, so changes can no longer be saved
-                    to the server. Your work is still being saved locally in this
-                    browser and will sync once you log in again.
+                    Час вашої сесії вичерпано, тому зміни більше не можуть бути збережені
+                    на сервері. Ваша робота продовжує зберігатися локально в цьому
+                    браузері та синхронізується після повторного входу.
                 </p>
                 <div className="sem-actions">
                     <button type="button" className="sem-btn sem-btn--ghost" onClick={onContinue}>
-                        Continue working offline
+                        Продовжити роботу офлайн
                     </button>
                     <button type="button" className="sem-btn sem-btn--primary" onClick={onLogin}>
-                        Log in again
+                        Увійти знову
                     </button>
                 </div>
             </div>

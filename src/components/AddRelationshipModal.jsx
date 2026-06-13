@@ -97,7 +97,7 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
             <div className="modal add-rel-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal__header">
                     <div>
-                        <p className="modal__title">Add Relationship</p>
+                        <p className="modal__title">Додати зв'язок</p>
                         <p className="modal__subtitle">
                             {sourceTable.name} → {targetTable.name}
                         </p>
@@ -106,7 +106,7 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
 
                 {sourcePKs.length > 1 && (
                     <label className="modal__label add-rel-modal__label">
-                        PK attribute to use as FK reference
+                        Атрибут PK для використання як посилання FK
                         <select
                             className="modal__select"
                             value={selectedPKAttrId ?? ''}
@@ -124,8 +124,8 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
                 {targetAlreadyHasFK ? (
                     <>
                         <p className="add-rel-modal__info add-rel-modal__info--ok">
-                            ✓ <strong>{targetTable.name}</strong> already has <strong>{selectedAttrName}</strong> as FK.
-                            A relationship will be created.
+                            ✓ <strong>{targetTable.name}</strong> вже має <strong>{selectedAttrName}</strong> як FK.
+                            Буде створено зв'язок.
                         </p>
                         <label className="add-rel-modal__skip-label">
                             <input
@@ -133,22 +133,22 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
                                 checked={skipNext}
                                 onChange={(e) => setSkipNext(e.target.checked)}
                             />
-                            Do not show again when FK already exists
+                            Не показувати знову, якщо FK вже існує
                         </label>
                     </>
                 ) : (
                     <p className="add-rel-modal__info">
-                        <strong>{targetTable.name}</strong> has no FK linking to <strong>{sourceTable.name}</strong>.
-                        <strong> {selectedAttrName}</strong> will be added as FK.
+                        <strong>{targetTable.name}</strong> не має FK, що посилається на <strong>{sourceTable.name}</strong>.
+                        <strong> {selectedAttrName}</strong> буде додано як FK.
                     </p>
                 )}
 
                 <div className="modal__actions">
                     <button type="button" className="modal__btn modal__btn--secondary" onClick={onClose}>
-                        Cancel
+                        Скасувати
                     </button>
                     <button type="button" className="modal__btn modal__btn--primary" onClick={handleConfirm}>
-                        Create relationship
+                        Створити зв'язок
                     </button>
                 </div>
             </div>

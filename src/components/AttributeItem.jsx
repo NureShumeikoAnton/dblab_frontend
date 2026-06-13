@@ -34,10 +34,10 @@ const AttributeItem = ({ attribute, isUnused, retireBlocked, onToggleRetire, onD
     const { name, data_type, isRetired } = attribute;
 
     const retireTitle = retireBlocked
-        ? 'Used in a table at this or a later stage — remove from canvas first'
+        ? 'Використовується в таблиці на цьому або пізнішому етапі — спочатку видаліть з полотна'
         : isRetired
-            ? 'Show from this stage'
-            : 'Hide from this stage';
+            ? 'Показати з цього етапу'
+            : 'Приховати з цього етапу';
 
     const handleDragStart = (e) => {
         e.dataTransfer.effectAllowed = 'move';
@@ -80,7 +80,7 @@ const AttributeItem = ({ attribute, isUnused, retireBlocked, onToggleRetire, onD
                 <div className="attribute-item__actions">
                     <button
                         className="attribute-item__action-btn"
-                        title="Edit attribute"
+                        title="Редагувати атрибут"
                         onClick={onEdit}
                     >
                         <IconPencil />
@@ -96,7 +96,7 @@ const AttributeItem = ({ attribute, isUnused, retireBlocked, onToggleRetire, onD
                     {isUnused && (
                         <button
                             className="attribute-item__action-btn attribute-item__action-btn--danger"
-                            title="Delete attribute"
+                            title="Видалити атрибут"
                             onClick={onDelete}
                         >
                             <IconTrash />

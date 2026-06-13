@@ -69,7 +69,7 @@ const RelationshipToolbar = () => {
                 className="rel-toolbar__card-select"
                 value={rel.cardinality_t1}
                 onChange={handleCardinality1}
-                title="Source cardinality"
+                title="Кардинальність джерела"
             >
                 {CARDINALITY_OPTIONS.map((o) => (
                     <option key={o} value={o}>{o}</option>
@@ -80,18 +80,18 @@ const RelationshipToolbar = () => {
                 className="rel-toolbar__type-select"
                 value={rel.type}
                 onChange={handleType}
-                title="Relationship type"
+                title="Тип зв'язку"
             >
-                <option value="identifying">Identifying</option>
-                <option value="non-identifying">Non-identifying</option>
-                <option value="many-to-many">Many-to-many</option>
+                <option value="identifying">Ідентифікуючий</option>
+                <option value="non-identifying">Неідентифікуючий</option>
+                <option value="many-to-many">Багато до багатьох</option>
             </select>
 
             <select
                 className="rel-toolbar__card-select"
                 value={rel.cardinality_t2}
                 onChange={handleCardinality2}
-                title="Target cardinality"
+                title="Кардинальність цілі"
             >
                 {CARDINALITY_OPTIONS.map((o) => (
                     <option key={o} value={o}>{o}</option>
@@ -103,12 +103,12 @@ const RelationshipToolbar = () => {
             </span>
 
             {linkedFKName ? (
-                <span className="rel-toolbar__fk-chip" title="FK attribute linking these tables">
+                <span className="rel-toolbar__fk-chip" title="Атрибут FK, що зв'язує таблиці">
                     FK: {linkedFKName}
                 </span>
             ) : (
-                <span className="rel-toolbar__fk-chip rel-toolbar__fk-chip--missing" title="No FK attribute found in target table">
-                    No FK linked
+                <span className="rel-toolbar__fk-chip rel-toolbar__fk-chip--missing" title="FK атрибут не знайдено в цільовій таблиці">
+                    FK не прив'язано
                 </span>
             )}
 
@@ -129,8 +129,8 @@ const RelationshipToolbar = () => {
                 type="button"
                 className="rel-toolbar__delete"
                 onClick={handleDelete}
-                aria-label="Delete relationship"
-                title="Delete relationship"
+                aria-label="Видалити зв'язок"
+                title="Видалити зв'язок"
             >
                 🗑
             </button>
@@ -138,7 +138,7 @@ const RelationshipToolbar = () => {
                 type="button"
                 className="rel-toolbar__close"
                 onClick={clearSelectedRelationship}
-                aria-label="Close"
+                aria-label="Закрити"
             >
                 ✕
             </button>

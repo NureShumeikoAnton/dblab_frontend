@@ -44,7 +44,7 @@ const TableToolbar = () => {
                 type="text"
                 value={localName}
                 onChange={handleNameChange}
-                placeholder="Table name"
+                placeholder="Назва таблиці"
                 autoFocus
             />
             <div className="table-toolbar__palette">
@@ -63,7 +63,7 @@ const TableToolbar = () => {
                 type="button"
                 className="table-toolbar__close"
                 onClick={clearSelectedTable}
-                aria-label="Close"
+                aria-label="Закрити"
             >
                 ✕
             </button>

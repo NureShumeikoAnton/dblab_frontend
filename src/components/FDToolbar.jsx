@@ -73,9 +73,9 @@ const FDToolbar = () => {
                 value={fd.type}
                 onChange={handleTypeChange}
             >
-                <option value="full">Full</option>
-                <option value="partial">Partial</option>
-                <option value="transitive">Transitive</option>
+                <option value="full">Повна</option>
+                <option value="partial">Часткова</option>
+                <option value="transitive">Транзитивна</option>
             </select>
 
             <div className="fd-toolbar__level-stepper">
@@ -83,7 +83,7 @@ const FDToolbar = () => {
                     type="button"
                     className="fd-toolbar__level-btn"
                     onClick={handleLevelInc}
-                    aria-label="Increase level"
+                    aria-label="Підвищити рівень"
                 >
                     ←
                 </button>
@@ -92,7 +92,7 @@ const FDToolbar = () => {
                     type="button"
                     className="fd-toolbar__level-btn"
                     onClick={handleLevelDec}
-                    aria-label="Decrease level"
+                    aria-label="Знизити рівень"
                 >
                     →
                 </button>
@@ -107,8 +107,8 @@ const FDToolbar = () => {
                 type="button"
                 className="fd-toolbar__delete"
                 onClick={handleDelete}
-                aria-label="Delete FD"
-                title="Delete FD"
+                aria-label="Видалити ФЗ"
+                title="Видалити ФЗ"
             >
                 🗑
             </button>
@@ -116,7 +116,7 @@ const FDToolbar = () => {
                 type="button"
                 className="fd-toolbar__close"
                 onClick={clearSelectedFD}
-                aria-label="Close"
+                aria-label="Закрити"
             >
                 ✕
             </button>

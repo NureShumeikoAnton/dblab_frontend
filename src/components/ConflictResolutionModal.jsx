@@ -12,22 +12,22 @@ const SummaryColumn = ({ title, summary, isLocal }) => {
         <div className="crm-column">
             <div className="crm-column__header">{title}</div>
             {isLocal
-                ? <div className="crm-column__date">Last saved: {date ?? '—'}</div>
+                ? <div className="crm-column__date">Останнє збереження: {date ?? '—'}</div>
                 : <div className="crm-column__date--placeholder" aria-hidden="true">placeholder</div>
             }
             <table className="crm-table">
                 <tbody>
                     <tr>
-                        <td className="crm-table__label">Attributes</td>
+                        <td className="crm-table__label">Атрибути</td>
                         <td className="crm-table__value">{summary.attrCount}</td>
                     </tr>
                     {summary.stages.map((s) => (
                         <tr key={s.form}>
                             <td className="crm-table__label">{STAGE_LABELS[s.form] ?? s.form}</td>
                             <td className="crm-table__value">
-                                {s.tableCount} {s.tableCount === 1 ? 'table' : 'tables'}
-                                {s.fdCount > 0 && `, ${s.fdCount} FDs`}
-                                {s.relCount > 0 && `, ${s.relCount} rels`}
+                                {s.tableCount} {s.tableCount === 1 ? 'таблиця' : s.tableCount < 5 ? 'таблиці' : 'таблиць'}
+                                {s.fdCount > 0 && `, ${s.fdCount} ФЗ`}
+                                {s.relCount > 0 && `, ${s.relCount} зв.`}
                             </td>
                         </tr>
                     ))}
@@ -43,23 +43,23 @@ const ConflictResolutionModal = ({ serverSummary, localSummary, onUseServer, onU
             <div className="crm-modal__strip" />
             <div className="crm-modal__inner">
                 <div className="crm-modal__head">
-                    <h2 className="crm-modal__title" id="crm-title">Data Conflict Detected</h2>
+                    <h2 className="crm-modal__title" id="crm-title">Виявлено конфлікт даних</h2>
                     <p className="crm-modal__sub">
-                        Your local data differs from what is stored on the server.
-                        Choose which version to load.
+                        Ваші локальні дані відрізняються від збережених на сервері.
+                        Оберіть версію для завантаження.
                     </p>
                 </div>
                 <div className="crm-columns">
-                    <SummaryColumn title="Server version" summary={serverSummary} isLocal={false} />
+                    <SummaryColumn title="Версія сервера" summary={serverSummary} isLocal={false} />
                     <div className="crm-divider" />
-                    <SummaryColumn title="Local version" summary={localSummary} isLocal={true} />
+                    <SummaryColumn title="Локальна версія" summary={localSummary} isLocal={true} />
                 </div>
                 <div className="crm-actions">
                     <button className="crm-btn crm-btn--ghost" onClick={onUseServer}>
-                        Use server version
+                        Використати версію сервера
                     </button>
                     <button className="crm-btn crm-btn--primary" onClick={onUseLocal}>
-                        Use local version
+                        Використати локальну версію
                     </button>
                 </div>
             </div>
