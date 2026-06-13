@@ -24,16 +24,11 @@ const DirectionCard = ({ name, link, description }) => (
 )
 
 const ExpertCard = ({ name, role, image, position, placeOfEmployment, level, description }) => {
-    let imageSrc = "#";
-    if (image != null) {
-        imageSrc = Array.from(new Uint8Array(image.data))
-            .map(byte => String.fromCharCode(byte)).join('');
-    }
+    const imageSrc = image ? `${API_CONFIG.BASE_URL}/teacher/photo/file/${image}` : null;
     return (
         <div className='expert-card'>
             <p className='expert-card__role'>{role}</p>
-            {image != null && <img src={imageSrc} alt={name} className='expert-card__img' />}
-            {image == null && <div className='expert-card__img'></div>}
+            {imageSrc ? <img src={imageSrc} alt={name} className='expert-card__img' /> : <div className='expert-card__img'></div>}
             <p className='expert-card__name'>{name}</p>
             {(position || placeOfEmployment) &&
                 <p className='expert-card__employment'>
