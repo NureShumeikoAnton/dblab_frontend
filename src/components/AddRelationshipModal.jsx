@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import useEditorStore from '../store/editorStore.js';
+import generateId from '../utils/generateId.js';
 import './styles/AddRelationshipModal.css';
 
 const LS_KEY = 'dblab_skip_fk_confirm';
@@ -51,7 +52,7 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
                     (max, ta) => Math.max(max, ta.order), -1
                 );
                 addTableAttribute(stageIndex, targetTable.id, {
-                    id: crypto.randomUUID(),
+                    id: generateId(),
                     attributeId: selectedPKAttrId,
                     is_PK: false,
                     is_FK: true,
@@ -66,7 +67,7 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
         }
 
         addRelationship(stageIndex, {
-            id: crypto.randomUUID(),
+            id: generateId(),
             type: 'non-identifying',
             color: '#64748b',
             cardinality_t1: '1',

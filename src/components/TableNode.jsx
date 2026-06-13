@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import generateId from '../utils/generateId.js';
 import { Handle, Position, useStore } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
 import { TABLE_COLORS } from './TableToolbar.jsx';
@@ -154,7 +155,7 @@ const TableNode = ({ data }) => {
         const attrs = tas.map((ta) => attrMap.get(ta.attributeId)).filter(Boolean);
         if (attrs.length !== tas.length) return;
 
-        const newTableId = crypto.randomUUID();
+        const newTableId = generateId();
         const color = TABLE_COLORS[Math.floor(Math.random() * TABLE_COLORS.length)];
         const position = { x: table.position.x + 280, y: table.position.y };
         const baseName = attrs.length === 1 ? attrs[0].name + '_Table' : attrs.map((a) => a.name).join('_') + '_Table';
@@ -165,7 +166,7 @@ const TableNode = ({ data }) => {
             color,
             position,
             tableAttributes: tas.map((ta, i) => ({
-                id: crypto.randomUUID(),
+                id: generateId(),
                 attributeId: ta.attributeId,
                 is_PK: true,
                 is_FK: false,
@@ -188,7 +189,7 @@ const TableNode = ({ data }) => {
         if (markAsFK) {
             taIds.forEach((taId) => updateTableAttribute(currentStageIndex, table.id, taId, { is_FK: true }));
             addRelationship(currentStageIndex, {
-                id: crypto.randomUUID(),
+                id: generateId(),
                 type: 'non-identifying',
                 color: '#64748b',
                 cardinality_t1: '1',
@@ -230,7 +231,7 @@ const TableNode = ({ data }) => {
 
         const maxOrder = table.tableAttributes.reduce((max, ta) => Math.max(max, ta.order), -1);
         addTableAttribute(currentStageIndex, table.id, {
-            id: crypto.randomUUID(),
+            id: generateId(),
             attributeId: attrId,
             is_PK: false,
             is_FK: false,

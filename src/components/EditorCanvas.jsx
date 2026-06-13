@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
+import generateId from '../utils/generateId.js';
 import {
     ReactFlow, ReactFlowProvider, Background, Controls,
     applyNodeChanges, ConnectionLineType, useReactFlow,
@@ -177,12 +178,12 @@ const EditorCanvasFlow = () => {
         const color = TABLE_COLORS[Math.floor(Math.random() * TABLE_COLORS.length)];
 
         addTable(currentStageIndex, {
-            id: crypto.randomUUID(),
+            id: generateId(),
             name: `Table_${nextNum}`,
             color,
             position,
             tableAttributes: [{
-                id: crypto.randomUUID(),
+                id: generateId(),
                 attributeId: attrId,
                 is_PK: true,
                 is_FK: false,

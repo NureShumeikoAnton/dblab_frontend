@@ -1,3 +1,5 @@
+import generateId from './generateId.js';
+
 export const FD_COLORS = ['#E74C3C', '#F39C12', '#27AE60', '#2980B9', '#9B59B6', '#16A085'];
 
 export const isFDHandle = (h) => h?.startsWith('fd-left-') || h?.startsWith('fd-right-');
@@ -68,13 +70,13 @@ export function connectFD(connection, { fds, tables, currentStageIndex, addFD, u
                     const usedLevels = sideFDs.map((fd) => Math.abs(fd.level));
                     const nextLevel = (usedLevels.length ? Math.max(...usedLevels) : 0) + 1;
                     addFD(currentStageIndex, {
-                        id: `fd-${crypto.randomUUID()}`,
+                        id: `fd-${generateId()}`,
                         tableId: tableNode.id,
                         color: pickColor(sideFDs),
                         level: isRight ? -nextLevel : nextLevel,
                         type: 'partial',
-                        starts: [{ id: `fds-${crypto.randomUUID()}`, attributeId: src.attrId }],
-                        ends:   [{ id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
+                        starts: [{ id: `fds-${generateId()}`, attributeId: src.attrId }],
+                        ends:   [{ id: `fde-${generateId()}`, attributeId: tgt.attrId }],
                     });
                 }
             }
@@ -82,7 +84,7 @@ export function connectFD(connection, { fds, tables, currentStageIndex, addFD, u
         }
 
         updateFD(currentStageIndex, matchingFD.id, {
-            ends: [...matchingFD.ends, { id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
+            ends: [...matchingFD.ends, { id: `fde-${generateId()}`, attributeId: tgt.attrId }],
         });
         return;
     }
@@ -105,7 +107,7 @@ export function connectFD(connection, { fds, tables, currentStageIndex, addFD, u
             lastFlipped.starts.some((s) => s.attributeId === tgt.attrId);
         if (!alreadyInFD) {
             updateFD(currentStageIndex, lastFlipped.id, {
-                ends: [...lastFlipped.ends, { id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
+                ends: [...lastFlipped.ends, { id: `fde-${generateId()}`, attributeId: tgt.attrId }],
             });
         }
         return;
@@ -117,7 +119,7 @@ export function connectFD(connection, { fds, tables, currentStageIndex, addFD, u
     );
     if (coStartFD) {
         updateFD(currentStageIndex, coStartFD.id, {
-            starts: [...coStartFD.starts, { id: `fds-${crypto.randomUUID()}`, attributeId: src.attrId }],
+            starts: [...coStartFD.starts, { id: `fds-${generateId()}`, attributeId: src.attrId }],
         });
         return;
     }
@@ -125,12 +127,12 @@ export function connectFD(connection, { fds, tables, currentStageIndex, addFD, u
     const usedLevels = sideFDs.map((fd) => Math.abs(fd.level));
     const nextLevel = (usedLevels.length ? Math.max(...usedLevels) : 0) + 1;
     addFD(currentStageIndex, {
-        id: `fd-${crypto.randomUUID()}`,
+        id: `fd-${generateId()}`,
         tableId: tableNode.id,
         color: pickColor(sideFDs),
         level: isRight ? -nextLevel : nextLevel,
         type: 'full',
-        starts: [{ id: `fds-${crypto.randomUUID()}`, attributeId: src.attrId }],
-        ends:   [{ id: `fde-${crypto.randomUUID()}`, attributeId: tgt.attrId }],
+        starts: [{ id: `fds-${generateId()}`, attributeId: src.attrId }],
+        ends:   [{ id: `fde-${generateId()}`, attributeId: tgt.attrId }],
     });
 }

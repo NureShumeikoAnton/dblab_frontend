@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import useEditorStore from '../store/editorStore.js';
+import generateId from '../utils/generateId.js';
 import AttributeItem from './AttributeItem.jsx';
 import NewAttributeModal from './NewAttributeModal.jsx';
 import './styles/AttributePanel.css';
@@ -93,7 +94,7 @@ const AttributePanel = () => {
             updateAttribute(editingAttribute.id, { name, data_type });
         } else {
             addAttribute({
-                id: crypto.randomUUID(),
+                id: generateId(),
                 name,
                 data_type,
                 introduced_at_stage_Id: stages[0].stageId,
