@@ -65,6 +65,24 @@ function runCommand(command, store, ctx) {
             }
             break;
 
+        case 'undo': {
+            const t = useEditorStore.temporal.getState();
+            if (t.pastStates.length) {
+                t.undo();
+                store.flagUnsaved();
+            }
+            break;
+        }
+
+        case 'redo': {
+            const t = useEditorStore.temporal.getState();
+            if (t.futureStates.length) {
+                t.redo();
+                store.flagUnsaved();
+            }
+            break;
+        }
+
         default:
             break;
     }

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { temporal } from 'zundo';
 import { serializeProjectMeta, serializeForAPI, serializeToLocal, deserializeFromAPI, mergeLocalOnlyFields } from '../utils/serializer.js';
 import { buildTableFromAttributes } from '../utils/tableFactory.js';
 import generateId from '../utils/generateId.js';
@@ -7,11 +8,21 @@ import API_CONFIG from '../config/api.js';
 
 export const STAGE_ORDER = ['stage-1nf', 'stage-fds', 'stage-2nf', 'stage-3nf'];
 
+/** Trailing debounce — coalesces a burst of rapid calls into one trailing call. */
+const debounce = (fn, ms) => {
+    let timer = null;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
+};
+
 /**
  * EditorStore — single Zustand store with immer middleware.
  * Shape matches SPEC.md §15.
  */
 const useEditorStore = create(
+    temporal(
     immer((set, get) => ({
         // ─── Core project data ───────────────────────────────────────────────────
         project: {
@@ -131,6 +142,8 @@ const useEditorStore = create(
             // local badge as saved and makes "Use server version" stick — otherwise
             // the stale local snapshot re-triggers the conflict modal on every load.
             get().saveLocally();
+            // Drop any history so the pristine empty store can't be reached via undo.
+            useEditorStore.temporal.getState().clear();
         },
 
         /** Hydrates store from a localStorage snapshot (offline fallback or conflict resolution). */
@@ -155,10 +168,26 @@ const useEditorStore = create(
                 state.ui.hasUnsavedChanges = false;
                 state.ui.isServerSaved = false;
             });
+            // Drop any history so the pristine empty store can't be reached via undo.
+            useEditorStore.temporal.getState().clear();
         },
 
         setLastSaveError(msg) {
             set((s) => { s.ui.lastSaveError = msg ?? null; });
+        },
+
+        /**
+         * Marks the project dirty. Called after undo/redo, which write diagram data
+         * directly via zundo and bypass the per-action dirty flags — without this an
+         * undo after a save would leave the project silently unsaved. UI-only, so it
+         * isn't itself recorded in history.
+         */
+        flagUnsaved() {
+            set((s) => {
+                s.ui.hasUnsavedChanges = true;
+                s.ui.isLocalSaved = false;
+                s.ui.isServerSaved = false;
+            });
         },
 
         /** Switch the active stage. */
@@ -1030,7 +1059,19 @@ const useEditorStore = create(
             const checks = get().stages[stageIndex].violationChecks;
             return checks.length > 0 && checks.every(Boolean);
         },
-    }))
+    })),
+    {
+        // Track only diagram data — never selection / modals / save flags / nav.
+        // Immer's structural sharing means a UI-only `set` leaves these references
+        // unchanged, so `equality` reports "no diagram change" and nothing is recorded.
+        partialize: (s) => ({ stages: s.stages, attributePool: s.attributePool }),
+        equality: (a, b) => a.stages === b.stages && a.attributePool === b.attributePool,
+        limit: 100,
+        // Coalesce bursts of rapid edits (e.g. typing a table name, which writes per
+        // keystroke) into a single undo step. Trade-off: two very fast distinct edits merge.
+        handleSet: (handleSet) => debounce(handleSet, 400),
+    }
+    )
 );
 
 export default useEditorStore;

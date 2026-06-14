@@ -24,9 +24,9 @@ export const KEYMAP = [
     { combo: 'Ctrl+Digit4', command: 'stage3', description: 'Перейти до 3НФ' },
     { combo: 'Alt+ArrowUp', command: 'reorderUp', description: 'Перемістити атрибут вгору' },
     { combo: 'Alt+ArrowDown', command: 'reorderDown', description: 'Перемістити атрибут вниз' },
-    // Reserved — wired once zundo undo/redo lands (see plan "Deferred"):
-    // { combo: 'Ctrl+Z', command: 'undo', description: 'Скасувати' },
-    // { combo: 'Ctrl+Shift+Z', command: 'redo', description: 'Повторити' },
+    { combo: 'Ctrl+Z', command: 'undo', description: 'Скасувати' },
+    { combo: 'Ctrl+Shift+Z', command: 'redo', description: 'Повторити' },
+    { combo: 'Ctrl+Y', command: 'redo', description: 'Повторити' },
 ];
 
 const COMBO_TO_COMMAND = new Map(KEYMAP.map((entry) => [entry.combo, entry.command]));
