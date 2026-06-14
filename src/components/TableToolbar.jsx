@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import useEditorStore from '../store/editorStore.js';
+import { TABLE_COLORS } from '../config/tableColors.js';
 import './styles/TableToolbar.css';
 
-export const TABLE_COLORS = [
-    '#4A90D9', '#E74C3C', '#27AE60', '#F39C12', '#9B59B6',
-    '#16A085', '#2C3E50', '#E67E22', '#1ABC9C', '#D35400',
-];
+// Re-exported for existing importers; the source of truth is config/tableColors.js
+export { TABLE_COLORS };
 
 const TableToolbar = () => {
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);

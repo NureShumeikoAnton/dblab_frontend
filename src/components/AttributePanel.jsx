@@ -1,23 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import useEditorStore from '../store/editorStore.js';
-import generateId from '../utils/generateId.js';
 import AttributeItem from './AttributeItem.jsx';
-import NewAttributeModal from './NewAttributeModal.jsx';
 import './styles/AttributePanel.css';
 
 const AttributePanel = () => {
     const attributePool = useEditorStore((s) => s.attributePool);
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const stages = useEditorStore((s) => s.stages);
-    const addAttribute = useEditorStore((s) => s.addAttribute);
-    const updateAttribute = useEditorStore((s) => s.updateAttribute);
     const retireAttribute = useEditorStore((s) => s.retireAttribute);
     const unretireAttribute = useEditorStore((s) => s.unretireAttribute);
     const deleteAttribute = useEditorStore((s) => s.deleteAttribute);
-
-    const [modalOpen, setModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState('add');
-    const [editingAttribute, setEditingAttribute] = useState(null);
+    const openModal = useEditorStore((s) => s.openModal);
 
     // Attributes placed in the current stage — hidden from the panel while they live on canvas.
     const usedInCurrentStageIds = useMemo(
@@ -77,33 +70,8 @@ const AttributePanel = () => {
         [attributePool, stages, currentStageIndex]
     );
 
-    const openAddModal = () => {
-        setModalMode('add');
-        setEditingAttribute(null);
-        setModalOpen(true);
-    };
-
-    const openEditModal = (attr) => {
-        setModalMode('edit');
-        setEditingAttribute(attr);
-        setModalOpen(true);
-    };
-
-    const handleAddAttribute = ({ name, data_type }) => {
-        if (modalMode === 'edit') {
-            updateAttribute(editingAttribute.id, { name, data_type });
-        } else {
-            addAttribute({
-                id: generateId(),
-                name,
-                data_type,
-                introduced_at_stage_Id: stages[0].stageId,
-                retired_at_stage_Id: null,
-            });
-        }
-        setModalOpen(false);
-        setEditingAttribute(null);
-    };
+    const openAddModal = () => openModal('newAttribute', { mode: 'add' });
+    const openEditModal = (attr) => openModal('newAttribute', { mode: 'edit', attribute: attr });
 
     return (
         <div className="attribute-panel">
@@ -136,14 +104,6 @@ const AttributePanel = () => {
                     ))
                 )}
             </div>
-            <NewAttributeModal
-                isOpen={modalOpen}
-                mode={modalMode}
-                onClose={() => { setModalOpen(false); setEditingAttribute(null); }}
-                onSubmit={handleAddAttribute}
-                initialName={editingAttribute?.name ?? ''}
-                initialDataType={editingAttribute?.data_type ?? 'VARCHAR'}
-            />
         </div>
     );
 };

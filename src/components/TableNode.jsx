@@ -2,12 +2,9 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import generateId from '../utils/generateId.js';
 import { Handle, Position, useStore } from '@xyflow/react';
 import useEditorStore from '../store/editorStore.js';
-import { TABLE_COLORS } from './TableToolbar.jsx';
 import { useNFAnalysis } from '../hooks/useNFAnalysis.jsx';
 import TableContextMenu from './TableContextMenu.jsx';
 import AttributeRowContextMenu from './AttributeRowContextMenu.jsx';
-import DeleteTableModal from './DeleteTableModal.jsx';
-import CreateTableFromAttrModal from './CreateTableFromAttrModal.jsx';
 import './styles/TableNode.css';
 
 const TableNode = ({ data }) => {
@@ -16,12 +13,9 @@ const TableNode = ({ data }) => {
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);
     const fds = useEditorStore((s) => s.stages[currentStageIndex]?.fds ?? []);
     const showFDs = useEditorStore((s) => s.ui.showFDs);
-    const deleteTable = useEditorStore((s) => s.deleteTable);
-    const deleteFD = useEditorStore((s) => s.deleteFD);
-    const addTable = useEditorStore((s) => s.addTable);
+    const requestDeleteTable = useEditorStore((s) => s.requestDeleteTable);
+    const createTableFromAttributes = useEditorStore((s) => s.createTableFromAttributes);
     const addTableAttribute = useEditorStore((s) => s.addTableAttribute);
-    const updateTableAttribute = useEditorStore((s) => s.updateTableAttribute);
-    const addRelationship = useEditorStore((s) => s.addRelationship);
     const selectTable = useEditorStore((s) => s.selectTable);
     const selectTableAttribute = useEditorStore((s) => s.selectTableAttribute);
     const removeTableAttribute = useEditorStore((s) => s.removeTableAttribute);
@@ -35,8 +29,6 @@ const TableNode = ({ data }) => {
 
     const [contextMenu, setContextMenu] = useState(null); // { x, y } | null
     const [attrContextMenu, setAttrContextMenu] = useState(null); // { x, y, tableAttributeId } | null
-    const [deleteConfirmFDs, setDeleteConfirmFDs] = useState(null); // FD[] | null
-    const [createTableFromAttrInfo, setCreateTableFromAttrInfo] = useState(null); // { taIds, attrNames, newTableId } | null
     const [hoveredAttrId, setHoveredAttrId] = useState(null);
     const [isDragOver, setIsDragOver] = useState(false);
     const [stagedAttrIds, setStagedAttrIds] = useState(new Set()); // tableAttributeIds staged for composite-PK extraction
@@ -124,82 +116,13 @@ const TableNode = ({ data }) => {
     }, []);
 
     const handleDelete = useCallback(() => {
-        const tableAttrIds = new Set(table.tableAttributes.map((ta) => ta.attributeId));
-        const affected = fds.filter((fd) =>
-            fd.starts.some((s) => tableAttrIds.has(s.attributeId)) ||
-            fd.ends.some((e) => tableAttrIds.has(e.attributeId))
-        );
-        if (affected.length === 0) {
-            deleteTable(currentStageIndex, table.id);
-        } else {
-            setDeleteConfirmFDs(affected);
-        }
-    }, [currentStageIndex, table, fds, deleteTable]);
-
-    const handleSaveDelete = useCallback(() => {
-        deleteTable(currentStageIndex, table.id);
-        setDeleteConfirmFDs(null);
-    }, [currentStageIndex, table.id, deleteTable]);
-
-    const handleDeleteAll = useCallback(() => {
-        deleteConfirmFDs.forEach((fd) => deleteFD(currentStageIndex, fd.id));
-        deleteTable(currentStageIndex, table.id);
-        setDeleteConfirmFDs(null);
-    }, [currentStageIndex, table.id, deleteConfirmFDs, deleteFD, deleteTable]);
+        requestDeleteTable(currentStageIndex, table.id);
+    }, [requestDeleteTable, currentStageIndex, table.id]);
 
     const handleCreateTableWithPK = useCallback((tableAttributeIds) => {
-        const tas = tableAttributeIds
-            .map((id) => table.tableAttributes.find((a) => a.id === id))
-            .filter(Boolean);
-        if (!tas.length) return;
-        const attrs = tas.map((ta) => attrMap.get(ta.attributeId)).filter(Boolean);
-        if (attrs.length !== tas.length) return;
-
-        const newTableId = generateId();
-        const color = TABLE_COLORS[Math.floor(Math.random() * TABLE_COLORS.length)];
-        const position = { x: table.position.x + 280, y: table.position.y };
-        const baseName = attrs.length === 1 ? attrs[0].name + '_Table' : attrs.map((a) => a.name).join('_') + '_Table';
-
-        addTable(currentStageIndex, {
-            id: newTableId,
-            name: baseName,
-            color,
-            position,
-            tableAttributes: tas.map((ta, i) => ({
-                id: generateId(),
-                attributeId: ta.attributeId,
-                is_PK: true,
-                is_FK: false,
-                alias: null,
-                order: i,
-            })),
-        });
-
-        setCreateTableFromAttrInfo({
-            taIds: tas.map((ta) => ta.id),
-            attrNames: attrs.map((a) => a.name),
-            newTableId,
-        });
+        createTableFromAttributes(currentStageIndex, table.id, tableAttributeIds);
         setStagedAttrIds(new Set());
-    }, [table, attrMap, currentStageIndex, addTable]);
-
-    const handleCreateTableFromAttrConfirm = useCallback((markAsFK) => {
-        if (!createTableFromAttrInfo) return;
-        const { taIds, newTableId } = createTableFromAttrInfo;
-        if (markAsFK) {
-            taIds.forEach((taId) => updateTableAttribute(currentStageIndex, table.id, taId, { is_FK: true }));
-            addRelationship(currentStageIndex, {
-                id: generateId(),
-                type: 'non-identifying',
-                color: '#64748b',
-                cardinality_t1: '1',
-                cardinality_t2: '0..*',
-                table1Id: newTableId,
-                table2Id: table.id,
-            });
-        }
-        setCreateTableFromAttrInfo(null);
-    }, [createTableFromAttrInfo, currentStageIndex, table.id, updateTableAttribute, addRelationship]);
+    }, [createTableFromAttributes, currentStageIndex, table.id]);
 
     const handleDragEnter = useCallback((e) => {
         if (!e.dataTransfer.types.includes('application/dblab-attribute')) return;
@@ -366,24 +289,6 @@ const TableNode = ({ data }) => {
                     />
                 );
             })()}
-            {deleteConfirmFDs && (
-                <DeleteTableModal
-                    tableName={table.name}
-                    fds={deleteConfirmFDs}
-                    attrMap={attrMap}
-                    onSave={handleSaveDelete}
-                    onDeleteAll={handleDeleteAll}
-                    onCancel={() => setDeleteConfirmFDs(null)}
-                />
-            )}
-            {createTableFromAttrInfo && (
-                <CreateTableFromAttrModal
-                    attrNames={createTableFromAttrInfo.attrNames}
-                    sourceTableName={table.name}
-                    onConfirm={handleCreateTableFromAttrConfirm}
-                    onClose={() => setCreateTableFromAttrInfo(null)}
-                />
-            )}
         </div>
     );
 };

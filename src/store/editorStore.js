@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { serializeProjectMeta, serializeForAPI, serializeToLocal, deserializeFromAPI, mergeLocalOnlyFields } from '../utils/serializer.js';
+import { buildTableFromAttributes } from '../utils/tableFactory.js';
+import generateId from '../utils/generateId.js';
 import API_CONFIG from '../config/api.js';
 
 export const STAGE_ORDER = ['stage-1nf', 'stage-fds', 'stage-2nf', 'stage-3nf'];
@@ -209,6 +211,153 @@ const useEditorStore = create(
             set((state) => {
                 state.ui.activeModal = null;
             });
+        },
+
+        // ─── High-level command intents ──────────────────────────────────────────
+        // Shared entry points used by BOTH context menus and keyboard shortcuts.
+        // They centralize the "decide what to do, maybe open a confirmation modal"
+        // logic that previously lived as local state inside TableNode.
+
+        /**
+         * Deletes whichever element is currently selected, smallest-first.
+         * Selection is mutually exclusive in this store, so at most one branch runs;
+         * the ordering is a defensive tiebreaker.
+         */
+        requestDeleteSelected() {
+            const { ui, currentStageIndex } = get();
+            if (ui.selectedTableAttribute) {
+                const { tableId, tableAttributeId } = ui.selectedTableAttribute;
+                get().removeTableAttribute(currentStageIndex, tableId, tableAttributeId);
+            } else if (ui.selectedRelationshipId) {
+                get().deleteRelationship(currentStageIndex, ui.selectedRelationshipId);
+            } else if (ui.selectedFDId) {
+                get().deleteFD(currentStageIndex, ui.selectedFDId);
+            } else if (ui.selectedTableId) {
+                get().requestDeleteTable(currentStageIndex, ui.selectedTableId);
+            }
+        },
+
+        /**
+         * Deletes a table directly when no FDs reference it; otherwise opens the
+         * DeleteTableModal so the student can choose to keep or drop those FDs.
+         */
+        requestDeleteTable(stageIndex, tableId) {
+            const stage = get().stages[stageIndex];
+            const table = stage?.tables.find((t) => t.id === tableId);
+            if (!table) return;
+            const tableAttrIds = new Set(table.tableAttributes.map((ta) => ta.attributeId));
+            const affected = stage.fds.filter((fd) =>
+                fd.starts.some((s) => tableAttrIds.has(s.attributeId)) ||
+                fd.ends.some((e) => tableAttrIds.has(e.attributeId))
+            );
+            if (affected.length === 0) {
+                get().deleteTable(stageIndex, tableId);
+            } else {
+                set((state) => {
+                    state.ui.activeModal = {
+                        type: 'deleteTable',
+                        payload: { tableId, affectedFdIds: affected.map((f) => f.id) },
+                    };
+                });
+            }
+        },
+
+        /** Confirms a pending table deletion; optionally drops the dependent FDs too. */
+        confirmDeleteTable(alsoDeleteFds) {
+            const { ui, currentStageIndex } = get();
+            if (ui.activeModal?.type !== 'deleteTable') return;
+            const { tableId, affectedFdIds } = ui.activeModal.payload;
+            if (alsoDeleteFds) {
+                affectedFdIds.forEach((fdId) => get().deleteFD(currentStageIndex, fdId));
+            }
+            get().deleteTable(currentStageIndex, tableId);
+            set((state) => { state.ui.activeModal = null; });
+        },
+
+        /**
+         * Extracts the given table attribute(s) into a brand-new table whose PK is
+         * those attributes, then opens CreateTableFromAttrModal to offer marking the
+         * originals as FK + drawing the relationship.
+         */
+        createTableFromAttributes(stageIndex, sourceTableId, tableAttributeIds) {
+            const state = get();
+            const stage = state.stages[stageIndex];
+            const sourceTable = stage?.tables.find((t) => t.id === sourceTableId);
+            if (!sourceTable) return;
+            const attrMap = new Map(state.attributePool.map((a) => [a.id, a]));
+            const tas = tableAttributeIds
+                .map((id) => sourceTable.tableAttributes.find((a) => a.id === id))
+                .filter(Boolean);
+            if (!tas.length) return;
+            const attrs = tas.map((ta) => attrMap.get(ta.attributeId)).filter(Boolean);
+            if (attrs.length !== tas.length) return;
+
+            const newTable = buildTableFromAttributes(sourceTable, tas, attrs);
+            set((s) => {
+                s.stages[stageIndex].tables.push(newTable);
+                s.ui.hasUnsavedChanges = true;
+                s.ui.isLocalSaved = false;
+                s.ui.isServerSaved = false;
+                s.ui.activeModal = {
+                    type: 'createTableFromAttr',
+                    payload: {
+                        sourceTableId,
+                        newTableId: newTable.id,
+                        taIds: tas.map((ta) => ta.id),
+                        attrNames: attrs.map((a) => a.name),
+                    },
+                };
+            });
+        },
+
+        /** Resolves CreateTableFromAttrModal — when confirmed, marks FK + adds relationship. */
+        confirmCreateTableFromAttr(markAsFK) {
+            const { ui, currentStageIndex } = get();
+            if (ui.activeModal?.type !== 'createTableFromAttr') return;
+            const { sourceTableId, newTableId, taIds } = ui.activeModal.payload;
+            set((state) => {
+                if (markAsFK) {
+                    const table = state.stages[currentStageIndex].tables.find((t) => t.id === sourceTableId);
+                    if (table) {
+                        taIds.forEach((taId) => {
+                            const ta = table.tableAttributes.find((a) => a.id === taId);
+                            if (ta) ta.is_FK = true;
+                        });
+                    }
+                    state.stages[currentStageIndex].relationships.push({
+                        id: generateId(),
+                        type: 'non-identifying',
+                        color: '#64748b',
+                        cardinality_t1: '1',
+                        cardinality_t2: '0..*',
+                        table1Id: newTableId,
+                        table2Id: sourceTableId,
+                    });
+                    state.ui.hasUnsavedChanges = true;
+                    state.ui.isLocalSaved = false;
+                    state.ui.isServerSaved = false;
+                }
+                state.ui.activeModal = null;
+            });
+        },
+
+        /** Resolves NewAttributeModal — add or edit a pool attribute based on payload.mode. */
+        submitAttributeModal({ name, data_type }) {
+            const { ui, stages } = get();
+            if (ui.activeModal?.type !== 'newAttribute') return;
+            const { mode, attribute } = ui.activeModal.payload ?? {};
+            if (mode === 'edit' && attribute) {
+                get().updateAttribute(attribute.id, { name, data_type });
+            } else {
+                get().addAttribute({
+                    id: generateId(),
+                    name,
+                    data_type,
+                    introduced_at_stage_Id: stages[0].stageId,
+                    retired_at_stage_Id: null,
+                });
+            }
+            set((state) => { state.ui.activeModal = null; });
         },
 
         // ─── Table actions ───────────────────────────────────────────────────────

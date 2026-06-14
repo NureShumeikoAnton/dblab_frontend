@@ -1,16 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import useEditorStore from '../store/editorStore.js';
 import EditorToolbar from '../components/EditorToolbar.jsx';
 import EditorCanvas from '../components/EditorCanvas.jsx';
 import AttributePanel from '../components/AttributePanel.jsx';
+import EditorModals from '../components/EditorModals.jsx';
 import StageBar from '../components/StageBar.jsx';
 import StageInitDialog from '../components/StageInitDialog.jsx';
 import ConflictResolutionModal from '../components/ConflictResolutionModal.jsx';
 import SessionExpiredModal from '../components/SessionExpiredModal.jsx';
 import EditorLoadingOverlay from '../components/EditorLoadingOverlay.jsx';
 import { NFAnalysisProvider } from '../hooks/useNFAnalysis.jsx';
+import useEditorShortcuts from '../hooks/useEditorShortcuts.js';
 import API_CONFIG from '../config/api.js';
 import { loadFromLocal, deserializeFromAPI, compareStructural } from '../utils/serializer.js';
 import './styles/EditorPage.css';
@@ -89,6 +91,14 @@ const EditorPage = () => {
         return () => clearInterval(interval);
     }, []);
 
+    // Ctrl+S → save with the current auth token (kept in a ref for freshness).
+    const handleSave = useCallback(() => {
+        const token = authHeaderRef.current?.split(' ')[1] ?? null;
+        useEditorStore.getState().saveProject(token);
+    }, []);
+
+    useEditorShortcuts({ onSave: handleSave });
+
     const isUninitialized = !stages[currentStageIndex].initialized;
     const stageLabel = STAGE_LABELS[currentStageIndex];
     const prevStageLabel = currentStageIndex > 0 ? STAGE_LABELS[currentStageIndex - 1] : null;
@@ -105,6 +115,7 @@ const EditorPage = () => {
                     currentStageIndex={currentStageIndex}
                     onStageChange={setCurrentStageIndex}
                 />
+                <EditorModals />
                 {!isLoading && !conflictData && isUninitialized && (
                     <StageInitDialog
                         stageLabel={stageLabel}
