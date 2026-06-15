@@ -6,6 +6,7 @@ import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import axios from 'axios';
 import API_CONFIG from '../../config/api.js';
+import { useToast } from '../../context/ToastContext';
 import './styles/ExpertManagement.css';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -53,6 +54,7 @@ export default ExpertManagementPage;
 
 function RequestsTab() {
     const authHeader = useAuthHeader();
+    const { addToast } = useToast();
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('');
@@ -86,12 +88,7 @@ function RequestsTab() {
 
     const handleApprove = async (req) => {
         try {
-            await axios.put(`${API_CONFIG.BASE_URL}/expertRequest/update/${req.request_id}`, 
-                { status: 'approved' },
-                { headers: { 'Authorization': authHeader } }
-            );
-            
-            // Also update the user's role to expert
+            // First update the user's role to expert
             if (req.User) {
                 const { password, ...userData } = req.User;
                 await axios.put(`${API_CONFIG.BASE_URL}/user/${req.user_id}`,
@@ -99,9 +96,18 @@ function RequestsTab() {
                     { headers: { 'Authorization': authHeader } }
                 );
             }
+
+            // If role update succeeds (or wasn't needed), update request status
+            await axios.put(`${API_CONFIG.BASE_URL}/expertRequest/update/${req.request_id}`, 
+                { status: 'approved' },
+                { headers: { 'Authorization': authHeader } }
+            );
+            
+            addToast('Запит успішно схвалено', 'success');
             fetchRequests();
         } catch (error) {
             console.error('Failed to approve request', error);
+            addToast('Не вдалося призначити роль експерта', 'error');
         }
     };
 
@@ -221,7 +227,7 @@ function RequestsTab() {
                                         </span>
                                     )}
                                     <span className="request-card__info-item">
-                                        <Hash size={12} /> ID: {user.user_id}
+                                        <Hash size={12} /> ID: {user.user_Id || user.user_id}
                                     </span>
                                 </div>
                             )}

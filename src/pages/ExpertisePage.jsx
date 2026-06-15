@@ -95,7 +95,7 @@ const ExpertisePage = () => {
                     const res = await axios.get(`${API_CONFIG.BASE_URL}/expertRequest/getOwn`, {
                         headers: { 'Authorization': authHeader }
                     });
-                    console.log(res.data);
+                    
                     if (res.data && res.data.length > 0) {
                         setOwnRequestStatus(res.data[0].status);
                     }
@@ -251,9 +251,6 @@ function ExpertRequestModal({ authUser, onClose, onRequestSubmitted }) {
                     }
                 }
             );
-            if (authUser) {
-                localStorage.setItem(`expert_request_pending_${authUser.user_Id}`, 'true');
-            }
             if (onRequestSubmitted) {
                 onRequestSubmitted();
             }

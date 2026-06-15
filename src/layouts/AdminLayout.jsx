@@ -6,10 +6,16 @@ import API_CONFIG from '../config/api.js';
 
 import AdminPageLayout from "./AdminPageLayout.jsx";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
 const AdminLayout = () => {
     const [upToDate, setUpToDate] = useState([{}]);
     const authHeader = useAuthHeader();
+    const authUser = useAuthUser();
+
+    if (!authUser || authUser.role !== 'admin') {
+        return null;
+    }
 
     useEffect(() => {
         axios.get(`${API_CONFIG.BASE_URL}/cache/getLastUpdate`, {
