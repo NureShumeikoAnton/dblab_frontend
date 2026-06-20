@@ -5,7 +5,7 @@ import {DatabaseIcon, LogOut, Users} from "lucide-react";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
-const AdminHeaderComponent = ({upToDate}) => {
+const AdminHeaderComponent = () => {
     const authUser = useAuthUser();
     const sighOut = useSignOut();
     const username = authUser ? authUser.username : null;
@@ -19,11 +19,6 @@ const AdminHeaderComponent = ({upToDate}) => {
                 <div className="admin-title-text">
                     <DatabaseIcon size={24} />
                     <h1>DBLAB Admin</h1>
-                    {upToDate[0].upToDate ? (
-                        <h2 className="up-to-date-text">Дані збережено</h2>
-                    ) : (
-                        <h2 className="not-up-to-date-text">Дані не кешовані</h2>
-                    )}
                 </div>
                 <nav className="admin-header-nav">
                     <Link to="/apanel/experts" className="admin-header-nav__link">

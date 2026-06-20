@@ -50,7 +50,10 @@ const TeacherSliderComponent = ({teachers}) => {
                     <p className="teacher-description">{teachers[currentIndex].text}</p>
                 </div>
                 <div className="teacher-image">
-                    <img src={teachers[currentIndex].photo} alt={teachers[currentIndex].full_name}/>
+                    {teachers[currentIndex].photo
+                        ? <img src={`${API_CONFIG.BASE_URL}/teacher/photo/file/${teachers[currentIndex].photo}`} alt={teachers[currentIndex].full_name}/>
+                        : <div className="teacher-image__placeholder" />
+                    }
                 </div>
             </div>
             {teachers.length > 1 && (

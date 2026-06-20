@@ -1,0 +1,187 @@
+.nf-checklist {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    right: 0;
+    width: 440px;
+    max-height: 520px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
+    z-index: 200;
+    font-size: 13px;
+    color: var(--text-color);
+}
+
+.nf-checklist__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid #e8edf4;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+}
+
+.nf-checklist__title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.nf-checklist__close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.15s;
+}
+
+.nf-checklist__close:hover {
+    color: var(--text-color);
+}
+
+.nf-checklist__rules {
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+}
+
+.nf-rule {
+    padding: 9px 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.nf-rule:last-child {
+    border-bottom: none;
+}
+
+.nf-rule__label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: default;
+    user-select: none;
+}
+
+.nf-rule--manual .nf-rule__label {
+    cursor: pointer;
+}
+
+/* Circle toggle for manual rules */
+.nf-rule__circle {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.nf-rule__circle:hover {
+    border-color: #16a34a;
+}
+
+.nf-rule__circle--checked {
+    background: #16a34a;
+    border-color: #16a34a;
+}
+
+.nf-rule__circle--checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.nf-rule__text {
+    flex: 1;
+    line-height: 1.45;
+    color: var(--text-color);
+}
+
+/* Status badge */
+.nf-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    margin-top: 0;
+}
+
+.nf-badge--pass {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #86efac;
+}
+
+.nf-badge--error {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+}
+
+.nf-badge--warning {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fcd34d;
+}
+
+.nf-badge--na {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+    font-size: 13px;
+}
+
+/* Violation / hint detail below auto rules */
+.nf-rule__detail {
+    list-style: none;
+    margin: 6px 0 2px 28px;
+    padding: 0;
+    font-size: 12px;
+    color: #475569;
+}
+
+.nf-rule__detail li {
+    padding: 2px 0;
+    line-height: 1.4;
+}
+
+.nf-rule__detail li::before {
+    content: '↳ ';
+    color: #94a3b8;
+}
+
+.nf-rule__detail-note {
+    margin: 6px 0 2px 28px;
+    font-size: 12px;
+    color: #d97706;
+    font-style: italic;
+    line-height: 1.4;
+}

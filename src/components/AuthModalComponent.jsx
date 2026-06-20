@@ -52,41 +52,39 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
         const newErrors = {};
 
         if (isLogin) {
-            // Login validation
             if (!formData.email && !formData.login) {
-                newErrors.emailOrLogin = "Email or Login is required";
+                newErrors.emailOrLogin = "Введіть email або логін";
             }
             if (!formData.password) {
-                newErrors.password = "Password is required";
+                newErrors.password = "Введіть пароль";
             }
         } else {
-            // Registration validation
             if (!formData.login) {
-                newErrors.login = "Login is required";
+                newErrors.login = "Введіть логін";
             } else if (!/^[a-zA-Z0-9]+$/.test(formData.login)) {
-                newErrors.login = "Login can only contain English letters and numbers";
+                newErrors.login = "Логін може містити лише латинські літери та цифри";
             }
 
             if (!formData.nickname) {
-                newErrors.nickname = "Nickname is required";
+                newErrors.nickname = "Введіть нікнейм";
             }
 
             if (!formData.email) {
-                newErrors.email = "Email is required";
+                newErrors.email = "Введіть email";
             } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-                newErrors.email = "Email is invalid";
+                newErrors.email = "Невірний формат email";
             }
 
             if (!formData.password) {
-                newErrors.password = "Password is required";
+                newErrors.password = "Введіть пароль";
             } else if (formData.password.length < 6) {
-                newErrors.password = "Password must be at least 6 characters";
+                newErrors.password = "Пароль повинен містити не менше 6 символів";
             }
 
             if (!formData.confirmPassword) {
-                newErrors.confirmPassword = "Please confirm your password";
+                newErrors.confirmPassword = "Підтвердіть пароль";
             } else if (formData.password !== formData.confirmPassword) {
-                newErrors.confirmPassword = "Passwords do not match";
+                newErrors.confirmPassword = "Паролі не співпадають";
             }
         }
 
@@ -141,7 +139,7 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
             console.error("Login error:", error);
             setApiError(
                 error.response?.data?.message ||
-                "Failed to login. Please check your credentials."
+                "Помилка входу. Перевірте ваші дані."
             );
         } finally {
             setIsLoading(false);
@@ -181,14 +179,14 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
             if (error.response?.status === 400) {
                 setErrors({
                     ...errors,
-                    login: "Login is busy"
+                    login: "Цей логін вже зайнятий"
                 });
-                setApiError("Login is busy");
+                setApiError("Цей логін вже зайнятий");
             }
             else {
                 setApiError(
                     error.response?.data?.message ||
-                    "Failed to register. Please try again."
+                    "Помилка реєстрації. Спробуйте ще раз."
                 );
             }
         } finally {
@@ -221,7 +219,7 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
                 </button>
 
                 <div className="modal-header">
-                    <h2>{isLogin ? "Sign In" : "Create Account"}</h2>
+                    <h2>{isLogin ? "Вхід" : "Створити акаунт"}</h2>
                 </div>
 
                 <div className="auth-tabs">
@@ -229,13 +227,13 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
                         className={isLogin ? "active-tab" : ""}
                         onClick={() => setIsLogin(true)}
                     >
-                        Login
+                        Вхід
                     </button>
                     <button
                         className={!isLogin ? "active-tab" : ""}
                         onClick={() => setIsLogin(false)}
                     >
-                        Register
+                        Реєстрація
                     </button>
                 </div>
 
@@ -250,44 +248,44 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
                     {!isLogin && (
                         <>
                             <InputFieldComponent
-                                label="Login"
+                                label="Логін"
                                 name="login"
                                 icon={<User size={20} />}
-                                placeholder="Enter your login"
+                                placeholder="Введіть ваш логін"
                                 value={formData.login}
                                 onChange={handleChange}
                                 error={errors.login}
                             />
-                            <p className="input-note">Note: Will be hidden from other users</p>
+                            <p className="input-note">Примітка: не відображається іншим користувачам</p>
 
                             <InputFieldComponent
-                                label="Nickname"
+                                label="Нікнейм"
                                 name="nickname"
                                 icon={<User size={20} />}
-                                placeholder="Enter your nickname (e.g. John Smith)"
+                                placeholder="Введіть нікнейм (напр. Іван Іваненко)"
                                 value={formData.nickname}
                                 onChange={handleChange}
                                 error={errors.nickname}
                             />
-                            <p className="input-note">Note: Will be shown to everyone</p>
+                            <p className="input-note">Примітка: відображається усім користувачам</p>
                         </>
                     )}
 
                     <InputFieldComponent
-                        label={isLogin ? "Email or Login" : "Email"}
+                        label={isLogin ? "Email або логін" : "Email"}
                         name="email"
                         icon={<Mail size={20} />}
-                        placeholder={isLogin ? "Enter your email or login" : "Enter your email"}
+                        placeholder={isLogin ? "Введіть ваш email або логін" : "Введіть ваш email"}
                         value={formData.email}
                         onChange={handleChange}
                         error={errors.email || errors.emailOrLogin}
                     />
 
                     <InputFieldComponent
-                        label="Password"
+                        label="Пароль"
                         name="password"
                         icon={<Lock size={20} />}
-                        placeholder="Enter your password"
+                        placeholder="Введіть ваш пароль"
                         value={formData.password}
                         onChange={handleChange}
                         error={errors.password}
@@ -296,10 +294,10 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
 
                     {!isLogin && (
                         <InputFieldComponent
-                            label="Confirm Password"
+                            label="Підтвердіть пароль"
                             name="confirmPassword"
                             icon={<Lock size={20} />}
-                            placeholder="Confirm your password"
+                            placeholder="Повторіть ваш пароль"
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             error={errors.confirmPassword}
@@ -316,7 +314,7 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
                                     checked={formData.rememberMe}
                                     onChange={handleChange}
                                 />
-                                <span>Remember Me</span>
+                                <span>Запам'ятати мене</span>
                             </label>
                         </div>
                     )}
@@ -327,20 +325,20 @@ const AuthModalComponent = ({ isOpen, onClose }) => {
                         disabled={isLoading}
                     >
                         {isLoading
-                            ? "Processing..."
-                            : (isLogin ? "Sign In" : "Create Account")
+                            ? "Завантаження..."
+                            : (isLogin ? "Увійти" : "Створити акаунт")
                         }
                     </button>
 
                     <div className="auth-switch">
                         <p>
-                            {isLogin ? "Don't have an account? " : "Already have an account? "}
+                            {isLogin ? "Немає акаунту? " : "Вже маєте акаунт? "}
                             <button
                                 type="button"
                                 onClick={toggleView}
                                 className="switch-btn"
                             >
-                                {isLogin ? "Register" : "Login"}
+                                {isLogin ? "Зареєструватись" : "Увійти"}
                             </button>
                         </p>
                     </div>

@@ -3,7 +3,6 @@ import './styles/Admin.css';
 import AdminHeaderComponent from "../components/AdminHeaderComponent.jsx";
 import axios from "axios";
 import API_CONFIG from '../config/api.js';
-
 import AdminPageLayout from "./AdminPageLayout.jsx";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
@@ -30,6 +29,7 @@ const AdminLayout = () => {
             console.error("Error fetching data:", error);
         });
     }, []);
+
     return (
         <div className={"admin-layout-container"}>
             <AdminHeaderComponent
@@ -40,7 +40,6 @@ const AdminLayout = () => {
             </main>
             <footer>
                 <div className="footer-text">
-                    <p>Останнє оновлення: {new Date(upToDate[0].lastUpdate).toLocaleString()}</p>
                     <p>&copy; 2023 DBLAB. All rights reserved.</p>
                 </div>
             </footer>

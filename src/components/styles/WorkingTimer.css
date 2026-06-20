@@ -1,0 +1,49 @@
+.working-timer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.working-timer__text {
+    font-size: 12px;
+    color: #a8b2bb;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.working-timer__clock {
+    letter-spacing: 0.04em;
+}
+
+.working-timer__divider {
+    font-size: 12px;
+    color: #cdd3d9;
+}
+
+.working-timer__pause {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #b0bac3;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.working-timer__pause:hover {
+    background: #ebebed;
+    color: #7a8490;
+}
+
+.working-timer__elapsed {
+    transition: color 0.2s ease;
+}
+
+.working-timer--paused .working-timer__elapsed {
+    color: #cdd3d9;
+}
