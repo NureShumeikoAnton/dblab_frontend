@@ -11,9 +11,9 @@ const ConfirmDeleteProjectModal = ({ projectName, onConfirm, onCancel, isDeletin
             <div className="cdp-modal" role="dialog" aria-modal="true" aria-labelledby="cdp-title">
                 <div className="cdp-modal__strip" />
                 <div className="cdp-modal__inner">
-                    <h2 className=”cdp-modal__title” id=”cdp-title”>Видалити проект?</h2>
-                    <p className=”cdp-modal__text”>
-                        Це назавжди видалить <strong>”{projectName}”</strong> з
+                    <h2 className="cdp-modal__title" id="cdp-title">Видалити проект?</h2>
+                    <p className="cdp-modal__text">
+                        Це назавжди видалить <strong>"{projectName}"</strong> з
                         усіма його етапами, таблицями, атрибутами та залежностями.
                         Цю дію неможливо скасувати.
                     </p>
