@@ -22,7 +22,7 @@ const EditorHeader = () => {
                     aria-label="Back to projects"
                 >
                     <ArrowLeft size={14} />
-                    <span>Back</span>
+                    <span>Назад</span>
                 </button>
             </div>
 

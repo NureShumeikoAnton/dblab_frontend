@@ -23,13 +23,13 @@ const EmptyState = ({ onNew }) => (
                 <path d="M48 46 Q60 46 72 73" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="4 2" fill="none" opacity="0.5"/>
             </svg>
         </div>
-        <h3 className="pcl-empty__title">No projects yet</h3>
+        <h3 className="pcl-empty__title">Проектів ще немає</h3>
         <p className="pcl-empty__sub">
-            Build your first normalized database schema —<br/>
-            from raw data all the way to 3NF.
+            Побудуйте свою першу нормалізовану схему бази даних —<br/>
+            від сирих даних до 3НФ.
         </p>
         <button className="pcl-empty__btn" onClick={onNew}>
-            + Create your first project
+            + Створити перший проект
         </button>
     </div>
 );

@@ -21,8 +21,8 @@ const EditProjectModal = ({ project, onClose, onSubmit, isSubmitting = false, er
                 <div className="epm-modal__strip" />
                 <div className="epm-modal__inner">
                     <div className="epm-modal__head">
-                        <h2 className="epm-modal__title" id="epm-title">Edit Project</h2>
-                        <button className="epm-modal__close" onClick={onClose} aria-label="Close">
+                        <h2 className="epm-modal__title" id="epm-title">Редагувати проект</h2>
+                        <button className="epm-modal__close" onClick={onClose} aria-label="Закрити">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                                 <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                             </svg>
@@ -32,7 +32,7 @@ const EditProjectModal = ({ project, onClose, onSubmit, isSubmitting = false, er
                     <form className="epm-form" onSubmit={handleSubmit}>
                         <div className="epm-field">
                             <label className="epm-field__label" htmlFor="epm-name">
-                                Project name <span className="epm-field__req">*</span>
+                                Назва проекту <span className="epm-field__req">*</span>
                             </label>
                             <input
                                 id="epm-name"
@@ -46,8 +46,8 @@ const EditProjectModal = ({ project, onClose, onSubmit, isSubmitting = false, er
                         </div>
                         <div className="epm-field">
                             <label className="epm-field__label" htmlFor="epm-desc">
-                                Description{' '}
-                                <span className="epm-field__opt">optional</span>
+                                Опис{' '}
+                                <span className="epm-field__opt">необов'язково</span>
                             </label>
                             <textarea
                                 id="epm-desc"
@@ -60,14 +60,14 @@ const EditProjectModal = ({ project, onClose, onSubmit, isSubmitting = false, er
                         {error && <div className="epm-error" role="alert">{error}</div>}
                         <div className="epm-actions">
                             <button type="button" className="epm-btn epm-btn--ghost" onClick={onClose}>
-                                Cancel
+                                Скасувати
                             </button>
                             <button
                                 type="submit"
                                 className="epm-btn epm-btn--primary"
                                 disabled={!name.trim() || isSubmitting}
                             >
-                                {isSubmitting ? 'Saving…' : 'Save changes'}
+                                {isSubmitting ? 'Збереження…' : 'Зберегти зміни'}
                             </button>
                         </div>
                     </form>

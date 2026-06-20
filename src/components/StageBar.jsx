@@ -7,7 +7,7 @@ import useEditorStore from '../store/editorStore.js';
 import { useNFAnalysis, useNFAnalysisTrigger } from '../hooks/useNFAnalysis.jsx';
 import './styles/StageBar.css';
 
-const STAGES = ['1NF', 'FDs', '2NF', '3NF'];
+const STAGES = ['1НФ', 'ФЗ', '2НФ', '3НФ'];
 
 const StageBar = ({ currentStageIndex, onStageChange }) => {
     const [showChecklist, setShowChecklist] = useState(false);

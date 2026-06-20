@@ -11,11 +11,11 @@ const ConfirmDeleteProjectModal = ({ projectName, onConfirm, onCancel, isDeletin
             <div className="cdp-modal" role="dialog" aria-modal="true" aria-labelledby="cdp-title">
                 <div className="cdp-modal__strip" />
                 <div className="cdp-modal__inner">
-                    <h2 className="cdp-modal__title" id="cdp-title">Delete project?</h2>
-                    <p className="cdp-modal__text">
-                        This will permanently delete <strong>“{projectName}”</strong> with
-                        all its stages, tables, attributes and dependencies.
-                        This action cannot be undone.
+                    <h2 className=”cdp-modal__title” id=”cdp-title”>Видалити проект?</h2>
+                    <p className=”cdp-modal__text”>
+                        Це назавжди видалить <strong>”{projectName}”</strong> з
+                        усіма його етапами, таблицями, атрибутами та залежностями.
+                        Цю дію неможливо скасувати.
                     </p>
                     {error && <div className="cdp-error" role="alert">{error}</div>}
                     <div className="cdp-actions">
@@ -25,7 +25,7 @@ const ConfirmDeleteProjectModal = ({ projectName, onConfirm, onCancel, isDeletin
                             onClick={onCancel}
                             disabled={isDeleting}
                         >
-                            Cancel
+                            Скасувати
                         </button>
                         <button
                             type="button"
@@ -33,7 +33,7 @@ const ConfirmDeleteProjectModal = ({ projectName, onConfirm, onCancel, isDeletin
                             onClick={onConfirm}
                             disabled={isDeleting}
                         >
-                            {isDeleting ? 'Deleting…' : 'Delete project'}
+                            {isDeleting ? 'Видалення…' : 'Видалити проект'}
                         </button>
                     </div>
                 </div>

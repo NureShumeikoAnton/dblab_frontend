@@ -43,13 +43,13 @@ const WorkingTimer = () => {
             <button
                 className="working-timer__pause"
                 onClick={() => setIsPaused((p) => !p)}
-                title={isPaused ? 'Resume timer' : 'Pause timer'}
-                aria-label={isPaused ? 'Resume timer' : 'Pause timer'}
+                title={isPaused ? 'Відновити таймер' : 'Пауза таймера'}
+                aria-label={isPaused ? 'Відновити таймер' : 'Пауза таймера'}
             >
                 {isPaused ? <Play size={11} /> : <Pause size={11} />}
             </button>
             <span className="working-timer__text working-timer__elapsed">
-                Working: {formatElapsed(elapsed)}
+                Пройшло часу: {formatElapsed(elapsed)}
             </span>
         </div>
     );

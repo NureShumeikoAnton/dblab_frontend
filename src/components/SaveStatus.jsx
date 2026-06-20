@@ -9,11 +9,11 @@ const SaveStatus = () => {
     return (
         <div className="save-status">
             <span className={`save-status__badge ${isLocalSaved ? 'save-status__badge--saved' : 'save-status__badge--unsaved'}`}>
-                {isLocalSaved ? '✓' : '●'} Local
+                {isLocalSaved ? '✓' : '●'} Локально
             </span>
             {projectId && (
                 <span className={`save-status__badge ${isServerSaved ? 'save-status__badge--saved' : 'save-status__badge--unsaved'}`}>
-                    {isServerSaved ? '✓' : '●'} Server
+                    {isServerSaved ? '✓' : '●'} Хмара
                 </span>
             )}
         </div>

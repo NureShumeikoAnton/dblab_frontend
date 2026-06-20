@@ -21,8 +21,8 @@ const NewProjectModal = ({ onClose, onSubmit, isSubmitting = false, error = null
                 <div className="npm-modal__strip" />
                 <div className="npm-modal__inner">
                     <div className="npm-modal__head">
-                        <h2 className="npm-modal__title" id="npm-title">New Project</h2>
-                        <button className="npm-modal__close" onClick={onClose} aria-label="Close">
+                        <h2 className="npm-modal__title" id="npm-title">Новий проект</h2>
+                        <button className="npm-modal__close" onClick={onClose} aria-label="Закрити">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                                 <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                             </svg>
@@ -32,7 +32,7 @@ const NewProjectModal = ({ onClose, onSubmit, isSubmitting = false, error = null
                     <form className="npm-form" onSubmit={handleSubmit}>
                         <div className="npm-field">
                             <label className="npm-field__label" htmlFor="npm-name">
-                                Project name <span className="npm-field__req">*</span>
+                                Назва проекту <span className="npm-field__req">*</span>
                             </label>
                             <input
                                 id="npm-name"
@@ -40,36 +40,36 @@ const NewProjectModal = ({ onClose, onSubmit, isSubmitting = false, error = null
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="e.g. Library Management System"
+                                placeholder="напр. Система управління бібліотекою"
                                 autoFocus
                                 required
                             />
                         </div>
                         <div className="npm-field">
                             <label className="npm-field__label" htmlFor="npm-desc">
-                                Description{' '}
-                                <span className="npm-field__opt">optional</span>
+                                Опис{' '}
+                                <span className="npm-field__opt">необов'язково</span>
                             </label>
                             <textarea
                                 id="npm-desc"
                                 className="npm-field__textarea"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                placeholder="What domain does this schema model?"
+                                placeholder="Яка предметна область цієї схеми?"
                                 rows={3}
                             />
                         </div>
                         {error && <div className="npm-error" role="alert">{error}</div>}
                         <div className="npm-actions">
                             <button type="button" className="npm-btn npm-btn--ghost" onClick={onClose}>
-                                Cancel
+                                Скасувати
                             </button>
                             <button
                                 type="submit"
                                 className="npm-btn npm-btn--primary"
                                 disabled={!name.trim() || isSubmitting}
                             >
-                                {isSubmitting ? 'Creating…' : 'Create project'}
+                                {isSubmitting ? 'Створення…' : 'Створити проект'}
                             </button>
                         </div>
                     </form>

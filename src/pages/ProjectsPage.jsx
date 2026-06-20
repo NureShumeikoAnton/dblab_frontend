@@ -59,7 +59,7 @@ const ProjectsPage = () => {
             })
             .catch((err) => {
                 console.error('[ProjectsPage] load failed', err);
-                setLoadError('Failed to load projects. Check your connection.');
+                setLoadError('Не вдалося завантажити проекти. Перевірте підключення.');
             });
     }, [authHeader, username]);
 
@@ -84,7 +84,7 @@ const ProjectsPage = () => {
         } catch (err) {
             console.error('[ProjectsPage] create failed', err);
             setIsCreating(false);
-            setCreateError('Failed to create the project. Please try again.');
+            setCreateError('Не вдалося створити проект. Будь ласка, спробуйте ще раз.');
         }
     };
 
@@ -104,7 +104,7 @@ const ProjectsPage = () => {
             setEditTarget(null);
         } catch (err) {
             console.error('[ProjectsPage] edit failed', err);
-            setEditError('Failed to save changes. Please try again.');
+            setEditError('Не вдалося зберегти зміни. Будь ласка, спробуйте ще раз.');
         } finally {
             setIsEditing(false);
         }
@@ -124,7 +124,7 @@ const ProjectsPage = () => {
             setDeleteTarget(null);
         } catch (err) {
             console.error('[ProjectsPage] delete failed', err);
-            setDeleteError('Failed to delete the project. Please try again.');
+            setDeleteError('Не вдалося видалити проект. Будь ласка, спробуйте ще раз.');
         } finally {
             setIsDeleting(false);
         }
@@ -136,16 +136,16 @@ const ProjectsPage = () => {
                 <div className="projects-page__top">
                     <div className="projects-page__header">
                         <h1 className="projects-page__title">
-                            <span>My</span> Projects
+                            <span>Мої</span> Проекти
                         </h1>
                         <p className="projects-page__sub">
-                            Select one of your projects or create a new one
+                            Оберіть один з ваших проектів або створіть новий
                         </p>
                         <button
                             className="projects-page__new-btn"
                             onClick={() => { setCreateError(null); setIsCreateOpen(true); }}
                         >
-                            + New Project
+                            + Новий проект
                         </button>
                     </div>
                     <InteractiveGuideComponent />
@@ -153,7 +153,13 @@ const ProjectsPage = () => {
                 <div className="project-page__count">
                     {loadError
                         ? loadError
-                        : `You have ${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`}
+                        : `У вас ${projects.length} ${
+                            projects.length % 10 === 1 && projects.length % 100 !== 11
+                                ? 'проект'
+                                : projects.length % 10 >= 2 && projects.length % 10 <= 4 && (projects.length % 100 < 10 || projects.length % 100 >= 20)
+                                    ? 'проекти'
+                                    : 'проектів'
+                        }`}
                 </div>
                 <ProjectCardList
                     projects={projects}

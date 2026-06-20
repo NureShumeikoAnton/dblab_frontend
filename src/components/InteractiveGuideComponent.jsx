@@ -4,27 +4,27 @@ import './styles/InteractiveGuideComponent.css';
 const steps = [
     {
         number: '01',
-        title: 'Create a Project',
-        desc: 'Give it a name and description. A project is the top-level container for one or more database schemas.',
+        title: 'Створіть проект',
+        desc: 'Дайте назву та опис. Проект — це контейнер верхнього рівня для однієї або кількох схем баз даних.',
     },
     {
         number: '02',
-        title: 'Build Your Schema',
-        desc: 'Add tables, define columns with data types, and draw relationships on a visual canvas.',
+        title: 'Побудуйте схему',
+        desc: 'Додайте таблиці, визначте стовпці з типами даних та накресліть зв\'язки на візуальному полотні.',
     },
     {
         number: '03',
-        title: 'Normalize Step by Step',
-        desc: 'Walk through 1NF → 2NF → 3NF with guided hints that detect violations automatically.',
+        title: 'Нормалізуйте крок за кроком',
+        desc: 'Пройдіть 1НФ → 2НФ → 3НФ з підказками, які автоматично виявляють порушення.',
     },
 ];
 
 const InteractiveGuideComponent = () => (
     <aside className="iguide">
         <div className="iguide__header">
-            <span className="iguide__badge">How it works</span>
+            <span className="iguide__badge">Як це працює</span>
             <p className="iguide__tagline">
-                Design, normalize, and export your database schema — all in one place.
+                Проектуйте, нормалізуйте та експортуйте схему бази даних — все в одному місці.
             </p>
         </div>
         <div className="iguide__steps">
