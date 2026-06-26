@@ -3,7 +3,7 @@ import useEditorStore from '../store/editorStore.js';
 import { TABLE_COLORS } from './TableToolbar.jsx';
 import './styles/RelationshipToolbar.css';
 
-const CARDINALITY_OPTIONS = ['1', '0..1', '1..*', '0..*'];
+const CARDINALITY_OPTIONS = ['1..1', '0..1', '1..*', '0..*'];
 
 const RelationshipToolbar = () => {
     const currentStageIndex = useEditorStore((s) => s.currentStageIndex);

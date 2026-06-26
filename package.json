@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:back": "cd ../dblab_backend/db_lab_backend && npm run dev",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

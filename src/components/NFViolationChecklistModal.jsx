@@ -67,9 +67,37 @@ function RuleDetail({ autoKey, analysis }) {
         );
     }
 
-    if (autoKey === 'fds_present') {
-        if (summary.fds_present !== 'warning') return null;
-        return <p className="nf-rule__detail-note">Функціональні залежності ще не накреслені — використовуйте інструмент дужок ФЗ для позначення залежностей у кожній таблиці.</p>;
+    if (autoKey === 'fds_table_coverage') {
+        if (summary.fds_table_coverage !== 'error') return null;
+        return (
+            <ul className="nf-rule__detail">
+                {summary.fds_table_coverage_violations.map((t) => (
+                    <li key={t.tableId}>Таблиця <strong>{t.tableName}</strong> не має жодної ФЗ</li>
+                ))}
+            </ul>
+        );
+    }
+
+    if (autoKey === 'fds_attr_determined') {
+        if (summary.fds_attr_determined !== 'error') return null;
+        return (
+            <ul className="nf-rule__detail">
+                {summary.fds_attr_determined_violations.map((v, i) => (
+                    <li key={i}><strong>{v.attrName}</strong> у {v.tableName} ні від чого не залежить</li>
+                ))}
+            </ul>
+        );
+    }
+
+    if (autoKey === 'fds_pk_determinant') {
+        if (summary.fds_pk_determinant !== 'error') return null;
+        return (
+            <ul className="nf-rule__detail">
+                {summary.fds_pk_determinant_violations.map((t) => (
+                    <li key={t.tableId}>У таблиці <strong>{t.tableName}</strong> немає залежності, де детермінант — повний первинний ключ</li>
+                ))}
+            </ul>
+        );
     }
 
     if (autoKey === '2nf') {

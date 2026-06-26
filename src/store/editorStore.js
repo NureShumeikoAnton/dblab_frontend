@@ -357,7 +357,7 @@ const useEditorStore = create(
                         id: generateId(),
                         type: 'non-identifying',
                         color: '#64748b',
-                        cardinality_t1: '1',
+                        cardinality_t1: '1..1',
                         cardinality_t2: '0..*',
                         table1Id: newTableId,
                         table2Id: sourceTableId,

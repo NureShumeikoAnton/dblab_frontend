@@ -38,9 +38,18 @@ export function runNFChecks(tables, fds, attributePool) {
         '1nf_atomic': 'pass',
         '2nf': 'pass',
         '3nf': 'pass',
-        fds_present: fds.length > 0 ? 'pass' : 'warning',
+        // FD-stage coverage checks (per-table):
+        //   fds_table_coverage — every table carries at least one FD
+        //   fds_attr_determined — every non-key attribute is determined by something
+        //   fds_pk_determinant — every table has an FD whose determinant is the full PK
+        fds_table_coverage: 'pass',
+        fds_attr_determined: 'pass',
+        fds_pk_determinant: 'pass',
         '2nf_violations': [],
         '3nf_violations': [],
+        fds_table_coverage_violations: [],
+        fds_attr_determined_violations: [],
+        fds_pk_determinant_violations: [],
         missingPK_tables: [],
         plural_attrs: [],
         atomic_attrs: [],
@@ -49,6 +58,9 @@ export function runNFChecks(tables, fds, attributePool) {
     if (tables.length === 0) {
         summary['2nf'] = 'na';
         summary['3nf'] = 'na';
+        summary.fds_table_coverage = 'na';
+        summary.fds_attr_determined = 'na';
+        summary.fds_pk_determinant = 'na';
         return { tableHeaderIssues, attrRowIssues, fdIssues, summary };
     }
 
@@ -151,6 +163,55 @@ export function runNFChecks(tables, fds, attributePool) {
     };
 
     const liveFDs = fds.filter((fd) => !isOrphaned(fd));
+
+    // ── FD-stage coverage checks ───────────────────────────────────────────────
+    // Surfaced on the FDs stage. A table is "complete" only when every non-key
+    // attribute is functionally determined and the primary key determines them.
+    for (const table of tables) {
+        const pkSet = new Set(
+            table.tableAttributes.filter((ta) => ta.is_PK).map((ta) => ta.attributeId)
+        );
+        const nonKeyTAs = table.tableAttributes.filter((ta) => !ta.is_PK);
+
+        // Pure key-only tables (junctions) carry no determinable attributes — skip.
+        if (nonKeyTAs.length === 0) continue;
+
+        const tableFDs = liveFDs.filter((fd) => getFDTable(fd)?.id === table.id);
+
+        // (7) A table left without any FD is an error, not a soft warning.
+        if (tableFDs.length === 0) {
+            summary.fds_table_coverage = 'error';
+            summary.fds_table_coverage_violations.push({ tableId: table.id, tableName: table.name });
+            continue; // the remaining FD checks are moot without any FD
+        }
+
+        // (11) Every non-key attribute must be a dependent of at least one FD —
+        // at minimum each attribute depends on the primary key.
+        const determinedIds = new Set(tableFDs.flatMap((fd) => fd.ends.map((e) => e.attributeId)));
+        for (const ta of nonKeyTAs) {
+            if (!determinedIds.has(ta.attributeId)) {
+                summary.fds_attr_determined = 'error';
+                summary.fds_attr_determined_violations.push({
+                    tableId: table.id,
+                    tableName: table.name,
+                    attrName: attrMap.get(ta.attributeId)?.name ?? ta.attributeId,
+                });
+            }
+        }
+
+        // (12) At least one FD whose determinant is exactly the full primary key
+        // (simple or composite). Skipped when the table has no PK — missingPK covers it.
+        if (pkSet.size > 0) {
+            const hasPKDeterminant = tableFDs.some((fd) => {
+                const startIds = fd.starts.map((s) => s.attributeId);
+                return startIds.length === pkSet.size && startIds.every((id) => pkSet.has(id));
+            });
+            if (!hasPKDeterminant) {
+                summary.fds_pk_determinant = 'error';
+                summary.fds_pk_determinant_violations.push({ tableId: table.id, tableName: table.name });
+            }
+        }
+    }
 
     // ── 2NF — partial dependency detection ─────────────────────────────────────
 

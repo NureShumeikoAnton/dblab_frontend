@@ -18,11 +18,11 @@ const EditorHeader = () => {
                 <button
                     className="editor-header__back"
                     onClick={() => navigate('/projects')}
-                    title="Back to projects"
-                    aria-label="Back to projects"
+                    title="На головну сторінку"
+                    aria-label="На головну сторінку"
                 >
                     <ArrowLeft size={14} />
-                    <span>Назад</span>
+                    <span>На головну</span>
                 </button>
             </div>
 

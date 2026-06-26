@@ -70,7 +70,7 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
             id: generateId(),
             type: 'non-identifying',
             color: '#64748b',
-            cardinality_t1: '1',
+            cardinality_t1: '1..1',
             cardinality_t2: '0..*',
             table1Id: sourceTable.id,
             table2Id: targetTable.id,
