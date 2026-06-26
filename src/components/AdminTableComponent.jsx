@@ -127,7 +127,8 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
             })
             .catch((error) => {
                 console.error("Error deleting item:", error);
-                notifyError("Error deleting item" + error.message);
+                const msg = error.response?.data?.message || error.message;
+                notifyError("Помилка видалення: " + msg);
             });
         };
         if (isDeleteWithoutConfirmation) {
