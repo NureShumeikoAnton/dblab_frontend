@@ -35,10 +35,9 @@ const MyStacksPage = () => {
     // Fetch Stacks
     const fetchStacks = async () => {
         if(!authHeader) return;
-        const token = authHeader.split(' ')[1];
         try {
             const response = await axios.get(`${API_CONFIG.BASE_URL}/stack/getAllByAuthor/${userId}`, {
-                headers: { 'Authorization': token }
+                headers: { 'Authorization': authHeader }
             });
             setStacks(response.data);
         } catch (error) {
@@ -56,9 +55,8 @@ const MyStacksPage = () => {
         const stackIdParam = searchParams.get('stackId');
 
         if (openEdit === 'true' && stackIdParam && authHeader) {
-            const token = authHeader.split(' ')[1];
             axios.get(`${API_CONFIG.BASE_URL}/stack/getById/${stackIdParam}`, {
-                headers: { 'Authorization': token }
+                headers: { 'Authorization': authHeader }
             })
             .then(res => {
                 const stack = res.data;
@@ -98,9 +96,8 @@ const MyStacksPage = () => {
         if(!window.confirm("Ви впевнені, що хочете видалити цей стек?")) return;
         
         try {
-            const token = authHeader.split(' ')[1];
             await axios.delete(`${API_CONFIG.BASE_URL}/stack/delete/${stackId}`, {
-                headers: { 'Authorization': token }
+                headers: { 'Authorization': authHeader }
             });
             setStacks(prev => prev.filter(s => s.stack_Id !== stackId));
         } catch (error) {
@@ -110,7 +107,6 @@ const MyStacksPage = () => {
     };
 
     const handleRemoveResource = async (resourceId) => {
-        const token = authHeader.split(' ')[1];
         
         const removedResource = currentStackResources.find(r => r.resource_Id === resourceId);
         setCurrentStackResources(prev => prev.filter(r => r.resource_Id !== resourceId));
@@ -125,13 +121,13 @@ const MyStacksPage = () => {
 
         try {
             await axios.delete(`${API_CONFIG.BASE_URL}/stack/removeResource/${currentStackId}/${resourceId}`, {
-                headers: { 'Authorization': token }
+                headers: { 'Authorization': authHeader }
             });
 
             showToast(`Ресурс "${removedResource.name}" видалено.`, async () => {
                 try {
                     await axios.post(`${API_CONFIG.BASE_URL}/stack/addResource/${currentStackId}/${resourceId}`, {}, {
-                        headers: { 'Authorization': token }
+                        headers: { 'Authorization': authHeader }
                     });
                     
                     setCurrentStackResources(prev => [...prev, removedResource]);
@@ -208,13 +204,12 @@ const MyStacksPage = () => {
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
-        const token = authHeader.split(' ')[1];
         
         try {
             if (isEditMode) {
                 // Update
                 const response = await axios.put(`${API_CONFIG.BASE_URL}/stack/${currentStackId}`, formData, {
-                    headers: { 'Authorization': token }
+                    headers: { 'Authorization': authHeader }
                 });
                 
                 setStacks(prev => prev.map(s => s.stack_Id === currentStackId ? { ...s, ...formData } : s));
@@ -223,7 +218,7 @@ const MyStacksPage = () => {
             } else {
                 // Create
                 const response = await axios.post(`${API_CONFIG.BASE_URL}/stack/create`, formData, {
-                    headers: { 'Authorization': token }
+                    headers: { 'Authorization': authHeader }
                 });
                 const newStack = response.data;
                 setStacks(prev => [newStack, ...prev]);

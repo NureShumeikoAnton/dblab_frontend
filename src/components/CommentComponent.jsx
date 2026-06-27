@@ -27,7 +27,6 @@ const CommentComponent = ({ comment, currentUserId, onEdit, onDelete }) => {
 
   const handleLikeToggle = async () => {
     if (!authHeader) return;
-    const token = authHeader.split(' ')[1];
     
     const newLikedState = !isLiked;
     const newLikesCount = newLikedState ? likesCount + 1 : likesCount - 1;
@@ -40,7 +39,7 @@ const CommentComponent = ({ comment, currentUserId, onEdit, onDelete }) => {
         await axios.put(
             `${API_CONFIG.BASE_URL}/comment/switchLike/${comment.comment_Id}`,
             { flag: apiFlag },
-            { headers: { 'Authorization': token } }
+            { headers: { 'Authorization': authHeader } }
         );
     } catch (error) {
         console.error("Like failed", error);
