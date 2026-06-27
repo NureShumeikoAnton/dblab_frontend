@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import { temporal } from 'zundo';
 import { serializeProjectMeta, serializeForAPI, serializeToLocal, deserializeFromAPI, mergeLocalOnlyFields } from '../utils/serializer.js';
 import { buildTableFromAttributes } from '../utils/tableFactory.js';
+import { relocateFDsToTable } from '../utils/fdRelocation.js';
 import generateId from '../utils/generateId.js';
 import API_CONFIG from '../config/api.js';
 
@@ -324,6 +325,11 @@ const useEditorStore = create(
             const newTable = buildTableFromAttributes(sourceTable, tas, attrs);
             set((s) => {
                 s.stages[stageIndex].tables.push(newTable);
+                // Issue #21 — if the extracted key already determines a moved
+                // attribute, move the FD into the new table.
+                if (stageIndex >= 1) {
+                    relocateFDsToTable(s.stages[stageIndex], newTable.id);
+                }
                 s.ui.hasUnsavedChanges = true;
                 s.ui.isLocalSaved = false;
                 s.ui.isServerSaved = false;
@@ -471,6 +477,11 @@ const useEditorStore = create(
                     // The same pool attribute must not appear twice in one table
                     if (table.tableAttributes.some((ta) => ta.attributeId === tableAttribute.attributeId)) return;
                     table.tableAttributes.push(tableAttribute);
+                    // Issue #21 — an attribute landing here may complete an FD's
+                    // determinant; move the relevant dependency into this table.
+                    if (stageIndex >= 1) {
+                        relocateFDsToTable(state.stages[stageIndex], tableId);
+                    }
                     state.ui.hasUnsavedChanges = true;
                     state.ui.isLocalSaved = false;
                     state.ui.isServerSaved = false;
@@ -543,6 +554,12 @@ const useEditorStore = create(
                 table.tableAttributes = table.tableAttributes.filter(
                     (a) => a.id !== tableAttributeId
                 );
+
+                // Issue #21 — removal is intentionally NON-destructive to FDs: a
+                // bracket whose endpoint row is gone is hidden by FDEdge, and an
+                // orphaned FD is excluded from validation. The dependency is moved
+                // (not destroyed) when its attribute is re-added to another table.
+
                 if (
                     state.ui.selectedTableAttribute?.tableId === tableId &&
                     state.ui.selectedTableAttribute?.tableAttributeId === tableAttributeId
