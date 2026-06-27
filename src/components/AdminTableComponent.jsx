@@ -142,12 +142,25 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
 
     const handleSave = async (formData) => {
         try {
-            if (currentItem) {
-                // Update existing item
-                await axios.put(`${apiUrl}/${currentItem[idField]}`, formData, {
-                    headers: {
-                        'Authorization': authHeader,
+            const fileColumns = columns.filter(col => col.type === 'file');
+            const cleanData = { ...formData };
+            fileColumns.forEach(col => delete cleanData[col.key]);
+
+            const uploadFiles = async (id) => {
+                for (const col of fileColumns) {
+                    if (formData[col.key] instanceof File) {
+                        const fd = new FormData();
+                        fd.append(col.key, formData[col.key]);
+                        await axios.post(`${apiUrl}/${id}/upload-photo`, fd, {
+                            headers: { 'Authorization': authHeader }
+                        });
                     }
+                }
+            };
+
+            if (currentItem) {
+                await axios.put(`${apiUrl}/${currentItem[idField]}`, cleanData, {
+                    headers: { 'Authorization': authHeader }
                 })
                     .then((response) => {
                         console.log("Item updated:", response.data);
@@ -157,16 +170,15 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                         console.error("Error updating item:", error);
                         notifyError("Error updating item" + error.message);
                     });
+                await uploadFiles(currentItem[idField]);
                 handleAdditionalFields("remove", currentItem[idField]);
                 setTimeout(() => {
                     handleAdditionalFields("add", currentItem[idField]);
                 }, 100);
             } else {
                 let createdItemId = null;
-                await axios.post(apiUrl + "/create", formData, {
-                    headers: {
-                        'Authorization': authHeader,
-                    }
+                await axios.post(apiUrl + "/create", cleanData, {
+                    headers: { 'Authorization': authHeader }
                 })
                     .then((response) => {
                         console.log("Item created:", response.data);
@@ -178,6 +190,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                         notifyError("Error creating item" + error.message);
                     });
                 if (createdItemId) {
+                    await uploadFiles(createdItemId);
                     handleAdditionalFields("add", createdItemId);
                 }
             }

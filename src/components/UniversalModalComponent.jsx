@@ -15,12 +15,7 @@ const UniversalModalComponent = ({modalName, data, rows, onSave, onCancel, onCha
     const handleFileChange = (e, row) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64 = reader.result;
-                onChange({ target: { name: row.key, value: base64 } }, row);
-            };
-            reader.readAsDataURL(file);
+            onChange({ target: { name: row.key, value: file } }, row);
         }
     }
 
