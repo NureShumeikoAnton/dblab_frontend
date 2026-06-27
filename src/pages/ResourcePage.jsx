@@ -35,10 +35,9 @@ const ResourcePage = () => {
   // Fetch Resource
   useEffect(() => {
     if (!authHeader) return;
-    const token = authHeader.split(' ')[1];
     
     axios.get(`${API_CONFIG.BASE_URL}/resource/getById/${resourceId}`, {
-        headers: { 'Authorization': token },
+        headers: { 'Authorization': authHeader },
     })
     .then((response) => {
         let resourceData = response.data;
@@ -52,7 +51,7 @@ const ResourcePage = () => {
                 resource_Id: resourceId,
                 is_viewed: true,
             }, {
-                headers: { 'Authorization': token }
+                headers: { 'Authorization': authHeader }
             }).catch(e => console.error("Failed to register view", e));
 
             resourceData = {
@@ -69,9 +68,8 @@ const ResourcePage = () => {
   // Fetch Comments
   useEffect(() => {
     if (!authHeader) return;
-    const token = authHeader.split(' ')[1];
     axios.get(`${API_CONFIG.BASE_URL}/comment/getForResource/${resourceId}/1/10`, {
-        headers: { 'Authorization': token },
+        headers: { 'Authorization': authHeader },
     })
     .then(response => setComments(response.data))
     .catch(error => console.error("Error fetching comments:", error));
@@ -84,7 +82,6 @@ const ResourcePage = () => {
   };
 
   const handleResourceLike = async () => {
-      const token = authHeader.split(' ')[1];
       const newLikedState = !isResourceLiked;
       
       setIsResourceLiked(newLikedState);
@@ -96,7 +93,7 @@ const ResourcePage = () => {
               is_liked: newLikedState,
               is_viewed: true
           }, {
-              headers: { 'Authorization': token }
+              headers: { 'Authorization': authHeader }
           });
       } catch (error) {
           console.error("Resource like failed", error);
@@ -106,11 +103,10 @@ const ResourcePage = () => {
   };
 
   const handleCommentSubmit = async (text) => {
-      const token = authHeader.split(' ')[1];
       try {
           const response = await axios.post(`${API_CONFIG.BASE_URL}/comment/createForResource`, 
               { text, resource_Id: resourceId }, 
-              { headers: { 'Authorization': token } }
+              { headers: { 'Authorization': authHeader } }
           );
           
           const newComment = { 
@@ -125,11 +121,10 @@ const ResourcePage = () => {
   };
 
   const handleCommentUpdate = async (text, commentId) => {
-      const token = authHeader.split(' ')[1];
       try {
           await axios.put(`${API_CONFIG.BASE_URL}/comment/updateTextForResourceComment/${commentId}`,
              { text }, 
-             { headers: { 'Authorization': token } }
+             { headers: { 'Authorization': authHeader } }
           );
           setComments(prev => prev.map(c => c.comment_Id === commentId ? { ...c, text } : c));
       } catch (error) { console.error("Update failed", error); }
@@ -139,7 +134,7 @@ const ResourcePage = () => {
       if(!window.confirm("Видалити коментар?")) return;
       try {
           await axios.delete(`${API_CONFIG.BASE_URL}/comment/deleteResourceComment/${commentId}`, {
-              headers: { 'Authorization': authHeader.split(' ')[1] }
+              headers: { 'Authorization': authHeader }
           });
           setComments(prev => prev.filter(c => c.comment_Id !== commentId));
       } catch (error) { console.error("Delete failed", error); }

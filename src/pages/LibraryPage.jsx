@@ -34,7 +34,6 @@ const LibraryPage = () => {
 
   const fetchResources = (paramsObj) => {
     if(!authHeader) return;
-    const token = authHeader.split(' ')[1];
 
     const queryParams = {
         page: paramsObj.page || 1,
@@ -43,7 +42,7 @@ const LibraryPage = () => {
     };
 
     axios.get(`${API_CONFIG.BASE_URL}/resource/search`, {
-        headers: { 'Authorization': token },
+        headers: { 'Authorization': authHeader },
         params: queryParams
     })
       .then(response => {
@@ -83,9 +82,8 @@ const LibraryPage = () => {
   // Stack mode logic
   useEffect(() => {
     if (isStackMode && authHeader) {
-        const token = authHeader.split(' ')[1];
         axios.get(`${API_CONFIG.BASE_URL}/stack/getResourceIds/${stackId}`, {
-            headers: { 'Authorization': token }
+            headers: { 'Authorization': authHeader }
         })
         .then(res => {
             setStackResourceIds(new Set(res.data));
@@ -96,7 +94,6 @@ const LibraryPage = () => {
 
   // Stack toggle handlers
   const handleToggleStackResource = async (resourceId, isAdded) => {
-      const token = authHeader.split(' ')[1];
       const url = `${API_CONFIG.BASE_URL}/stack/${isAdded ? 'removeResource' : 'addResource'}/${stackId}/${resourceId}`;
       const method = isAdded ? 'delete' : 'post';
 
@@ -106,7 +103,7 @@ const LibraryPage = () => {
           else newSet.add(resourceId);
           setStackResourceIds(newSet);
 
-          await axios({ method, url, headers: { 'Authorization': token } });
+          await axios({ method, url, headers: { 'Authorization': authHeader } });
       } catch (error) {
           console.error("Failed to toggle resource in stack", error);
           const newSet = new Set(stackResourceIds);
@@ -280,7 +277,6 @@ const ResourceSearchResultComponent = ({ resource, stackMode, isInStack, onToggl
     e.stopPropagation();
     if (!authHeader) return;
 
-    const token = authHeader.split(' ')[1];
     const newState = !currentState;
 
     setState(newState);
@@ -290,7 +286,7 @@ const ResourceSearchResultComponent = ({ resource, stackMode, isInStack, onToggl
             resource_Id,
             [field]: newState
         }, {
-            headers: { 'Authorization': token }
+            headers: { 'Authorization': authHeader }
         });
     } catch (error) {
         console.error(`Failed to update ${field}:`, error);

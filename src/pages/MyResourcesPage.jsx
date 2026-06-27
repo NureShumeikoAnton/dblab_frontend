@@ -35,8 +35,7 @@ const MyResourcesPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             if(!authHeader) return;
-            const token = authHeader.split(' ')[1];
-            const config = { headers: { 'Authorization': token } };
+            const config = { headers: { 'Authorization': authHeader } };
 
             try {
                 const [resResources, resLinkTypes, resDirections] = await Promise.all([
@@ -61,9 +60,8 @@ const MyResourcesPage = () => {
         if(!window.confirm("Ви впевнені, що хочете видалити цей ресурс?")) return;
         
         try {
-            const token = authHeader.split(' ')[1];
             await axios.delete(`${API_CONFIG.BASE_URL}/resource/delete/${resourceId}`, {
-                headers: { 'Authorization': token }
+                headers: { 'Authorization': authHeader }
             });
             setResources(prev => prev.filter(r => r.resource_Id !== resourceId));
         } catch (error) {
@@ -145,8 +143,7 @@ const MyResourcesPage = () => {
     const handleSubmit = async () => {
         if (!validateForm()) return;
 
-        const token = authHeader.split(' ')[1];
-        const config = { headers: { 'Authorization': token } };
+        const config = { headers: { 'Authorization': authHeader } };
         
         const payload = {
             ...formData,

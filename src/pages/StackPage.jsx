@@ -30,10 +30,9 @@ const StackPage = () => {
     if (requestRef.current === stackId) return;
     requestRef.current = stackId;
 
-    const token = authHeader.split(' ')[1];
     
     axios.get(`${API_CONFIG.BASE_URL}/stack/getById/${stackId}`, {
-        headers: { 'Authorization': token },
+        headers: { 'Authorization': authHeader },
     })
     .then((response) => {
         let stackData = response.data;
@@ -49,7 +48,7 @@ const StackPage = () => {
                 stack_Id: stackId,
                 is_viewed: true,
                 is_liked: interaction?.is_liked || false 
-            }, { headers: { 'Authorization': token } }).catch(e => console.error("Failed to register stack view", e));
+            }, { headers: { 'Authorization': authHeader } }).catch(e => console.error("Failed to register stack view", e));
 
             stackData = { ...stackData, views_cache: stackData.views_cache + 1 };
         }
@@ -66,9 +65,8 @@ const StackPage = () => {
   // Fetch comments
   useEffect(() => {
     if (!authHeader) return;
-    const token = authHeader.split(' ')[1];
     axios.get(`${API_CONFIG.BASE_URL}/comment/getForStack/${stackId}/1/10`, {
-        headers: { 'Authorization': token },
+        headers: { 'Authorization': authHeader },
     })
     .then(response => setComments(response.data))
     .catch(error => console.error("Error fetching stack comments:", error));
@@ -78,7 +76,6 @@ const StackPage = () => {
   // Handlers
 
   const handleStackLike = async () => {
-      const token = authHeader.split(' ')[1];
       const newLikedState = !isLiked;
 
       setIsLiked(newLikedState);
@@ -89,7 +86,7 @@ const StackPage = () => {
               stack_Id: stackId,
               is_liked: newLikedState,
               is_viewed: true
-          }, { headers: { 'Authorization': token } });
+          }, { headers: { 'Authorization': authHeader } });
       } catch (error) {
           console.error("Stack like failed", error);
           setIsLiked(!newLikedState);
@@ -98,11 +95,10 @@ const StackPage = () => {
   };
 
   const handleCommentSubmit = async (text) => {
-      const token = authHeader.split(' ')[1];
       try {
           const response = await axios.post(`${API_CONFIG.BASE_URL}/comment/createForStack`, 
               { text, stack_Id: stackId }, 
-              { headers: { 'Authorization': token } }
+              { headers: { 'Authorization': authHeader } }
           );
           
           const newComment = { 
@@ -117,11 +113,10 @@ const StackPage = () => {
   };
 
   const handleCommentUpdate = async (text, commentId) => {
-      const token = authHeader.split(' ')[1];
       try {
           await axios.put(`${API_CONFIG.BASE_URL}/comment/updateTextForStackComment/${commentId}`,
              { text }, 
-             { headers: { 'Authorization': token } }
+             { headers: { 'Authorization': authHeader } }
           );
           setComments(prev => prev.map(c => c.comment_Id === commentId ? { ...c, text } : c));
       } catch (error) { console.error("Update failed", error); }
@@ -131,7 +126,7 @@ const StackPage = () => {
       if(!window.confirm("Видалити коментар?")) return;
       try {
           await axios.delete(`${API_CONFIG.BASE_URL}/comment/deleteStackComment/${commentId}`, {
-              headers: { 'Authorization': authHeader.split(' ')[1] }
+              headers: { 'Authorization': authHeader }
           });
           setComments(prev => prev.filter(c => c.comment_Id !== commentId));
       } catch (error) { console.error("Delete failed", error); }
