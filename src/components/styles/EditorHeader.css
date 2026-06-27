@@ -11,6 +11,9 @@
 
 .editor-header__left {
     min-width: 100px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .editor-header__center {
@@ -45,6 +48,29 @@
 .editor-header__back:hover {
     background: #ebebed;
     color: #555e68;
+}
+
+.editor-header__history-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: #a8b2bb;
+    cursor: pointer;
+    padding: 4px 5px;
+    border-radius: 5px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.editor-header__history-btn:hover:not(:disabled) {
+    background: #ebebed;
+    color: #555e68;
+}
+
+.editor-header__history-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
 }
 
 .editor-header__divider {

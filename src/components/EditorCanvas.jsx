@@ -249,6 +249,7 @@ const EditorCanvasFlow = () => {
                     targetTable={targetTable}
                     attributePool={attributePool}
                     stageIndex={currentStageIndex}
+                    alreadyLinked={pendingRelationshipSetup.alreadyLinked ?? false}
                     onClose={clearRelationshipSetup}
                 />
             )}

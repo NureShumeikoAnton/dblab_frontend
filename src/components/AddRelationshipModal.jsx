@@ -6,7 +6,7 @@ import './styles/AddRelationshipModal.css';
 
 const LS_KEY = 'dblab_skip_fk_confirm';
 
-const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIndex, onClose }) => {
+const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIndex, alreadyLinked, onClose }) => {
     const addTableAttribute = useEditorStore((s) => s.addTableAttribute);
     const updateTableAttribute = useEditorStore((s) => s.updateTableAttribute);
     const addRelationship = useEditorStore((s) => s.addRelationship);
@@ -31,10 +31,14 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
 
     const targetAlreadyHasFK = useMemo(() => {
         if (!selectedPKAttrId) return false;
+        const sourcePKName = attrMap.get(selectedPKAttrId)?.name?.toLowerCase();
         return targetTable.tableAttributes.some(
-            (ta) => ta.attributeId === selectedPKAttrId && ta.is_FK
+            (ta) => ta.is_FK && (
+                ta.attributeId === selectedPKAttrId ||
+                (sourcePKName && attrMap.get(ta.attributeId)?.name?.toLowerCase() === sourcePKName)
+            )
         );
-    }, [targetTable, selectedPKAttrId]);
+    }, [targetTable, selectedPKAttrId, attrMap]);
 
     const selectedAttrName = attrMap.get(selectedPKAttrId)?.name ?? '';
 
@@ -90,7 +94,7 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
     if (sourcePKs.length === 0) return null;
 
     // If we'll auto-confirm, render nothing (handleConfirm fires on mount above)
-    if (targetAlreadyHasFK && localStorage.getItem(LS_KEY) === 'true') return null;
+    if (!alreadyLinked && targetAlreadyHasFK && localStorage.getItem(LS_KEY) === 'true') return null;
 
     return createPortal(
         <div className="modal-overlay" onClick={onClose}>
@@ -104,52 +108,62 @@ const AddRelationshipModal = ({ sourceTable, targetTable, attributePool, stageIn
                     </div>
                 </div>
 
-                {sourcePKs.length > 1 && (
-                    <label className="modal__label add-rel-modal__label">
-                        Атрибут PK для використання як посилання FK
-                        <select
-                            className="modal__select"
-                            value={selectedPKAttrId ?? ''}
-                            onChange={(e) => setSelectedPKAttrId(e.target.value)}
-                        >
-                            {sourcePKs.map(({ ta, attr }) => (
-                                <option key={ta.attributeId} value={ta.attributeId}>
-                                    {attr.name}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                )}
-
-                {targetAlreadyHasFK ? (
-                    <>
-                        <p className="add-rel-modal__info add-rel-modal__info--ok">
-                            ✓ <strong>{targetTable.name}</strong> вже має <strong>{selectedAttrName}</strong> як FK.
-                            Буде створено зв'язок.
-                        </p>
-                        <label className="add-rel-modal__skip-label">
-                            <input
-                                type="checkbox"
-                                checked={skipNext}
-                                onChange={(e) => setSkipNext(e.target.checked)}
-                            />
-                            Не показувати знову, якщо FK вже існує
-                        </label>
-                    </>
-                ) : (
-                    <p className="add-rel-modal__info">
-                        <strong>{targetTable.name}</strong> не має FK, що посилається на <strong>{sourceTable.name}</strong>.
-                        <strong> {selectedAttrName}</strong> буде додано як FK.
+                {alreadyLinked ? (
+                    <p className="add-rel-modal__info add-rel-modal__info--warn">
+                        ⚠ Зв'язок між <strong>{sourceTable.name}</strong> та <strong>{targetTable.name}</strong> вже існує. Додавання дубліката не дозволено.
                     </p>
+                ) : (
+                    <>
+                        {sourcePKs.length > 1 && (
+                            <label className="modal__label add-rel-modal__label">
+                                Атрибут PK для використання як посилання FK
+                                <select
+                                    className="modal__select"
+                                    value={selectedPKAttrId ?? ''}
+                                    onChange={(e) => setSelectedPKAttrId(e.target.value)}
+                                >
+                                    {sourcePKs.map(({ ta, attr }) => (
+                                        <option key={ta.attributeId} value={ta.attributeId}>
+                                            {attr.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        )}
+
+                        {targetAlreadyHasFK ? (
+                            <>
+                                <p className="add-rel-modal__info add-rel-modal__info--ok">
+                                    ✓ <strong>{targetTable.name}</strong> вже має <strong>{selectedAttrName}</strong> як FK.
+                                    Буде створено зв'язок.
+                                </p>
+                                <label className="add-rel-modal__skip-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={skipNext}
+                                        onChange={(e) => setSkipNext(e.target.checked)}
+                                    />
+                                    Не показувати знову, якщо FK вже існує
+                                </label>
+                            </>
+                        ) : (
+                            <p className="add-rel-modal__info">
+                                <strong>{targetTable.name}</strong> не має FK, що посилається на <strong>{sourceTable.name}</strong>.
+                                <strong> {selectedAttrName}</strong> буде додано як FK.
+                            </p>
+                        )}
+                    </>
                 )}
 
                 <div className="modal__actions">
                     <button type="button" className="modal__btn modal__btn--secondary" onClick={onClose}>
-                        Скасувати
+                        {alreadyLinked ? 'Закрити' : 'Скасувати'}
                     </button>
-                    <button type="button" className="modal__btn modal__btn--primary" onClick={handleConfirm}>
-                        Створити зв'язок
-                    </button>
+                    {!alreadyLinked && (
+                        <button type="button" className="modal__btn modal__btn--primary" onClick={handleConfirm}>
+                            Створити зв'язок
+                        </button>
+                    )}
                 </div>
             </div>
         </div>,

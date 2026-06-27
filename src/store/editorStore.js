@@ -754,7 +754,13 @@ const useEditorStore = create(
                     state.ui.pendingRelationshipSourceTableId = null;
                     return;
                 }
-                state.ui.pendingRelationshipSetup = { sourceTableId, targetTableId };
+                const stage = state.stages[state.currentStageIndex];
+                const alreadyLinked = stage?.relationships.some(
+                    (r) => (r.table1Id === sourceTableId && r.table2Id === targetTableId) ||
+                            (r.table1Id === targetTableId && r.table2Id === sourceTableId)
+                );
+                // Still open the modal — it will show an "already linked" message.
+                state.ui.pendingRelationshipSetup = { sourceTableId, targetTableId, alreadyLinked: alreadyLinked ?? false };
                 state.ui.pendingRelationshipSourceTableId = null;
             });
         },
