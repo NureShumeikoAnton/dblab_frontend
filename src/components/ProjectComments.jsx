@@ -9,6 +9,7 @@ const REPLY_AUTO_EXPAND_LEVELS = 2;
 
 export function CommentInput({ onSubmit, placeholder = 'Залиште коментар...', submitLabel = 'Коментувати', onCancel }) {
     const [text, setText] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     return (
         <div className="project-comment-input">
             <textarea
@@ -20,16 +21,25 @@ export function CommentInput({ onSubmit, placeholder = 'Залиште коме�
             />
             <div className="project-comment-actions">
                 {onCancel && (
-                    <button className="cancel-btn-text" onClick={() => { setText(''); onCancel(); }}>
+                    <button className="cancel-btn-text" onClick={() => { setText(''); onCancel(); }} disabled={isSubmitting}>
                         Скасувати
                     </button>
                 )}
                 <button
-                    className={`action-btn ${!text.trim() ? 'action-btn--disabled' : ''}`}
-                    onClick={() => { if (!text.trim()) return; onSubmit(text.trim()); setText(''); }}
-                    disabled={!text.trim()}
+                    className={`action-btn ${(!text.trim() || isSubmitting) ? 'action-btn--disabled' : ''}`}
+                    onClick={async () => { 
+                        if (!text.trim() || isSubmitting) return; 
+                        setIsSubmitting(true);
+                        try {
+                            const success = await onSubmit(text.trim());
+                            if (success !== false) setText('');
+                        } finally {
+                            setIsSubmitting(false);
+                        }
+                    }}
+                    disabled={!text.trim() || isSubmitting}
                 >
-                    {submitLabel}
+                    {isSubmitting ? 'Завантаження...' : submitLabel}
                 </button>
             </div>
         </div>
@@ -130,6 +140,8 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
 
     const visibleReplyCount = fetchedThread ? fetchedThread.length : (comment.replies ? comment.replies.length : 0);
 
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
+
     return (
         <div className="project-comment">
             <div className="project-comment__header">
@@ -170,19 +182,28 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
                         value={editText}
                         onChange={e => setEditText(e.target.value)}
                         rows={2}
+                        disabled={isSavingEdit}
                     />
                     <div className="project-comment-actions">
-                        <button className="cancel-btn-text" onClick={() => setEditing(false)}>Скасувати</button>
+                        <button className="cancel-btn-text" onClick={() => setEditing(false)} disabled={isSavingEdit}>Скасувати</button>
                         <button
-                            className="action-btn"
+                            className={`action-btn ${(!editText.trim() || isSavingEdit) ? 'action-btn--disabled' : ''}`}
                             onClick={async () => { 
-                                await onSaveEdit(commentId, editText.trim()); 
-                                setLocalText(editText.trim());
-                                setEditing(false); 
+                                if (!editText.trim() || isSavingEdit) return;
+                                setIsSavingEdit(true);
+                                try {
+                                    const success = await onSaveEdit(commentId, editText.trim()); 
+                                    if (success !== false) {
+                                        setLocalText(editText.trim());
+                                        setEditing(false); 
+                                    }
+                                } finally {
+                                    setIsSavingEdit(false);
+                                }
                             }}
-                            disabled={!editText.trim()}
+                            disabled={!editText.trim() || isSavingEdit}
                         >
-                            Зберегти
+                            {isSavingEdit ? 'Збереження...' : 'Зберегти'}
                         </button>
                     </div>
                 </div>
@@ -196,14 +217,17 @@ export function ProjectComment({ comment, currentUserId, onReply, onSaveEdit, on
                         placeholder={`Відповідь для @${authorName}…`}
                         submitLabel="Відповісти"
                         onSubmit={async (newText) => { 
-                            await onReply(commentId, newText); 
-                            setReplyOpen(false); 
-                            
-                            // Immediately fetch the thread to update the UI with the new reply
-                            await fetchThreadData();
-                            if (!repliesExpanded) {
-                                setRepliesExpanded(true);
+                            const success = await onReply(commentId, newText); 
+                            if (success !== false) {
+                                setReplyOpen(false); 
+                                
+                                // Immediately fetch the thread to update the UI with the new reply
+                                await fetchThreadData();
+                                if (!repliesExpanded) {
+                                    setRepliesExpanded(true);
+                                }
                             }
+                            return success;
                         }}
                         onCancel={() => setReplyOpen(false)}
                     />

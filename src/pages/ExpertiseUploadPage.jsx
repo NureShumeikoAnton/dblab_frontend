@@ -58,8 +58,14 @@ const ExpertiseUploadPage = () => {
                 const ext = m.file.name.slice(m.file.name.lastIndexOf('.')).toLowerCase();
                 return !allowedExtensions.includes(ext);
             });
+            const hasOversizedFile = dataModels.some(m => {
+                return m.file && m.file.size > 5 * 1024 * 1024;
+            });
+            
             if (hasInvalidFile) {
                 e.dataModels = 'Дозволені формати: png, jpg, jpeg, webp, txt, sql, json';
+            } else if (hasOversizedFile) {
+                e.dataModels = 'Максимальний розмір файлу — 5 МБ';
             }
         }
         return e;
@@ -89,30 +95,45 @@ const ExpertiseUploadPage = () => {
             const project_id = createdProject.project_id || createdProject.project_Id;
 
             // 2. Upload each data model
-            for (const model of dataModels) {
-                if (model.file) {
-                    const formData = new FormData();
-                    formData.append('file', model.file);
-                    formData.append('type', model.type);
+            try {
+                for (const model of dataModels) {
+                    if (model.file) {
+                        const formData = new FormData();
+                        formData.append('file', model.file);
+                        formData.append('type', model.type);
 
-                    await axios.post(
-                        `${API_CONFIG.BASE_URL}/model/create/${project_id}`,
-                        formData,
-                        {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                                'Authorization': authHeader
+                        await axios.post(
+                            `${API_CONFIG.BASE_URL}/model/create/${project_id}`,
+                            formData,
+                            {
+                                headers: {
+                                    'Content-Type': 'multipart/form-data',
+                                    'Authorization': authHeader
+                                }
                             }
-                        }
-                    );
+                        );
+                    }
                 }
+            } catch (fileError) {
+                console.error('Error uploading files, rolling back project creation:', fileError);
+                try {
+                    await axios.delete(`${API_CONFIG.BASE_URL}/project/delete/${project_id}`, {
+                        headers: { 'Authorization': authHeader }
+                    });
+                } catch (rollbackError) {
+                    console.error('Failed to rollback project creation:', rollbackError);
+                }
+                const errorMsg = fileError.response?.data?.message || 'Невідома помилка';
+                addToast(`Помилка файлів: ${errorMsg}. Проєкт не збережено.`, 'error');
+                return;
             }
 
-            addToast('Проєкт успішно завантажено!', 'success');
+            addToast('Проєкт успішно створено!', 'success');
             navigate('/expertise');
         } catch (error) {
             console.error('Error uploading project:', error);
-            addToast('Не вдалося завантажити проєкт', 'error');
+            const errorMsg = error.response?.data?.message || 'Невідома помилка';
+            addToast(`Не вдалося створити проєкт: ${errorMsg}`, 'error');
         }
     };
 

@@ -6,6 +6,7 @@ import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import dayjs from 'dayjs';
 import axios from 'axios';
 import API_CONFIG from '../config/api.js';
+import { useToast } from '../context/ToastContext.jsx';
 import { CommentInput, CommentThread } from '../components/ProjectComments.jsx';
 import './styles/ClientPages.css';
 import './styles/ExpertiseProjectPage.css';
@@ -41,6 +42,21 @@ function ModelIcon({ type }) {
     };
     return typeIconMap[type] || <FileText size={16} />;
 }
+
+export const processScoreInput = (val) => {
+    if (val === '') return '';
+    const num = parseInt(val, 10);
+    if (isNaN(num)) return '';
+    if (num > 100) return '100';
+    if (num < 0) return '0';
+    return num.toString();
+};
+
+export const handleScoreKeyDown = (e) => {
+    if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
+        e.preventDefault();
+    }
+};
 
 const handleSecureFileClick = async (e, fileUrl, authHeader) => {
     e.preventDefault();
@@ -79,6 +95,7 @@ const ExpertiseProjectPage = () => {
     const navigate = useNavigate();
     const authUser = useAuthUser();
     const authHeader = useAuthHeader();
+    const { addToast } = useToast();
 
     const pid = parseInt(projectId);
 
@@ -88,6 +105,7 @@ const ExpertiseProjectPage = () => {
     const [allComments, setAllComments] = useState([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isClaiming, setIsClaiming] = useState(false);
 
     const [isEditingProject, setIsEditingProject] = useState(false);
     const [editName, setEditName] = useState('');
@@ -134,7 +152,7 @@ const ExpertiseProjectPage = () => {
     const isAdmin = authUser && authUser.role === 'admin';
     const isExpert = authUser && (authUser.role === 'expert' || authUser.role === 'admin');
     const currentUserId = authUser?.id || authUser?.user_Id;
-    const isAuthor = authUser && localProject && currentUserId === localProject.author.user_Id;
+    const isAuthor = authUser && localProject && currentUserId === localProject.author?.user_Id;
     
     const myDraftExpertise = localExpertises.find(e => e.end_date === null && e.expert_user_Id === currentUserId);
     const hasCompletedReview = localExpertises.some(e => e.end_date !== null && e.expert_user_Id === currentUserId);
@@ -189,6 +207,8 @@ const ExpertiseProjectPage = () => {
     };
 
     const handleClaim = async () => {
+        if (isClaiming) return;
+        setIsClaiming(true);
         try {
             await axios.post(`${API_CONFIG.BASE_URL}/expertise/create/${pid}`, {}, {
                 headers: { 'Authorization': authHeader }
@@ -196,6 +216,8 @@ const ExpertiseProjectPage = () => {
             await fetchProjectData();
         } catch (error) {
             console.error('Error claiming expertise:', error);
+        } finally {
+            setIsClaiming(false);
         }
     };
 
@@ -230,18 +252,34 @@ const ExpertiseProjectPage = () => {
             });
 
             const validAttachments = reviewAttachments.filter(a => a.file);
+            let fileErrorOccurred = false;
+            let lastFileError = '';
+
             for (const att of validAttachments) {
                 const formData = new FormData();
                 formData.append('file', att.file);
-                await axios.post(`${API_CONFIG.BASE_URL}/imbed/create/${draftId}`, formData, {
-                    headers: { 'Authorization': authHeader, 'Content-Type': 'multipart/form-data' }
-                });
+                try {
+                    await axios.post(`${API_CONFIG.BASE_URL}/imbed/create/${draftId}`, formData, {
+                        headers: { 'Authorization': authHeader, 'Content-Type': 'multipart/form-data' }
+                    });
+                } catch (fileErr) {
+                    fileErrorOccurred = true;
+                    lastFileError = fileErr.response?.data?.message || 'Помилка файлу';
+                    console.error('Error uploading file:', fileErr);
+                }
             }
 
             await fetchProjectData();
+            
+            if (fileErrorOccurred) {
+                addToast(`Експертизу збережено, але виникла помилка з файлами: ${lastFileError}. Відредагуйте експертизу, щоб додати їх.`, 'error');
+            } else {
+                addToast('Експертизу успішно додано!', 'success');
+            }
             return true;
         } catch (error) {
             console.error('Error submitting review:', error);
+            addToast('Не вдалося зберегти експертизу', 'error');
             return false;
         }
     };
@@ -257,8 +295,10 @@ const ExpertiseProjectPage = () => {
                 headers: { 'Authorization': authHeader }
             });
             await fetchProjectData();
+            return true;
         } catch (error) {
             console.error('Error adding comment:', error);
+            return false;
         }
     };
 
@@ -270,8 +310,10 @@ const ExpertiseProjectPage = () => {
                 headers: { 'Authorization': authHeader }
             });
             await fetchProjectData();
+            return true;
         } catch (error) {
             console.error('Error editing comment:', error);
+            return false;
         }
     };
 
@@ -331,7 +373,11 @@ const ExpertiseProjectPage = () => {
     const handleAddDataModel = async () => {
         if (!newModelFile) return;
         if (!isValidFileType(newModelFile)) {
-            alert('Недопустимий формат файлу. Дозволені: .jpg, .jpeg, .png, .webp, .txt, .sql, .json');
+            alert('Непідтримуваний формат файлу. Дозволені: .jpg, .jpeg, .png, .webp, .txt, .sql, .json');
+            return;
+        }
+        if (newModelFile.size > 5 * 1024 * 1024) {
+            alert('Максимальний розмір файлу — 5 МБ.');
             return;
         }
         const formData = new FormData();
@@ -483,7 +529,7 @@ const ExpertiseProjectPage = () => {
                     <span className={`expertise-status-badge status-${localProject.status}`}>
                         {STATUS_LABEL[localProject.status] || localProject.status}
                     </span>
-                    {canClaim && !localProject.isarchived && <button className="action-btn" onClick={handleClaim}>Взяти на експертизу</button>}
+                    {canClaim && !localProject.isarchived && <button className="action-btn" onClick={handleClaim} disabled={isClaiming}>{isClaiming ? 'Опрацювання...' : 'Взяти на експертизу'}</button>}
                     {isMyClaim && !localProject.isarchived && <button className="btn-danger-outline" onClick={handleUnclaim}>Відмовитись</button>}
                 </div>
             </div>
@@ -627,10 +673,20 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
     const isAuthor = currentUserId === ex.expert?.user_Id;
 
     const handleSaveExpertise = async () => {
+        const scoreVal = parseInt(editScore);
+        if (isNaN(scoreVal) || scoreVal < 0 || scoreVal > 100) {
+            alert('Оцінка має бути числом від 0 до 100.');
+            return;
+        }
+        if (!editReviewText.trim()) {
+            alert('Текст рецензії обов\'язковий.');
+            return;
+        }
+
         try {
             await axios.put(`${API_CONFIG.BASE_URL}/expertise/update/${ex.expertise_Id}`, {
-                score: editScore,
-                review_text: editReviewText
+                score: scoreVal,
+                review_text: editReviewText.trim()
             }, {
                 headers: { 'Authorization': authHeader }
             });
@@ -656,7 +712,11 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
     const handleAddAttachment = async () => {
         if (!newAttachmentFile) return;
         if (!isValidFileType(newAttachmentFile)) {
-            alert('Недопустимий формат файлу. Дозволені: .jpg, .jpeg, .png, .webp, .txt, .sql, .json');
+            alert('Непідтримуваний формат файлу. Дозволені: .jpg, .jpeg, .png, .webp, .txt, .sql, .json');
+            return;
+        }
+        if (newAttachmentFile.size > 5 * 1024 * 1024) {
+            alert('Максимальний розмір файлу — 5 МБ.');
             return;
         }
         const formData = new FormData();
@@ -707,7 +767,8 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
                         type="number" 
                         className="review-form__input" 
                         value={editScore} 
-                        onChange={e => setEditScore(e.target.value)} 
+                        onChange={e => setEditScore(processScoreInput(e.target.value))}
+                        onKeyDown={handleScoreKeyDown}
                         min="0" max="100"
                     />
                 </div>
@@ -729,18 +790,27 @@ function ExpertiseReviewCard({ expertise: ex, allComments, authUser, addComment,
 
             {(ex.attachments?.length > 0 || isEditing) && (
                 <div className="expertise-review-attachments expertise-review-attachments--editing">
-                    {ex.attachments?.map(a => (
-                        <div key={a.attachment_Id} className="attachment-edit-item">
-                            <a href={`${API_CONFIG.BASE_URL}/imbed/photo/file/${a.link_url || a.link}`} onClick={(e) => handleSecureFileClick(e, `${API_CONFIG.BASE_URL}/imbed/photo/file/${a.link_url || a.link}`, authHeader)} target="_blank" rel="noopener noreferrer" className="model-list__link model-list__link--no-margin">
-                                <ExternalLink size={13} /> файл ({a.link_url || a.link})
-                            </a>
-                            {isEditing && (
-                                <button className="cancel-btn-text model-delete-btn" onClick={() => handleDeleteAttachment(a.attachment_Id)}>
-                                    <Trash2 size={16} />
-                                </button>
-                            )}
-                        </div>
-                    ))}
+                    {ex.attachments?.map(a => {
+                        const linkStr = a.link_url || a.link;
+                        return (
+                            <div key={a.attachment_Id} className="attachment-edit-item">
+                                <a 
+                                    href={`${API_CONFIG.BASE_URL}/imbed/photo/file/${linkStr}`} 
+                                    onClick={(e) => handleSecureFileClick(e, `${API_CONFIG.BASE_URL}/imbed/photo/file/${linkStr}`, authHeader)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="model-list__link model-list__link--no-margin"
+                                >
+                                    <ExternalLink size={13} /> файл ({linkStr})
+                                </a>
+                                {isEditing && (
+                                    <button className="cancel-btn-text model-delete-btn" onClick={() => handleDeleteAttachment(a.attachment_Id)}>
+                                        <Trash2 size={16} />
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    })}
                     {isEditing && (
                         <div className="add-model-form add-model-form--full-width">
                             <h4 className="add-model-form__title">Додати додаток</h4>
@@ -803,9 +873,15 @@ function ReviewForm({ reviewScore, setReviewScore, reviewText, setReviewText, re
         if (!reviewText.trim()) next.text = 'Текст рецензії обов\'язковий.';
         
         for (const att of reviewAttachments) {
-            if (att.file && !isValidFileType(att.file)) {
-                next.text = next.text ? next.text + ' Один або декілька файлів мають недопустимий формат.' : 'Один або декілька файлів мають недопустимий формат.';
-                break;
+            if (att.file) {
+                if (!isValidFileType(att.file)) {
+                    next.text = next.text ? next.text + ' Один із обраних файлів має непідтримуваний формат.' : 'Один із обраних файлів має непідтримуваний формат.';
+                    break;
+                }
+                if (att.file.size > 5 * 1024 * 1024) {
+                    next.text = next.text ? next.text + ' Один із обраних файлів перевищує ліміт у 5 МБ.' : 'Один із обраних файлів перевищує ліміт у 5 МБ.';
+                    break;
+                }
             }
         }
 
@@ -827,8 +903,12 @@ function ReviewForm({ reviewScore, setReviewScore, reviewText, setReviewText, re
                     type="number" min="0" max="100"
                     className={`review-form__input${errors.score ? ' input-error' : ''}`}
                     value={reviewScore}
-                    onChange={e => { setReviewScore(e.target.value); if (errors.score) setErrors(p => ({ ...p, score: undefined })); }}
-                    placeholder="наприклад, 85"
+                    onChange={e => {
+                        setReviewScore(processScoreInput(e.target.value));
+                        if (errors.score) setErrors(p => ({ ...p, score: undefined }));
+                    }}
+                    onKeyDown={handleScoreKeyDown}
+                    placeholder="Наприклад, 85"
                 />
                 {errors.score && <span className="field-error">{errors.score}</span>}
             </div>

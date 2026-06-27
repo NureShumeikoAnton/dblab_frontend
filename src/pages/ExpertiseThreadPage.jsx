@@ -54,14 +54,16 @@ const ExpertiseThreadPage = () => {
             await axios.post(`${API_CONFIG.BASE_URL}/projectComment/create`, {
                 text,
                 projectId: projectId,
-                expertiseId: rootComment.expertise_Id,
+                expertiseId: rootComment.expertise_id || rootComment.expertise_Id,
                 reply_to_id: replyToId
             }, {
                 headers: { 'Authorization': authHeader }
             });
             fetchData();
+            return true;
         } catch (error) {
             console.error('Error adding comment:', error);
+            return false;
         }
     };
 
@@ -73,8 +75,10 @@ const ExpertiseThreadPage = () => {
                 headers: { 'Authorization': authHeader }
             });
             fetchData();
+            return true;
         } catch (error) {
             console.error('Error editing comment:', error);
+            return false;
         }
     };
 
