@@ -135,7 +135,7 @@ export function runNFChecks(tables, fds, attributePool) {
                 numMatch && numMatch[1] &&
                 ((numberedBaseCount.get(numMatch[1]) ?? 0) >= 2 || namesInTable.has(numMatch[1]))
             ) {
-                issues.push({ type: 'warning', rule: '1NF-D', message: 'Attribute looks like part of a numbered repeating group (e.g. "phone1", "phone2") — repeating groups violate 1NF. Move them to a separate table.' });
+                issues.push({ type: 'warning', rule: '1NF-D', message: 'Attribute looks like part of a numbered repeating group (e.g. "phone1", "phone2") — consider moving repeated values to a separate table.' });
                 summary['1nf_plural'] = worse(summary['1nf_plural'], 'warning');
                 summary.plural_attrs.push({ attributeId: ta.attributeId, name: attr.name, tableId: table.id, tableName: table.name });
             }
