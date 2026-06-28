@@ -17,6 +17,20 @@
 
 const localKey = (projectId) => `dblab_editor_${projectId}`;
 
+/**
+ * An FD is only meaningful while its home table still holds at least one determinant
+ * AND one dependent attribute. Once an attribute is removed (not moved) and a side
+ * has nothing left in the table, the FD is dead — FDEdge already hides it and the
+ * validation engine ignores it; this drops it from saves so leftovers don't persist
+ * (and keeps the save payload and the conflict fingerprint in agreement).
+ */
+function fdHasLiveEndpoints(fd, homeTable) {
+    if (!homeTable) return false;
+    const present = new Set(homeTable.tableAttributes.map((ta) => ta.attributeId));
+    return fd.starts.some((s) => present.has(s.attributeId))
+        && fd.ends.some((e) => present.has(e.attributeId));
+}
+
 // Maps store stageId strings to the 1-based integer the backend expects for
 // introduced_at_stage_id on the PUT payload.
 const STAGE_INDEX = {
@@ -95,6 +109,7 @@ export function serializeForAPI(store) {
             // have no resolvable table_id — sending them would corrupt the payload.
             fds: stage.fds
                 .filter((fd) => tableIndexMap[fd.tableId] != null)
+                .filter((fd) => fdHasLiveEndpoints(fd, stage.tables.find((t) => t.id === fd.tableId)))
                 .map((fd) => ({
                     colour: fd.color,
                     level: fd.level,
@@ -242,6 +257,7 @@ function buildFingerprint(attrPool, stages) {
 
     const stagesStr = (stages ?? []).map((s) => {
         const tableNameById = new Map((s.tables ?? []).map((t) => [t.id, t.name]));
+        const tableById = new Map((s.tables ?? []).map((t) => [t.id, t]));
 
         const tables = (s.tables ?? [])
             .map((t) => {
@@ -259,6 +275,7 @@ function buildFingerprint(attrPool, stages) {
         // a phantom conflict on every load.
         const fds = (s.fds ?? [])
             .filter((fd) => !fd.tableId || tableNameById.has(fd.tableId))
+            .filter((fd) => !fd.tableId || fdHasLiveEndpoints(fd, tableById.get(fd.tableId)))
             .map((fd) => `${(fd.starts ?? []).map(attrName).sort().join('.')}>${(fd.ends ?? []).map(attrName).sort().join('.')}`)
             .sort()
             .join(',');

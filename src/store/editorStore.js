@@ -276,9 +276,13 @@ const useEditorStore = create(
             const table = stage?.tables.find((t) => t.id === tableId);
             if (!table) return;
             const tableAttrIds = new Set(table.tableAttributes.map((ta) => ta.attributeId));
+            // Only FDs HOMED on this table are affected by its deletion. Matching by
+            // shared attributeId would wrongly flag FDs owned by other tables that
+            // merely reference an attribute this table also holds (e.g. a shared PK).
             const affected = stage.fds.filter((fd) =>
-                fd.starts.some((s) => tableAttrIds.has(s.attributeId)) ||
-                fd.ends.some((e) => tableAttrIds.has(e.attributeId))
+                fd.tableId
+                    ? fd.tableId === tableId
+                    : fd.starts.every((s) => tableAttrIds.has(s.attributeId))
             );
             if (affected.length === 0) {
                 get().deleteTable(stageIndex, tableId);

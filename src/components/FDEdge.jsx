@@ -65,6 +65,13 @@ const FDEdge = ({ source, data }) => {
     const laneX         = isLeft
         ? posAbs.x - Math.abs(fd.level) * LANE_WIDTH
         : posAbs.x + nodeW + Math.abs(fd.level) * LANE_WIDTH;
+    // Issue #25 — only the END (arrow) side is shortened for outer levels: a
+    // level-N arrowhead terminates on the lane line of level N-1 instead of the
+    // table edge, so stacked arrows no longer pile up on the same row. Level 1
+    // still points at the table edge. Start stubs always reach the table edge.
+    const arrowEdgeX    = isLeft
+        ? posAbs.x - (Math.abs(fd.level) - 1) * LANE_WIDTH
+        : posAbs.x + nodeW + (Math.abs(fd.level) - 1) * LANE_WIDTH;
     const handleIdPrefix = isLeft ? 'fd-left-' : 'fd-right-';
 
     const getHandleY = (attributeId) => {
@@ -82,10 +89,10 @@ const FDEdge = ({ source, data }) => {
     const topY    = Math.min(...allYs);
     const bottomY = Math.max(...allYs);
 
-    // Arrowhead pointing from laneX toward the table edge
+    // Arrowhead pointing toward the table, anchored at the (possibly inset) arrow edge
     const arrowPath = (y) => isLeft
-        ? `M ${tableEdgeX},${y} L ${tableEdgeX - ARROW_SIZE * 1.5},${y - ARROW_SIZE} L ${tableEdgeX - ARROW_SIZE * 1.5},${y + ARROW_SIZE} Z`
-        : `M ${tableEdgeX},${y} L ${tableEdgeX + ARROW_SIZE * 1.5},${y - ARROW_SIZE} L ${tableEdgeX + ARROW_SIZE * 1.5},${y + ARROW_SIZE} Z`;
+        ? `M ${arrowEdgeX},${y} L ${arrowEdgeX - ARROW_SIZE * 1.5},${y - ARROW_SIZE} L ${arrowEdgeX - ARROW_SIZE * 1.5},${y + ARROW_SIZE} Z`
+        : `M ${arrowEdgeX},${y} L ${arrowEdgeX + ARROW_SIZE * 1.5},${y - ARROW_SIZE} L ${arrowEdgeX + ARROW_SIZE * 1.5},${y + ARROW_SIZE} Z`;
 
     const isSelected = selectedFDId === fd.id;
     const lp = { stroke: fd.color, strokeWidth: isSelected ? 2.5 : 1.5, opacity: 0.55 };
@@ -122,11 +129,12 @@ const FDEdge = ({ source, data }) => {
                     </g>
                 ))}
 
-                {/* End stubs — line + solid arrowhead (dependent side) */}
+                {/* End stubs — line + solid arrowhead (dependent side).
+                    Starts at arrowEdgeX (inset for outer levels), runs out to the spine. */}
                 {endYs.map((y, i) => (
                     <g key={`e-${i}`}>
-                        <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
-                        <line x1={tableEdgeX} y1={y} x2={laneX} y2={y} {...hitProps} />
+                        <line x1={arrowEdgeX} y1={y} x2={laneX} y2={y} {...lp} />
+                        <line x1={arrowEdgeX} y1={y} x2={laneX} y2={y} {...hitProps} />
                         <path d={arrowPath(y)} fill={fd.color} />
                     </g>
                 ))}
