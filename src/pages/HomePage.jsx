@@ -7,6 +7,7 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import API_CONFIG from '../config/api.js';
+import { resolvePhotoFilename } from '../utils/photo.js';
 
 const SkillCard = ({ id, name }) => (
     <Link to={`/studentproposals?directionId=${id}`} className='skill-card-link'>
@@ -24,7 +25,8 @@ const DirectionCard = ({ name, link, description }) => (
 )
 
 const ExpertCard = ({ name, role, image, position, placeOfEmployment, level, description }) => {
-    const imageSrc = image ? `${API_CONFIG.BASE_URL}/teacher/photo/file/${image}` : null;
+    const photoFilename = resolvePhotoFilename(image);
+    const imageSrc = photoFilename ? `${API_CONFIG.BASE_URL}/teacher/photo/file/${photoFilename}` : null;
     return (
         <div className='expert-card'>
             <p className='expert-card__role'>{role}</p>

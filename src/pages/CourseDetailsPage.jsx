@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {ChevronLeft, ChevronRight} from 'lucide-react';
 import './styles/CourseDetails.css';
 import API_CONFIG from '../config/api.js';
+import { resolvePhotoFilename } from '../utils/photo.js';
 
 import axios from "axios";
 
@@ -50,8 +51,8 @@ const TeacherSliderComponent = ({teachers}) => {
                     <p className="teacher-description">{teachers[currentIndex].text}</p>
                 </div>
                 <div className="teacher-image">
-                    {teachers[currentIndex].photo
-                        ? <img src={`${API_CONFIG.BASE_URL}/teacher/photo/file/${teachers[currentIndex].photo}`} alt={teachers[currentIndex].full_name}/>
+                    {resolvePhotoFilename(teachers[currentIndex].photo)
+                        ? <img src={`${API_CONFIG.BASE_URL}/teacher/photo/file/${resolvePhotoFilename(teachers[currentIndex].photo)}`} alt={teachers[currentIndex].full_name}/>
                         : <div className="teacher-image__placeholder" />
                     }
                 </div>
