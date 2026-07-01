@@ -139,7 +139,7 @@ const ExpertiseProjectPage = () => {
     const myDraftExpertise = localExpertises.find(e => e.end_date === null && e.expert_user_Id === currentUserId);
     const hasCompletedReview = localExpertises.some(e => e.end_date !== null && e.expert_user_Id === currentUserId);
     const isMyClaim = !!myDraftExpertise;
-    const canClaim = isExpert && !isMyClaim && !hasCompletedReview;
+    const canClaim = isExpert && !isMyClaim && !hasCompletedReview && !isAuthor;
     
     const pendingReviewers = localExpertises.filter(e => e.end_date === null);
 
@@ -181,10 +181,11 @@ const ExpertiseProjectPage = () => {
                 headers: { 'Authorization': authHeader }
             });
             setShowDeleteModal(false);
+            addToast('Проєкт успішно видалено', 'success');
             navigate('/expertise');
         } catch (err) {
             console.error('Error deleting project', err);
-            alert('Помилка при видаленні проєкту');
+            addToast(err.response?.data?.message || 'Помилка при видаленні проєкту', 'error');
         }
     };
 
