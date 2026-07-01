@@ -1,6 +1,7 @@
 import { X, FileText, Film, FileCode, FileSpreadsheet, Video } from "lucide-react";
 import dayjs from "dayjs";
 import "./styles/EventModal.css";
+import API_CONFIG from "../config/api.js";
 
 const EventModalComponent = ({ event, onClose }) => {
   const handleModalClick = (e) => {
@@ -108,7 +109,8 @@ const EventModalComponent = ({ event, onClose }) => {
               {event.materials.map((material) => (
                 <a 
                   key={material.material_Id}
-                  href={material.file} 
+                  href={material.file ? (material.file.startsWith('http') ? material.file : `${API_CONFIG.BASE_URL}/material/file/${material.file}`) : '#'} 
+                  onClick={(e) => { if (!material.file) e.preventDefault(); }}
                   className="material-link"
                   target="_blank"
                   rel="noopener noreferrer"

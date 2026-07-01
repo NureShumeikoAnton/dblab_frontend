@@ -64,7 +64,7 @@ const Materials = () => {
         { key: "material_name", title: "Назва" },
         { key: "event_Id", title: "Подія", type: "select", options: eventOptions, hidden: true },
         { key: "event_name", title: "Подія", modalHidden: true },
-        { key: "file", title: "Посилання" },
+        { key: "file", title: "Файл", type: "file", uploadEndpoint: "upload-file" },
         { key: "material_type", title: "Тип", type: "select", options: typeOptions },
     ];
 

@@ -151,12 +151,9 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
                     if (formData[col.key] instanceof File) {
                         const fd = new FormData();
                         fd.append(col.key, formData[col.key]);
-                        console.log("sending image...")
-                        await axios.post(`${apiUrl}/${id}/upload-photo`, fd, {
-                            headers: { 
-                                'Authorization': authHeader,
-                                'Content-Type': 'multipart/form-data'
-                            }
+                        const uploadUrlSuffix = col.uploadEndpoint || 'upload-photo';
+                        await axios.post(`${apiUrl}/${id}/${uploadUrlSuffix}`, fd, {
+                            headers: { 'Authorization': authHeader }
                         });
                     }
                 }
