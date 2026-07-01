@@ -40,6 +40,7 @@ const FooterComponent = () => {
                 </div>
                 <div className="footer-bottom">
                     <p>&copy; 2025 Лабораторія розробки баз даних DBLAB. All rights reserved.</p>
+                    <p>Powered By: Shumeiko A. | Halkin M. | Henbach R. | Poliakov A. | Naboka A.</p>
                 </div>
             </div>
         </footer>
