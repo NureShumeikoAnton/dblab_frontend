@@ -32,6 +32,7 @@ const tables = [
     { name: 'Competitions', path: '/apanel/competitions' },
     { name: 'Statistics', path: '/apanel/statistics' },
     { name: 'Reports', path: '/apanel/reports' },
+    { name: 'Users', path: '/apanel/users' },
     { name: 'Expert Management', path: '/apanel/experts' },
 ];
 

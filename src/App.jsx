@@ -29,6 +29,7 @@ import DisciplineSkills from "./pages/adminPages/disciplineSkills.jsx";
 import Lessons from "./pages/adminPages/lessons.jsx";
 import Events from "./pages/adminPages/events.jsx";
 import Materials from './pages/adminPages/materials.jsx';
+import Users from './pages/adminPages/users.jsx';
 import ResourcePage from './pages/ResourcePage.jsx';
 import MyResourcesPage from './pages/MyResourcesPage.jsx';
 import StackPage from './pages/StackPage.jsx';
@@ -106,6 +107,7 @@ const App = () => {
                     <Route path={"lessons"} element={<Lessons/>}></Route>
                     <Route path={"events"} element={<Events/>}></Route>
                     <Route path={"materials"} element={<Materials/>}></Route>
+                    <Route path={"users"} element={<Users/>}></Route>
                     
                     <Route path={"directions"} element={<Directions/>}></Route>
                     <Route path={"proposals"} element={<Proposals/>}></Route>

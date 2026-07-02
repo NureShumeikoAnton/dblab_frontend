@@ -107,7 +107,7 @@ const AdminTableComponent = ({tableName, columns, endpoint, idField = "id"}) => 
         const updatedFormData = {};
         columns.forEach(col => {
             if (col.key !== idField) {
-                updatedFormData[col.key] = item[col.key];
+                updatedFormData[col.key] = col.clearOnEdit ? "" : item[col.key];
             }
         });
         setFormData(updatedFormData);
